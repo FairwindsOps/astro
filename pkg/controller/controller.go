@@ -5,9 +5,6 @@ import (
   "github.com/mjhuber/dd-manager/pkg/util"
   "github.com/mjhuber/dd-manager/conf"
   "time"
-  "encoding/json"
-  "fmt"
-
   "k8s.io/client-go/util/workqueue"
   "k8s.io/client-go/tools/cache"
   metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -15,6 +12,10 @@ import (
   "k8s.io/apimachinery/pkg/util/wait"
   "os"
   "os/signal"
+  "k8s.io/client-go/kubernetes"
+  "k8s.io/apimachinery/pkg/runtime"
+  "k8s.io/apimachinery/pkg/watch"
+  "syscall"
 )
 
 
@@ -81,7 +82,7 @@ func Run(cfg *conf.Config) {
 func createController(kubeClient kubernetes.Interface, informer cache.SharedIndexInformer, resource string) *KubeResourceWatcher {
   wq := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
 
-  informer.AddEventHandler(cache.ResourceVentHandlerFuncs{
+  informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
     AddFunc: func(obj interface{}) {
       log.Infof("%s/%s has been added.", resource, cache.MetaNamespaceKeyFunc(obj))
     },

@@ -32,10 +32,10 @@ type K8sMeta struct {
 }
 
 type Config struct {
-  Port int
-  WebhookUri string
+  DatadogApiKey string
+  DatadogAppKey string
   DryRun bool
-  Interval int
+  ClusterName string
 }
 
 
@@ -44,7 +44,7 @@ func New() *Config {
     DatadogApiKey: getEnv("DD_API_KEY", ""),
     DatadogAppKey: getEnv("DD_APP_KEY", ""),
     DryRun: envAsBool("DRY_RUN", false),
-    ClusterName: getEnv("CLUSTER_NAME", "")
+    ClusterName: getEnv("CLUSTER_NAME", ""),
   }
 }
 
