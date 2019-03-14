@@ -28,6 +28,7 @@ type KubeResourceWatcher struct {
 
 
 func (watcher *KubeResourceWatcher) Watch(term <-chan struct{}) {
+  log.Infof("Starting watcher.")
   go watcher.informer.Run(term)
   wait.Until(watcher.waitForEvents, time.Second, term)
 }
@@ -80,17 +81,21 @@ func Run(cfg *conf.Config) {
 
 
 func createController(kubeClient kubernetes.Interface, informer cache.SharedIndexInformer, resource string) *KubeResourceWatcher {
+  log.Infof("Creating controller for resource type %s", resource)
   wq := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
 
   informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
     AddFunc: func(obj interface{}) {
-      log.Infof("%s/%s has been added.", resource, cache.MetaNamespaceKeyFunc(obj))
+      name, _ := cache.MetaNamespaceKeyFunc(obj)
+      log.Infof("%s/%s has been added.", resource, name)
     },
     DeleteFunc: func(obj interface{}) {
-      log.Infof("%s/%s has been deleted.", resource, cache.MetaNamespaceKeyFunc(obj))
+      name, _ := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
+      log.Infof("%s/%s has been deleted.", resource, name)
     },
-    UpdateFunc: func(obj interface{}) {
-      log.Infof("%s/%s has been updated.", resource, cache.MetaNamespaceKeyFunc(obj))
+    UpdateFunc: func(old interface{}, new interface{}) {
+      name, _ := cache.MetaNamespaceKeyFunc(old)
+      log.Infof("%s/%s has been updated.", resource, name)
     },
   })
 
