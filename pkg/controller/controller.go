@@ -56,7 +56,7 @@ func (watcher *KubeResourceWatcher) Watch(term <-chan struct{}) {
 
 func (watcher *KubeResourceWatcher) waitForEvents() {
   // just keep running forever
-  for {
+  for watcher.next() {
 
   }
 }
@@ -111,7 +111,7 @@ func (watcher *KubeResourceWatcher) next() bool {
 
 
 
-func Run(cfg *conf.Config) {
+func NewController(cfg *conf.Config) {
   log.Info("Starting controller.")
   kubeClient := util.GetKubeClient()
 

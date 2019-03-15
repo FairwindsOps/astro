@@ -32,5 +32,5 @@ func loadConfig(cmd *cobra.Command)(*conf.Config) {
 
 func run(cmd *cobra.Command, args []string) {
   conf := loadConfig(cmd)
-  controller.Run(conf)
+  controller.NewController(conf)
 }
