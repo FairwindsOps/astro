@@ -16,6 +16,8 @@ import (
   "k8s.io/apimachinery/pkg/runtime"
   "k8s.io/apimachinery/pkg/watch"
   "syscall"
+  rt "k8s.io/apimachinery/pkg/util/runtime"
+  "fmt"
 )
 
 
@@ -26,12 +28,31 @@ type KubeResourceWatcher struct {
   wq          workqueue.RateLimitingInterface
 }
 
+type Event struct {
+  key          string
+  eventType    string
+  namespace    string
+  resourceType string
+}
+
 
 func (watcher *KubeResourceWatcher) Watch(term <-chan struct{}) {
   log.Infof("Starting watcher.")
+
+  defer watcher.wq.ShutDown()
+  defer rt.HandleCrash()
+
   go watcher.informer.Run(term)
+
+  if !cache.WaitForCacheSync(term, watcher.HasSynced) {
+    rt.HandleError(fmt.Errorf("Timeout waiting for cache sync."))
+    return
+  }
+
+  log.Infof("Watcher synced.")
   wait.Until(watcher.waitForEvents, time.Second, term)
 }
+
 
 func (watcher *KubeResourceWatcher) waitForEvents() {
   // just keep running forever
@@ -41,6 +62,52 @@ func (watcher *KubeResourceWatcher) waitForEvents() {
 }
 
 
+func (watcher *KubeResourceWatcher) HasSynced() bool {
+  return watcher.informer.HasSynced()
+}
+
+
+func (watcher *KubeResourceWatcher) LastSyncResourceVersion() string {
+  return watcher.informer.LastSyncResourceVersion()
+}
+
+
+func (watcher *KubeResourceWatcher) process(evt Event) error {
+  info, _, err := watcher.informer.GetIndexer().GetByKey(evt.key)
+  if err != nil {
+    //TODO - need some better error handling here
+    return err
+  }
+  log.Infof("Processing item %s", info)
+
+  // TODO - process
+  return nil
+}
+
+
+func (watcher *KubeResourceWatcher) next() bool {
+  evt, err := watcher.wq.Get()
+
+  if err {
+    return false
+  }
+
+  defer watcher.wq.Done(evt)
+  processErr := watcher.process(evt.(Event))
+  if processErr != nil {
+    // limit the number of retries
+    if watcher.wq.NumRequeues(evt) < 5 {
+      log.Errorf("Error running queued item %s: %v", evt.(Event).key, processErr)
+      log.Infof("Retry processing item %s", evt.(Event).key)
+      watcher.wq.AddRateLimited(evt)
+    } else {
+      log.Errorf("Giving up trying to run queued item %s: %v", evt.(Event).key, processErr)
+      watcher.wq.Forget(evt)
+      rt.HandleError(processErr)
+    }
+  }
+  return true
+}
 
 
 
