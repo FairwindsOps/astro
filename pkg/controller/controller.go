@@ -18,6 +18,7 @@ import (
   "syscall"
   rt "k8s.io/apimachinery/pkg/util/runtime"
   "fmt"
+  "strings"
 )
 
 
@@ -144,7 +145,39 @@ func NewController(cfg *conf.Config) {
   <-signals
 }
 
+/*
+func getManifest(client kubernetes.Interface, objectType string, ListOrWatch string) func() {
+  switch strings.ToLower(objectType) {
+    case "deployment":
+      if strings.ToLower(ListOrWatch) == "list" {
+        return func() { return client.AppsV1().Deployments("").List(metav1.ListOptions{}) }
+      }
+      return func() { return client.AppsV1().Deployments("").Watch(metav1.ListOptions{}) }
+  }
+  return nil
+}*/
 
+
+func getWatchInterface(client kubernetes.Interface, objectType string) (watch.Interface, error) {
+  switch strings.ToLower(objectType) {
+  case "deployment":
+    return client.AppsV1().Deployments("").Watch(metav1.ListOptions{})
+  case "namespace":
+    return client.CoreV1().Namespaces().Watch(metav1.ListOptions{})
+  }
+ return nil, nil 
+}
+
+
+func getListInterface(client kubernetes.Interface, objectType string) (runtime.Object, error) {
+  switch strings.ToLower(objectType) {
+  case "deployment":
+    return client.AppsV1().Deployments("").List(metav1.ListOptions{})
+  case "namespace":
+    return client.CoreV1().Namespaces().List(metav1.ListOptions{})
+  }
+  return nil, nil
+}
 
 
 func createController(kubeClient kubernetes.Interface, informer cache.SharedIndexInformer, resource string) *KubeResourceWatcher {
