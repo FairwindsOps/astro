@@ -116,13 +116,43 @@ func NewController(cfg *conf.Config) {
   log.Info("Starting controller.")
   kubeClient := util.GetKubeClient()
 
+  for _, kubernetesObject := range cfg.WatchedObjects {
+    log.Infof("Creating watcher for %s", kubernetesObject)
+
+    informer := cache.NewSharedIndexInformer(
+      &cache.ListWatch{
+        ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+          //return kubeClient.AppsV1().Deployments("").List(options)
+          return getListInterface(kubeClient, kubernetesObject)
+        },
+        WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+          //return kubeClient.AppsV1().Deployments("").Watch(options)
+          return getWatchInterface(kubeClient, kubernetesObject)
+        },
+      },
+      &v1.Deployment{},
+      0,
+      cache.Indexers{},
+    )
+
+    watcher := createController(kubeClient, informer, "Deployment")
+    term := make(chan struct{})
+    defer close(term)
+
+    go watcher.Watch(term)
+
+  }
+  
+/*
   informer := cache.NewSharedIndexInformer(
     &cache.ListWatch{
       ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-        return kubeClient.AppsV1().Deployments("").List(options)
+        //return kubeClient.AppsV1().Deployments("").List(options)
+        return getListInterface(kubeClient, "Deployment")
       },
       WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-        return kubeClient.AppsV1().Deployments("").Watch(options)
+        //return kubeClient.AppsV1().Deployments("").Watch(options)
+        return getWatchInterface(kubeClient, "Deployment")
       },
     },
     &v1.Deployment{},
@@ -135,6 +165,7 @@ func NewController(cfg *conf.Config) {
   defer close(term)
 
   go watcher.Watch(term)
+*/
 
 
 
@@ -144,18 +175,6 @@ func NewController(cfg *conf.Config) {
   signal.Notify(signals, syscall.SIGINT)
   <-signals
 }
-
-/*
-func getManifest(client kubernetes.Interface, objectType string, ListOrWatch string) func() {
-  switch strings.ToLower(objectType) {
-    case "deployment":
-      if strings.ToLower(ListOrWatch) == "list" {
-        return func() { return client.AppsV1().Deployments("").List(metav1.ListOptions{}) }
-      }
-      return func() { return client.AppsV1().Deployments("").Watch(metav1.ListOptions{}) }
-  }
-  return nil
-}*/
 
 
 func getWatchInterface(client kubernetes.Interface, objectType string) (watch.Interface, error) {
