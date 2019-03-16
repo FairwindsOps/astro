@@ -135,7 +135,7 @@ func NewController(cfg *conf.Config) {
       cache.Indexers{},
     )
 
-    watcher := createController(kubeClient, informer, "Deployment")
+    watcher := createController(kubeClient, informer, kubernetesObject)
     term := make(chan struct{})
     defer close(term)
 
