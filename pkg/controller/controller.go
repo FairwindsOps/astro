@@ -9,6 +9,7 @@ import (
   "k8s.io/client-go/tools/cache"
   metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
   "k8s.io/api/apps/v1"
+  corev1 "k8s.io/api/core/v1"
   "k8s.io/apimachinery/pkg/util/wait"
   "os"
   "os/signal"
@@ -130,7 +131,7 @@ func NewController(cfg *conf.Config) {
           return getWatchInterface(kubeClient, kubernetesObject)
         },
       },
-      &v1.Deployment{},
+      getInterface(kubernetesObject),
       0,
       cache.Indexers{},
     )
@@ -197,6 +198,18 @@ func getListInterface(client kubernetes.Interface, objectType string) (runtime.O
   }
   return nil, nil
 }
+
+
+func getInterface(objectType string) (runtime.Object) {
+  switch strings.ToLower(objectType) {
+  case "deployment":
+    return &v1.Deployment{}
+  case "namespace":
+    return &corev1.Namespace{}
+  }
+  return nil
+}
+
 
 
 func createController(kubeClient kubernetes.Interface, informer cache.SharedIndexInformer, resource string) *KubeResourceWatcher {
