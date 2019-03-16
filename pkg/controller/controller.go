@@ -123,11 +123,9 @@ func NewController(cfg *conf.Config) {
     informer := cache.NewSharedIndexInformer(
       &cache.ListWatch{
         ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-          //return kubeClient.AppsV1().Deployments("").List(options)
           return getListInterface(kubeClient, kubernetesObject)
         },
         WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-          //return kubeClient.AppsV1().Deployments("").Watch(options)
           return getWatchInterface(kubeClient, kubernetesObject)
         },
       },
