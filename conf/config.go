@@ -36,7 +36,7 @@ type Config struct {
   DatadogAppKey string
   DryRun bool
   ClusterName string
-  WatchedObjects []string
+  MonitorDefinitions string
 }
 
 
@@ -46,7 +46,7 @@ func New() *Config {
     DatadogAppKey: getEnv("DD_APP_KEY", ""),
     DryRun: envAsBool("DRY_RUN", false),
     ClusterName: getEnv("CLUSTER_NAME", ""),
-    WatchedObjects: []string{"deployment", "namespace"},
+    MonitorDefinitions: getEnv("DEFINITIONS_PATH", "conf.yml"),
   }
 }
 

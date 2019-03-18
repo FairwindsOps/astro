@@ -1,0 +1,30 @@
+- object: deployment
+  match_annotations:
+    - name: dd-manager/owner
+      value: dd-manager
+  monitors:
+    - name: "[{{env.CLUSTER_NAME}}] Deploy Replica Alert - {{Name}}"
+      type: metric alert
+      query: "max(last_10m):max:kubernetes_state.deployment.replicas_available{kubernetescluster:{{CLUSTER_NAME}},namespace:{{NAMESPACE}}} by {deployment} <= 0"
+      message: |
+        {{#is_alert}}
+        Available replicas is currently 0 for {{deployment.name}}
+        {{/is_alert}}
+        {{^is_alert}}
+        Available replicas is no longer 0 for {{deployment.name}}
+        {{/is_alert}}
+        {{NOTIFICATION_PROFILE}}
+      tags:
+        - dd-manager
+      no_data_timeframe: 
+      notify_audit:
+      notify_no_data:
+      renotify_interval:
+      new_host_delay:
+      evaluation_delay:
+      timeout:
+      escalation_message:
+      thresholds:
+        critical: 0
+      require_full_window: True
+      locked: False
