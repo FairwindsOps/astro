@@ -141,31 +141,6 @@ func NewController(cfg *conf.Config) {
     go watcher.Watch(term)
 
   }
-  
-/*
-  informer := cache.NewSharedIndexInformer(
-    &cache.ListWatch{
-      ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-        //return kubeClient.AppsV1().Deployments("").List(options)
-        return getListInterface(kubeClient, "Deployment")
-      },
-      WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-        //return kubeClient.AppsV1().Deployments("").Watch(options)
-        return getWatchInterface(kubeClient, "Deployment")
-      },
-    },
-    &v1.Deployment{},
-    0,
-    cache.Indexers{},
-  )
-
-  watcher := createController(kubeClient, informer, "Deployment")
-  term := make(chan struct{})
-  defer close(term)
-
-  go watcher.Watch(term)
-*/
-
 
 
   // create a channel to respond to SIGTERMs
@@ -213,19 +188,30 @@ func getInterface(objectType string) (runtime.Object) {
 func createController(kubeClient kubernetes.Interface, informer cache.SharedIndexInformer, resource string) *KubeResourceWatcher {
   log.Infof("Creating controller for resource type %s", resource)
   wq := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
+  var err error
+  var evt Event
 
   informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
     AddFunc: func(obj interface{}) {
-      name, _ := cache.MetaNamespaceKeyFunc(obj)
-      log.Infof("%s/%s has been added.", resource, name)
+      evt.key, err = cache.MetaNamespaceKeyFunc(obj)
+      evt.eventType = "create"
+      evt.resourceType = resource
+      log.Infof("%s/%s has been added.", resource, evt.key)
+      wq.Add(evt)
     },
     DeleteFunc: func(obj interface{}) {
-      name, _ := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
-      log.Infof("%s/%s has been deleted.", resource, name)
+      evt.key, err = cache.MetaNamespaceKeyFunc(obj)
+      evt.eventType = "delete"
+      evt.resourceType = resource
+      log.Infof("%s/%s has been deleted.", resource, evt.key)
+      wq.Add(evt)
     },
     UpdateFunc: func(old interface{}, new interface{}) {
-      name, _ := cache.MetaNamespaceKeyFunc(old)
-      log.Infof("%s/%s has been updated.", resource, name)
+      evt.key, err = cache.MetaNamespaceKeyFunc(new)
+      evt.eventType = "update"
+      evt.resourceType = resource
+      log.Infof("%s/%s has been updated.", resource, evt.key)
+      wq.Add(evt)
     },
   })
 
