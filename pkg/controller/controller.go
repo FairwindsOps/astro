@@ -19,7 +19,6 @@ import (
   "syscall"
   rt "k8s.io/apimachinery/pkg/util/runtime"
   "fmt"
-  "strings"
 )
 
 
@@ -117,30 +116,47 @@ func NewController(cfg *conf.Config) {
   log.Info("Starting controller.")
   kubeClient := util.GetKubeClient()
 
-  for _, kubernetesObject := range cfg.WatchedObjects {
-    log.Infof("Creating watcher for %s", kubernetesObject)
-
-    informer := cache.NewSharedIndexInformer(
-      &cache.ListWatch{
-        ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-          return getListInterface(kubeClient, kubernetesObject)
-        },
-        WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-          return getWatchInterface(kubeClient, kubernetesObject)
-        },
+  log.Infof("Creating watcher for Deployments.")
+  DeploymentInformer := cache.NewSharedIndexInformer(
+    &cache.ListWatch{
+      ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+        return kubeClient.AppsV1().Deployments("").List(metav1.ListOptions{})
       },
-      getInterface(kubernetesObject),
-      0,
-      cache.Indexers{},
-    )
+      WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+        return kubeClient.AppsV1().Deployments("").Watch(metav1.ListOptions{})
+      },
+    },
+    &v1.Deployment{},
+    0,
+    cache.Indexers{},
+  )
 
-    watcher := createController(kubeClient, informer, kubernetesObject)
-    term := make(chan struct{})
-    defer close(term)
+  DeployWatcher := createController(kubeClient, DeploymentInformer, "deployment")
+  dTerm := make(chan struct{})
+  defer close(dTerm)
+  go DeployWatcher.Watch(dTerm)
 
-    go watcher.Watch(term)
 
-  }
+
+  log.Infof("Creating watcher for Namespaces.")
+  NSInformer := cache.NewSharedIndexInformer(
+    &cache.ListWatch{
+      ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+        return kubeClient.CoreV1().Namespaces().List(metav1.ListOptions{})
+      },
+      WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+        return kubeClient.CoreV1().Namespaces().Watch(metav1.ListOptions{})
+      },
+    },
+    &corev1.Namespace{},
+    0,
+    cache.Indexers{},
+  )
+
+  NSWatcher := createController(kubeClient, NSInformer, "deployment")
+  nsTerm := make(chan struct{})
+  defer close(nsTerm)
+  go NSWatcher.Watch(nsTerm)
 
 
   // create a channel to respond to SIGTERMs
@@ -149,40 +165,6 @@ func NewController(cfg *conf.Config) {
   signal.Notify(signals, syscall.SIGINT)
   <-signals
 }
-
-
-func getWatchInterface(client kubernetes.Interface, objectType string) (watch.Interface, error) {
-  switch strings.ToLower(objectType) {
-  case "deployment":
-    return client.AppsV1().Deployments("").Watch(metav1.ListOptions{})
-  case "namespace":
-    return client.CoreV1().Namespaces().Watch(metav1.ListOptions{})
-  }
- return nil, nil 
-}
-
-
-func getListInterface(client kubernetes.Interface, objectType string) (runtime.Object, error) {
-  switch strings.ToLower(objectType) {
-  case "deployment":
-    return client.AppsV1().Deployments("").List(metav1.ListOptions{})
-  case "namespace":
-    return client.CoreV1().Namespaces().List(metav1.ListOptions{})
-  }
-  return nil, nil
-}
-
-
-func getInterface(objectType string) (runtime.Object) {
-  switch strings.ToLower(objectType) {
-  case "deployment":
-    return &v1.Deployment{}
-  case "namespace":
-    return &corev1.Namespace{}
-  }
-  return nil
-}
-
 
 
 func createController(kubeClient kubernetes.Interface, informer cache.SharedIndexInformer, resource string) *KubeResourceWatcher {
