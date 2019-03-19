@@ -8,6 +8,8 @@ import (
   "strconv"
   "fmt"
   log "github.com/sirupsen/logrus"
+  "gopkg.in/yaml.v2"
+  "io/ioutil"
 )
 
 
@@ -57,7 +59,8 @@ type Config struct {
   DatadogAppKey string
   DryRun bool
   ClusterName string
-  MonitorDefinitions string
+  MonitorDefinitionsPath string
+  Monitors *MonitorSet
 }
 
 
@@ -67,8 +70,24 @@ func New() *Config {
     DatadogAppKey: getEnv("DD_APP_KEY", ""),
     DryRun: envAsBool("DRY_RUN", false),
     ClusterName: getEnv("CLUSTER_NAME", ""),
-    MonitorDefinitions: getEnv("DEFINITIONS_PATH", "conf.yml"),
+    MonitorDefinitionsPath: getEnv("DEFINITIONS_PATH", "conf.yml"),
+    Monitors: loadMonitorDefinitions(getEnv("DEFINITIONS_PATH", "conf.yml")),
   }
+}
+
+
+func loadMonitorDefinitions(path string) *MonitorSet {
+  mSet := &MonitorSet{}
+  yml, err := ioutil.ReadFile(path)
+  if err != nil {
+    log.FatalF("Could not load config file %s: %v", path, err)
+  }
+  
+  err = yaml.Unmarshal(yml, mSet)
+  if err != nil {
+    log.FatalF("Error unmarshalling config file %s: %v", path, err)
+  }
+  return mSet
 }
 
 
