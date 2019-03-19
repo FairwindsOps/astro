@@ -59,6 +59,7 @@ type Config struct {
   DatadogAppKey string
   DryRun bool
   ClusterName string
+  OwnerTag string
   MonitorDefinitionsPath string
   Rulesets *ruleset
 }
@@ -70,6 +71,7 @@ func New() *Config {
     DatadogAppKey: getEnv("DD_APP_KEY", ""),
     DryRun: envAsBool("DRY_RUN", false),
     ClusterName: getEnv("CLUSTER_NAME", ""),
+    OwnerTag: getEnv("OWNER","dd-manager"),
     MonitorDefinitionsPath: getEnv("DEFINITIONS_PATH", "conf.yml"),
     Rulesets: loadMonitorDefinitions(getEnv("DEFINITIONS_PATH", "conf.yml")),
   }

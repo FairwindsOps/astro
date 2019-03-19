@@ -3,6 +3,7 @@ module github.com/mjhuber/dd-manager
 go 1.12
 
 require (
+	github.com/cenkalti/backoff v2.1.1+incompatible // indirect
 	github.com/gogo/protobuf v1.2.1 // indirect
 	github.com/golang/protobuf v1.3.0 // indirect
 	github.com/google/btree v0.0.0-20180813153112-4030bb1f1f0c // indirect
@@ -19,6 +20,7 @@ require (
 	github.com/sirupsen/logrus v1.4.0
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/pflag v1.0.3 // indirect
+	github.com/zorkian/go-datadog-api v2.19.0+incompatible
 	golang.org/x/crypto v0.0.0-20190313024323-a1f597ede03a // indirect
 	golang.org/x/net v0.0.0-20190313082753-5c2c250b6a70 // indirect
 	golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421 // indirect
