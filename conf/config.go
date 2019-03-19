@@ -10,26 +10,47 @@ import (
   log "github.com/sirupsen/logrus"
 )
 
-type NotificationProfile struct {
-  WarnAddresses string
-  CriticalAddress string
+
+type MonitorSet struct {
+  Object string `yaml:"object"`
+  Annotations []Annotation `yaml:"match_annotations"`
+  Monitors: []Monitor `yaml:"monitors"`
 }
 
-type MatchRule struct {
-  Field string
-  Operand string
-  Val string
+type Annotation struct {
+  Name string `yaml:"name"`
+  Value string `yaml:"value"`
+}
+
+type Thresholds struct {
+  Ok int `yaml:"ok"`
+  Critical int `yaml:"critical"`
+  Warning int `yaml:"warning"`
+  Unknown int `yaml:"unknown"`
+  CriticalRecovery int `yaml:"critical_recovery"`
+  WarningRecovery int `yaml:"warning_recovery"`
+}
+
+type Monitor struct {
+  Name string `yaml:"name"`
+  Type string `yaml:"type"`
+  Query string `yaml:"query"`
+  Message string `yaml:"message"`
+  Tags []string `yaml:"tags"`
+  NoDataTimeframe int `yaml:"no_data_timeframe"`
+  NotifyAudit bool `yaml:"notify_audit"`
+  NotifyNoData bool `yaml:"notify_no_data"`
+  RenotifyInterval int `yaml:"renotify_interval"`
+  NewHostDelay int `yaml:"new_host_delay"`
+  EvaluationDelay int `yaml:"evaluation_delay"`
+  Timeout int `yaml:"timeout"`
+  EscalationMessage string `yaml:"escalation_message"`
+  Thresholds Thresholds `yaml:"thresholds"`
+  RequireFullWindow bool `yaml:"require_full_window"`
+  Locked bool `yaml:"locked"`
 }
 
 
-type K8sMeta struct {
-  ClusterName string
-	Deployments []v1.Deployment
-	Ingresses []v1beta1.Ingress
-	Daemonsets []v1.DaemonSet
-	Namespaces []corev1.Namespace
-	Nodes []corev1.Node
-}
 
 type Config struct {
   DatadogApiKey string
