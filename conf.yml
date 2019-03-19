@@ -1,4 +1,6 @@
-- object: deployment
+---
+rulesets:
+- type: deployment
   match_annotations:
     - name: dd-manager/owner
       value: dd-manager
@@ -16,15 +18,15 @@
         {{NOTIFICATION_PROFILE}}
       tags:
         - dd-manager
-      no_data_timeframe: 
-      notify_audit:
-      notify_no_data:
-      renotify_interval:
-      new_host_delay:
-      evaluation_delay:
-      timeout:
-      escalation_message:
+      no_data_timeframe: 60
+      notify_audit: false
+      notify_no_data: false
+      renotify_interval: 5
+      new_host_delay: 5
+      evaluation_delay: 300
+      timeout: 300
+      escalation_message: ""
       thresholds:
         critical: 0
-      require_full_window: True
-      locked: False
+      require_full_window: true
+      locked: false
