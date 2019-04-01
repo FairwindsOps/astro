@@ -1,6 +1,6 @@
 package main
 
-import "github.com/mjhuber/dd-manager/cmd"
+import "github.com/reactiveops/dd-manager/cmd"
 
 func main() {
   cmd.RootCmd().Execute()

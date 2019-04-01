@@ -2,8 +2,8 @@ package controller
 
 import (
   log "github.com/sirupsen/logrus"
-  "github.com/mjhuber/dd-manager/pkg/util"
-  "github.com/mjhuber/dd-manager/conf"
+  "github.com/reactiveops/dd-manager/pkg/util"
+  "github.com/reactiveops/dd-manager/conf"
   "time"
   "k8s.io/client-go/util/workqueue"
   "k8s.io/client-go/tools/cache"

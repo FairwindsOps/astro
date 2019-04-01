@@ -2,8 +2,8 @@ package cmd
 
 import (
   "github.com/spf13/cobra"
-  "github.com/mjhuber/dd-manager/conf"
-  "github.com/mjhuber/dd-manager/pkg/controller"
+  "github.com/reactiveops/dd-manager/conf"
+  "github.com/reactiveops/dd-manager/pkg/controller"
   log "github.com/sirupsen/logrus"
   "os"
 )
