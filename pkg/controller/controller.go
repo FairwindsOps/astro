@@ -75,6 +75,7 @@ func (watcher *KubeResourceWatcher) LastSyncResourceVersion() string {
 
 func (watcher *KubeResourceWatcher) process(evt Event) error {
   info, _, err := watcher.informer.GetIndexer().GetByKey(evt.key)
+
   if err != nil {
     //TODO - need some better error handling here
     return err
