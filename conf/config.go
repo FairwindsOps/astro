@@ -24,6 +24,7 @@ type Annotation struct {
   Value               string        `yaml:"value"`
 }
 
+
 type Thresholds struct {
   Ok                  int           `yaml:"ok"`
   Critical            int           `yaml:"critical"`
@@ -63,6 +64,34 @@ type Config struct {
   MonitorDefinitionsPath string
   Rulesets *ruleset
 }
+
+
+func (config *Config) GetMatchingMonitors(annotations map[string]string, objectType string) *[]Monitor {
+  var validMonitors []Monitor
+
+  for _, monitorSet := range config.Rulesets.MonitorSets {
+    if monitorSet.ObjectType == objectType {
+      var hasAllAnnotations = false
+
+      for _, annotation := range monitorSet.Annotations {
+          val, found := annotations[annotation.Name]
+          if found == true && val == annotation.Value {
+            log.Infof("Annotation %s with value %s exists.", annotation.Name, annotation.Value)
+            hasAllAnnotations = true
+          } else {
+            log.Infof("Annotation %s with value %s does not exist, exiting.", annotation.Name, annotation.Value)
+            break
+          }
+      }
+
+      if hasAllAnnotations {
+        // valid - add to the list of monitors
+        validMonitors = append(validMonitors, monitorSet.Monitors...)
+      }
+    }
+  }
+  return &validMonitors
+} 
 
 
 func New() *Config {
