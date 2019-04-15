@@ -54,7 +54,6 @@ type Monitor struct {
 }
 
 
-
 type Config struct {
   DatadogApiKey string
   DatadogAppKey string
