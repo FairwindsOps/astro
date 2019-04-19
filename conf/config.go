@@ -8,7 +8,6 @@ import (
   "gopkg.in/yaml.v2"
   "io/ioutil"
   "sync"
-  "reflect"
 )
 
 type ruleset struct {
