@@ -94,9 +94,6 @@ func (watcher *KubeResourceWatcher) process(evt Event) error {
   default:
     log.Warnf("Unknown event type %s encountered.", evt.eventType)
   }
-
-
-  // TODO - process
   return nil
 }
 

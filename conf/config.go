@@ -7,6 +7,7 @@ import (
   log "github.com/sirupsen/logrus"
   "gopkg.in/yaml.v2"
   "io/ioutil"
+  "sync"
 )
 
 type ruleset struct {
@@ -90,19 +91,25 @@ func (config *Config) GetMatchingMonitors(annotations map[string]string, objectT
     }
   }
   return &validMonitors
-} 
+}
 
+
+var instance *Config
+var once sync.Once
 
 func New() *Config {
-  return &Config {
-    DatadogApiKey: getEnv("DD_API_KEY", ""),
-    DatadogAppKey: getEnv("DD_APP_KEY", ""),
-    DryRun: envAsBool("DRY_RUN", false),
-    ClusterName: getEnv("CLUSTER_NAME", ""),
-    OwnerTag: getEnv("OWNER","dd-manager"),
-    MonitorDefinitionsPath: getEnv("DEFINITIONS_PATH", "conf.yml"),
-    Rulesets: loadMonitorDefinitions(getEnv("DEFINITIONS_PATH", "conf.yml")),
-  }
+  once.Do(func() {
+    instance = &Config {
+      DatadogApiKey: getEnv("DD_API_KEY", ""),
+      DatadogAppKey: getEnv("DD_APP_KEY", ""),
+      DryRun: envAsBool("DRY_RUN", false),
+      ClusterName: getEnv("CLUSTER_NAME", ""),
+      OwnerTag: getEnv("OWNER","dd-manager"),
+      MonitorDefinitionsPath: getEnv("DEFINITIONS_PATH", "conf.yml"),
+      Rulesets: loadMonitorDefinitions(getEnv("DEFINITIONS_PATH", "conf.yml")),
+    }
+  })
+  return instance;
 }
 
 
