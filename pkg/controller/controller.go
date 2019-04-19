@@ -19,6 +19,7 @@ import (
   "syscall"
   rt "k8s.io/apimachinery/pkg/util/runtime"
   "fmt"
+  handler "github.com/reactiveops/dd-manager/pkg/handler"
 )
 
 
@@ -28,6 +29,7 @@ type KubeResourceWatcher struct {
   informer    cache.SharedIndexInformer
   wq          workqueue.RateLimitingInterface
 }
+
 
 type Event struct {
   key          string
@@ -82,7 +84,16 @@ func (watcher *KubeResourceWatcher) process(evt Event) error {
   }
   log.Infof("Processing item %s", info)
 
-  // TODO - process
+  switch evt.eventType {
+  case "create":
+    handler.OnCreate(info)
+  case "delete":
+    handler.OnDelete(info)
+  case "update":
+    handler.OnUpdate(info)
+  default:
+    log.Warnf("Unknown event type %s encountered.", evt.eventType)
+  }
   return nil
 }
 
