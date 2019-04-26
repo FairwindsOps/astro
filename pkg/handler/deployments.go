@@ -6,7 +6,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
   "github.com/reactiveops/dd-manager/conf"
   "text/template"
-  "os"
   "bytes"
 )
 
@@ -59,7 +58,7 @@ func applyDeploymentTemplate(deployment *appsv1.Deployment, monitor *conf.Monito
 
   err = query.Execute(&tpl, deployment)
   if err != nil {
-    log.Errorf("Error templating query: %s, err)
+    log.Errorf("Error templating query: %s", err)
   }
   monitor.Query = tpl.String()
   tpl.Reset()

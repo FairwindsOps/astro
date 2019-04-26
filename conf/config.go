@@ -11,6 +11,7 @@ import (
 )
 
 type ruleset struct {
+  NotificationProfiles map[string]string `yaml:"notification_profiles"`
   MonitorSets         []MonitorSet  `yaml:"rulesets"`
 }
 

@@ -8,8 +8,6 @@ import (
 )
 
 
-
-
 func OnUpdate(obj interface{}) {
 	log.Info("Handler got an OnUpdate event.")
 

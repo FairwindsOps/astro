@@ -1,4 +1,7 @@
 ---
+notification_profiles:
+  default: "@slack-foo-default"
+  severe: "@pagerduty-foobar"
 rulesets:
 - type: deployment
   match_annotations:
