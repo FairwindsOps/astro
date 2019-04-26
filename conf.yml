@@ -5,17 +5,16 @@ rulesets:
     - name: dd-manager/owner
       value: dd-manager
   monitors:
-    - name: "[{{env.CLUSTER_NAME}}] Deploy Replica Alert - {{Name}}"
+    - name: "Deployment Replica Alert - {{ .ObjectMeta.Name }}"
       type: metric alert
-      query: "max(last_10m):max:kubernetes_state.deployment.replicas_available{kubernetescluster:{{CLUSTER_NAME}},namespace:{{NAMESPACE}}} by {deployment} <= 0"
+      query: "max(last_10m):max:kubernetes_state.deployment.replicas_available{kubernetescluster:foobar,namespace:{{ .ObjectMeta.Namespace }}} by {deployment} <= 0"
       message: |
-        {{#is_alert}}
-        Available replicas is currently 0 for {{deployment.name}}
-        {{/is_alert}}
-        {{^is_alert}}
-        Available replicas is no longer 0 for {{deployment.name}}
-        {{/is_alert}}
-        {{NOTIFICATION_PROFILE}}
+        {{ "{{#is_alert}}" }}
+        Available replicas is currently 0 for {{ .ObjectMeta.Name }}
+        {{ "{{/is_alert}}" }}
+        {{ "{{^is_alert}}" }}
+        Available replicas is no longer 0 for {{ .ObjectMeta.Name }}
+        {{ "{{/is_alert}}" }}
       tags:
         - dd-manager
       no_data_timeframe: 60
