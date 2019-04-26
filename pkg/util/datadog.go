@@ -9,7 +9,21 @@ import (
 )
 
 
-func GetProvisionedMonitor(config conf.Config, monitor conf.Monitor) (*datadog.Monitor, error) {
+func AddOrUpdate(config conf.Config, monitor *conf.Monitor) (*int, error) {
+  // check if monitor exists
+  ddMonitor, err := GetProvisionedMonitor(config, monitor)
+  if err != nil {
+    //monitor doesn't exist
+    //TODO - create monitor
+    log.Info("TODO - Creating monitor")
+  }
+  //monitor exists
+  //TODO - does monitor need updating?
+  log.Infof("Monitor %s exists.", ddMonitor.Id)
+  return nil, nil
+}
+
+func GetProvisionedMonitor(config conf.Config, monitor *conf.Monitor) (*datadog.Monitor, error) {
   monitors, err := GetProvisionedMonitors(config)
   if err != nil {
     log.Errorf("Error getting monitors: %v", err)

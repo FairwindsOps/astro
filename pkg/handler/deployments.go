@@ -14,8 +14,8 @@ func OnUpdatedDeployment(deployment *appsv1.Deployment) {
   cfg := conf.New()
   monitors := cfg.GetMatchingMonitors(deployment.Annotations, "deployment")
   for _, monitor := range *monitors {
-    log.Infof("looping monitor %s", monitor.Name)
     applyDeploymentTemplate(deployment, &monitor)
+    log.Infof("Reconcile monitor %s", monitor.Name)
   }
 }
 
@@ -24,8 +24,8 @@ func OnCreatedDeployment(deployment *appsv1.Deployment) {
   cfg := conf.New()
   monitors := cfg.GetMatchingMonitors(deployment.Annotations, "deployment")
   for _, monitor := range *monitors {
-    log.Infof("looping monitor %s", monitor.Name)
     applyDeploymentTemplate(deployment, &monitor)
+    log.Infof("Reconcile monitor %s", monitor.Name)
   }
 }
 
@@ -35,8 +35,8 @@ func OnDeletedDeployment(deployment *appsv1.Deployment) {
   cfg := conf.New()
   monitors := cfg.GetMatchingMonitors(deployment.Annotations, "deployment")
   for _, monitor := range *monitors {
-    log.Infof("looping monitor %s", monitor.Name)
     applyDeploymentTemplate(deployment, &monitor)
+    log.Infof("Reconcile monitor %s", monitor.Name)
   }
 }
 
