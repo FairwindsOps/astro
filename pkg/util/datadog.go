@@ -51,9 +51,13 @@ func GetProvisionedMonitors(config *conf.Config) ([]datadog.Monitor, error) {
 }
 
 
-func DeleteMonitor(config *conf.Config, AlertId int) error {
+func DeleteMonitor(config *conf.Config, monitor *conf.Monitor) error {
   client := getDDClient(config)
-  return client.DeleteMonitor(AlertId)
+  ddMonitor, err := GetProvisionedMonitor(config, monitor)
+  if err != nil {
+    return client.DeleteMonitor(ddMonitor.Id)
+  }
+  return nil 
 }
 
 
