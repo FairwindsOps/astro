@@ -8,6 +8,7 @@ import (
   "gopkg.in/yaml.v2"
   "io/ioutil"
   "sync"
+  "encoding/json"
 )
 
 type ruleset struct {
@@ -28,12 +29,12 @@ type Annotation struct {
 
 
 type Thresholds struct {
-  Ok                  int           `yaml:"ok"`
-  Critical            int           `yaml:"critical"`
-  Warning             int           `yaml:"warning"`
-  Unknown             int           `yaml:"unknown"`
-  CriticalRecovery    int           `yaml:"critical_recovery"`
-  WarningRecovery     int           `yaml:"warning_recovery"`
+  Ok                  *json.Number  `yaml:"ok"`
+  Critical            *json.Number  `yaml:"critical"`
+  Warning             *json.Number  `yaml:"warning"`
+  Unknown             *json.Number  `yaml:"unknown"`
+  CriticalRecovery    *json.Number  `yaml:"critical_recovery"`
+  WarningRecovery     *json.Number  `yaml:"warning_recovery"`
 }
 
 type Monitor struct {

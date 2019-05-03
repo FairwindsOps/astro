@@ -5,6 +5,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
   "github.com/reactiveops/dd-manager/conf"
+  "github.com/reactiveops/dd-manager/pkg/util"
   "text/template"
   "bytes"
 )
@@ -16,6 +17,7 @@ func OnUpdatedDeployment(deployment *appsv1.Deployment) {
   for _, monitor := range *monitors {
     applyDeploymentTemplate(deployment, &monitor)
     log.Infof("Reconcile monitor %s", monitor.Name)
+    util.AddOrUpdate(cfg,&monitor)
   }
 }
 
@@ -26,6 +28,7 @@ func OnCreatedDeployment(deployment *appsv1.Deployment) {
   for _, monitor := range *monitors {
     applyDeploymentTemplate(deployment, &monitor)
     log.Infof("Reconcile monitor %s", monitor.Name)
+    util.AddOrUpdate(cfg,&monitor)
   }
 }
 
