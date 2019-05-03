@@ -6,6 +6,7 @@ import (
   "github.com/reactiveops/dd-manager/conf"
   "github.com/zorkian/go-datadog-api"
   "errors"
+  "reflect"
 )
 
 
@@ -14,7 +15,7 @@ func AddOrUpdate(config *conf.Config, monitor *conf.Monitor) (*int, error) {
   ddMonitor, err := GetProvisionedMonitor(config, monitor)
   if err != nil {
     //monitor doesn't exist
-    provisioned, err := createMonitor(config, convertMonitor(monitor))
+    provisioned, err := createMonitor(config, toDdMonitor(monitor))
     if err != nil {
       log.Errorf("Error creating monitor %s: %s", monitor.Name, err)
       return nil, err
@@ -23,9 +24,17 @@ func AddOrUpdate(config *conf.Config, monitor *conf.Monitor) (*int, error) {
   }
 
   //monitor exists
-  //TODO - does monitor need updating?
-  log.Infof("Monitor %s exists.", ddMonitor.Id)
-  return nil, nil
+  if reflect.DeepEqual(monitor, toMonitor(ddMonitor)) {
+    log.Infof("Monitor %d exists and is up to date.", ddMonitor.Id)
+  } else {
+    // monitor exists and needs updating.
+    err := updateMonitor(config, toDdMonitor(monitor))
+    if err != nil {
+      log.Errorf("Could not update monitor %d: %s", ddMonitor.Id, err)
+      return ddMonitor.Id, err
+    }
+  }
+  return ddMonitor.Id, nil
 }
 
 
@@ -55,9 +64,9 @@ func DeleteMonitor(config *conf.Config, monitor *conf.Monitor) error {
   client := getDDClient(config)
   ddMonitor, err := GetProvisionedMonitor(config, monitor)
   if err != nil {
-    return client.DeleteMonitor(ddMonitor.Id)
+    return client.DeleteMonitor(*ddMonitor.Id)
   }
-  return nil 
+  return nil
 }
 
 
@@ -67,9 +76,9 @@ func createMonitor(config *conf.Config, monitor *datadog.Monitor) (*datadog.Moni
 }
 
 
-func UpdateMonitor(config *conf.Config, monitor *datadog.Monitor) error {
-  //TODO - Update monitor
-  return nil
+func updateMonitor(config *conf.Config, monitor *datadog.Monitor) error {
+  client := getDDClient(config)
+  return client.UpdateMonitor(monitor)
 }
 
 
@@ -79,7 +88,7 @@ func getDDClient(config *conf.Config) *datadog.Client {
 }
 
 
-func convertMonitor(in *conf.Monitor) *datadog.Monitor {
+func toDdMonitor(in *conf.Monitor) *datadog.Monitor {
   monitor := datadog.Monitor {
     Type:     &in.Type,
     Query:    &in.Query,
@@ -106,6 +115,37 @@ func convertMonitor(in *conf.Monitor) *datadog.Monitor {
       RequireFullWindow:  &in.RequireFullWindow,
       Locked:             &in.Locked,
     },
+  }
+  return &monitor
+}
+
+
+func toMonitor(in *datadog.Monitor) *conf.Monitor {
+  thresholds := conf.Thresholds {
+    Ok:               in.Options.Thresholds.Ok,
+    Critical:         in.Options.Thresholds.Critical,
+    Warning:          in.Options.Thresholds.Warning,
+    Unknown:          in.Options.Thresholds.Unknown,
+    CriticalRecovery: in.Options.Thresholds.CriticalRecovery,
+    WarningRecovery:  in.Options.Thresholds.WarningRecovery,
+  }
+
+  monitor := conf.Monitor {
+    Name:               *in.Name,
+    Type:               *in.Type,
+    Query:              *in.Query,
+    Message:            *in.Message,
+    Tags:               in.Tags,
+    NoDataTimeframe:    int(in.Options.NoDataTimeframe),
+    NotifyAudit:        *in.Options.NotifyAudit,
+    NotifyNoData:       *in.Options.NotifyNoData,
+    RenotifyInterval:   *in.Options.RenotifyInterval,
+    NewHostDelay:       *in.Options.NewHostDelay,
+    EvaluationDelay:    *in.Options.EvaluationDelay,
+    Timeout:            *in.Options.TimeoutH,
+    EscalationMessage:  *in.Options.EscalationMessage,
+    Thresholds:         thresholds,
+    RequireFullWindow:  *in.Options.RequireFullWindow,
   }
   return &monitor
 }
