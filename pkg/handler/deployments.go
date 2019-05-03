@@ -40,6 +40,7 @@ func OnDeletedDeployment(deployment *appsv1.Deployment) {
   for _, monitor := range *monitors {
     applyDeploymentTemplate(deployment, &monitor)
     log.Infof("Reconcile monitor %s", monitor.Name)
+    util.DeleteMonitor(cfg, &monitor)
   }
 }
 
