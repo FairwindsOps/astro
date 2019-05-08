@@ -14,6 +14,7 @@ import (
 
 func OnDeploymentChanged(deployment *appsv1.Deployment, eventType string) {
   cfg := conf.New()
+  log.Info("Process OnDeploymentChanged")
   monitors := cfg.GetMatchingMonitors(deployment.Annotations, "deployment")
 
   for _, monitor := range *monitors {

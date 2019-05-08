@@ -11,6 +11,7 @@ import (
 
 
 func AddOrUpdate(config *conf.Config, monitor *conf.Monitor) (*int, error) {
+  log.Infof("Update templated monitor:\n\n%+v", monitor)
   // check if monitor exists
   ddMonitor, err := GetProvisionedMonitor(config, monitor)
   if err != nil {
@@ -28,7 +29,13 @@ func AddOrUpdate(config *conf.Config, monitor *conf.Monitor) (*int, error) {
     log.Infof("Monitor %d exists and is up to date.", ddMonitor.Id)
   } else {
     // monitor exists and needs updating.
-    err := updateMonitor(config, toDdMonitor(monitor))
+    log.Infof("Monitor %d needs updating.", ddMonitor.Id)
+
+    //TODO - do a deep merge of monitors
+    updated := toDdMonitor(monitor)
+    updated.Id = ddMonitor.Id
+
+    err := updateMonitor(config, updated)
     if err != nil {
       log.Errorf("Could not update monitor %d: %s", ddMonitor.Id, err)
       return ddMonitor.Id, err

@@ -82,7 +82,7 @@ func (watcher *KubeResourceWatcher) process(evt Event) error {
     //TODO - need some better error handling here
     return err
   }
-  log.Infof("Processing item %s", info)
+  //log.Infof("Processing item %s", info)
 
   handler.OnUpdate(info, evt.eventType)
   return nil
@@ -156,7 +156,7 @@ func NewController(cfg *conf.Config) {
     cache.Indexers{},
   )
 
-  NSWatcher := createController(kubeClient, NSInformer, "deployment")
+  NSWatcher := createController(kubeClient, NSInformer, "namespace")
   nsTerm := make(chan struct{})
   defer close(nsTerm)
   go NSWatcher.Watch(nsTerm)

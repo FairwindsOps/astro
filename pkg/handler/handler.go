@@ -9,13 +9,14 @@ import (
 
 
 func OnUpdate(obj interface{}, eventType string) {
-  log.Info("Handler got an OnUpdate event.")
+  log.Infof("Handler got an OnUpdate event of type %s", eventType)
 
   switch t := obj.(type) {
   case *appsv1.Deployment:
     OnDeploymentChanged(obj.(*appsv1.Deployment), eventType)
   case *corev1.Namespace:
-    log.Info("Its a namespace.")
+    OnNamespaceChanged(obj.(*corev1.Namespace), eventType)
+    log.Info("Its a namespace")
   default:
     log.Warnf("Object has unknown type of %T", t)
   }
