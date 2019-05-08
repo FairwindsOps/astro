@@ -84,16 +84,7 @@ func (watcher *KubeResourceWatcher) process(evt Event) error {
   }
   log.Infof("Processing item %s", info)
 
-  switch evt.eventType {
-  case "create":
-    handler.OnCreate(info)
-  case "delete":
-    handler.OnDelete(info)
-  case "update":
-    handler.OnUpdate(info)
-  default:
-    log.Warnf("Unknown event type %s encountered.", evt.eventType)
-  }
+  handler.OnUpdate(info, evt.eventType)
   return nil
 }
 

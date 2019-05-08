@@ -8,43 +8,14 @@ import (
 )
 
 
-func OnUpdate(obj interface{}) {
-	log.Info("Handler got an OnUpdate event.")
-
-	switch t := obj.(type) {
-	case *appsv1.Deployment:
-		OnUpdatedDeployment(obj.(*appsv1.Deployment))
-	case *corev1.Namespace:
-		log.Info("Its a namespace.")
-	default:
-		log.Warnf("Object has unknown type of %T", t)
-	}
-
-}
-
-
-func OnDelete(obj interface{}) {
-	log.Info("Handler got an OnDelete event.")
+func OnUpdate(obj interface{}, eventType string) {
+  log.Info("Handler got an OnUpdate event.")
 
   switch t := obj.(type) {
   case *appsv1.Deployment:
-    OnDeletedDeployment(obj.(*appsv1.Deployment))
+    OnDeploymentChanged(obj.(*appsv1.Deployment), eventType)
   case *corev1.Namespace:
-    log.Info("Its a namespace")
-  default:
-    log.Warnf("Object has unknown type of %T", t)
-  }
-}
-
-
-func OnCreate(obj interface{}) {
-	log.Info("Handler got an OnCreate event.")
-
-  switch t := obj.(type) {
-  case *appsv1.Deployment:
-    OnCreatedDeployment(obj.(*appsv1.Deployment))
-  case *corev1.Namespace:
-    log.Info("Its a namespace")
+    log.Info("Its a namespace.")
   default:
     log.Warnf("Object has unknown type of %T", t)
   }

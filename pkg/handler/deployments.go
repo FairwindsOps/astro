@@ -8,39 +8,26 @@ import (
   "github.com/reactiveops/dd-manager/pkg/util"
   "text/template"
   "bytes"
+  "strings"
 )
 
 
-func OnUpdatedDeployment(deployment *appsv1.Deployment) {
+func OnDeploymentChanged(deployment *appsv1.Deployment, eventType string) {
   cfg := conf.New()
   monitors := cfg.GetMatchingMonitors(deployment.Annotations, "deployment")
+
   for _, monitor := range *monitors {
-    applyDeploymentTemplate(deployment, &monitor)
     log.Infof("Reconcile monitor %s", monitor.Name)
-    util.AddOrUpdate(cfg,&monitor)
-  }
-}
-
-
-func OnCreatedDeployment(deployment *appsv1.Deployment) {
-  cfg := conf.New()
-  monitors := cfg.GetMatchingMonitors(deployment.Annotations, "deployment")
-  for _, monitor := range *monitors {
     applyDeploymentTemplate(deployment, &monitor)
-    log.Infof("Reconcile monitor %s", monitor.Name)
-    util.AddOrUpdate(cfg,&monitor)
-  }
-}
 
-
-func OnDeletedDeployment(deployment *appsv1.Deployment) {
-	log.Infof("I finally made it to my deletion handler.")
-  cfg := conf.New()
-  monitors := cfg.GetMatchingMonitors(deployment.Annotations, "deployment")
-  for _, monitor := range *monitors {
-    applyDeploymentTemplate(deployment, &monitor)
-    log.Infof("Reconcile monitor %s", monitor.Name)
-    util.DeleteMonitor(cfg, &monitor)
+    switch strings.ToLower(eventType) {
+    case "create", "update":
+      util.AddOrUpdate(cfg, &monitor)
+    case "delete":
+      util.DeleteMonitor(cfg, &monitor)
+    default:
+      log.Warnf("Update type %s is not valid, skipping.", eventType)
+    }
   }
 }
 
