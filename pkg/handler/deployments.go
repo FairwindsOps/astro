@@ -12,7 +12,7 @@ import (
 )
 
 
-func OnDeploymentChanged(deployment *appsv1.Deployment, eventType string) {
+func OnDeploymentChanged(deployment *appsv1.Deployment, event conf.Event) {
   cfg := conf.New()
   log.Info("Process OnDeploymentChanged")
   monitors := cfg.GetMatchingMonitors(deployment.Annotations, "deployment")
@@ -21,13 +21,13 @@ func OnDeploymentChanged(deployment *appsv1.Deployment, eventType string) {
     log.Infof("Reconcile monitor %s", monitor.Name)
     applyDeploymentTemplate(deployment, &monitor)
 
-    switch strings.ToLower(eventType) {
+    switch strings.ToLower(event.EventType) {
     case "create", "update":
       util.AddOrUpdate(cfg, &monitor)
     case "delete":
       util.DeleteMonitor(cfg, &monitor)
     default:
-      log.Warnf("Update type %s is not valid, skipping.", eventType)
+      log.Warnf("Update type %s is not valid, skipping.", event.EventType)
     }
   }
 }

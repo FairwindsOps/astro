@@ -12,7 +12,7 @@ import (
 
 
 
-func OnNamespaceChanged(namespace *corev1.Namespace, eventType string) {
+func OnNamespaceChanged(namespace *corev1.Namespace, event conf.Event) {
 	cfg := conf.New()
 	monitors := cfg.GetMatchingMonitors(namespace.Annotations, "namespace")
 
@@ -20,13 +20,13 @@ func OnNamespaceChanged(namespace *corev1.Namespace, eventType string) {
 		log.Infof("Reconcile monitor %s", monitor.Name)
 		applyNamespaceTemplate(namespace, &monitor)
 
-		switch strings.ToLower(eventType) {
+		switch strings.ToLower(event.EventType) {
 		case "create", "update":
 			util.AddOrUpdate(cfg, &monitor)
 		case "delete":
 			util.DeleteMonitor(cfg, &monitor)
 		default:
-			log.Warnf("Update type %s is not valid, skipping.", eventType)
+			log.Warnf("Update type %s is not valid, skipping.", event.EventType)
 		}
 	}
 }

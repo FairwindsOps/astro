@@ -57,6 +57,14 @@ type Monitor struct {
 }
 
 
+type Event struct {
+  Key          string
+  EventType    string
+  Namespace    string
+  ResourceType string
+}
+
+
 type Config struct {
   DatadogApiKey string
   DatadogAppKey string

@@ -31,14 +31,6 @@ type KubeResourceWatcher struct {
 }
 
 
-type Event struct {
-  key          string
-  eventType    string
-  namespace    string
-  resourceType string
-}
-
-
 func (watcher *KubeResourceWatcher) Watch(term <-chan struct{}) {
   log.Infof("Starting watcher.")
 
@@ -75,16 +67,15 @@ func (watcher *KubeResourceWatcher) LastSyncResourceVersion() string {
 }
 
 
-func (watcher *KubeResourceWatcher) process(evt Event) error {
-  info, _, err := watcher.informer.GetIndexer().GetByKey(evt.key)
+func (watcher *KubeResourceWatcher) process(evt conf.Event) error {
+  info, _, err := watcher.informer.GetIndexer().GetByKey(evt.Key)
 
   if err != nil {
     //TODO - need some better error handling here
     return err
   }
-  //log.Infof("Processing item %s", info)
 
-  handler.OnUpdate(info, evt.eventType)
+  handler.OnUpdate(info, evt)
   return nil
 }
 
@@ -97,15 +88,15 @@ func (watcher *KubeResourceWatcher) next() bool {
   }
 
   defer watcher.wq.Done(evt)
-  processErr := watcher.process(evt.(Event))
+  processErr := watcher.process(evt.(conf.Event))
   if processErr != nil {
     // limit the number of retries
     if watcher.wq.NumRequeues(evt) < 5 {
-      log.Errorf("Error running queued item %s: %v", evt.(Event).key, processErr)
-      log.Infof("Retry processing item %s", evt.(Event).key)
+      log.Errorf("Error running queued item %s: %v", evt.(conf.Event).Key, processErr)
+      log.Infof("Retry processing item %s", evt.(conf.Event).Key)
       watcher.wq.AddRateLimited(evt)
     } else {
-      log.Errorf("Giving up trying to run queued item %s: %v", evt.(Event).key, processErr)
+      log.Errorf("Giving up trying to run queued item %s: %v", evt.(conf.Event).Key, processErr)
       watcher.wq.Forget(evt)
       rt.HandleError(processErr)
     }
@@ -174,28 +165,28 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
   log.Infof("Creating controller for resource type %s", resource)
   wq := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
   var err error
-  var evt Event
+  var evt conf.Event
 
   informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
     AddFunc: func(obj interface{}) {
-      evt.key, err = cache.MetaNamespaceKeyFunc(obj)
-      evt.eventType = "create"
-      evt.resourceType = resource
-      log.Infof("%s/%s has been added.", resource, evt.key)
+      evt.Key, err = cache.MetaNamespaceKeyFunc(obj)
+      evt.EventType = "create"
+      evt.ResourceType = resource
+      log.Infof("%s/%s has been added.", resource, evt.Key)
       wq.Add(evt)
     },
     DeleteFunc: func(obj interface{}) {
-      evt.key, err = cache.MetaNamespaceKeyFunc(obj)
-      evt.eventType = "delete"
-      evt.resourceType = resource
-      log.Infof("%s/%s has been deleted.", resource, evt.key)
+      evt.Key, err = cache.MetaNamespaceKeyFunc(obj)
+      evt.EventType = "delete"
+      evt.ResourceType = resource
+      log.Infof("%s/%s has been deleted.", resource, evt.Key)
       wq.Add(evt)
     },
     UpdateFunc: func(old interface{}, new interface{}) {
-      evt.key, err = cache.MetaNamespaceKeyFunc(new)
-      evt.eventType = "update"
-      evt.resourceType = resource
-      log.Infof("%s/%s has been updated.", resource, evt.key)
+      evt.Key, err = cache.MetaNamespaceKeyFunc(new)
+      evt.EventType = "update"
+      evt.ResourceType = resource
+      log.Infof("%s/%s has been updated.", resource, evt.Key)
       wq.Add(evt)
     },
   })
