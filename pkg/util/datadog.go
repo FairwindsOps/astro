@@ -10,13 +10,13 @@ import (
 )
 
 
-func AddOrUpdate(config *conf.Config, monitor *conf.Monitor) (*int, error) {
+func AddOrUpdate(monitor *conf.Monitor) (*int, error) {
   log.Infof("Update templated monitor:\n\n%+v", monitor)
   // check if monitor exists
-  ddMonitor, err := GetProvisionedMonitor(config, monitor)
+  ddMonitor, err := GetProvisionedMonitor(monitor)
   if err != nil {
     //monitor doesn't exist
-    provisioned, err := createMonitor(config, toDdMonitor(monitor))
+    provisioned, err := createMonitor(toDdMonitor(monitor))
     if err != nil {
       log.Errorf("Error creating monitor %s: %s", monitor.Name, err)
       return nil, err
@@ -35,7 +35,7 @@ func AddOrUpdate(config *conf.Config, monitor *conf.Monitor) (*int, error) {
     updated := toDdMonitor(monitor)
     updated.Id = ddMonitor.Id
 
-    err := updateMonitor(config, updated)
+    err := updateMonitor(updated)
     if err != nil {
       log.Errorf("Could not update monitor %d: %s", ddMonitor.Id, err)
       return ddMonitor.Id, err
@@ -45,8 +45,8 @@ func AddOrUpdate(config *conf.Config, monitor *conf.Monitor) (*int, error) {
 }
 
 
-func GetProvisionedMonitor(config *conf.Config, monitor *conf.Monitor) (*datadog.Monitor, error) {
-  monitors, err := GetProvisionedMonitors(config)
+func GetProvisionedMonitor(monitor *conf.Monitor) (*datadog.Monitor, error) {
+  monitors, err := GetProvisionedMonitors()
   if err != nil {
     log.Errorf("Error getting monitors: %v", err)
     return nil, err
@@ -61,15 +61,15 @@ func GetProvisionedMonitor(config *conf.Config, monitor *conf.Monitor) (*datadog
 }
 
 
-func GetProvisionedMonitors(config *conf.Config) ([]datadog.Monitor, error) {
-  client := getDDClient(config)
-  return client.GetMonitorsByTags([]string{config.OwnerTag})
+func GetProvisionedMonitors() ([]datadog.Monitor, error) {
+  client := getDDClient()
+  return client.GetMonitorsByTags([]string{conf.New().OwnerTag})
 }
 
 
-func DeleteMonitor(config *conf.Config, monitor *conf.Monitor) error {
-  client := getDDClient(config)
-  ddMonitor, err := GetProvisionedMonitor(config, monitor)
+func DeleteMonitor(monitor *conf.Monitor) error {
+  client := getDDClient()
+  ddMonitor, err := GetProvisionedMonitor(monitor)
   if err != nil {
     return client.DeleteMonitor(*ddMonitor.Id)
   }
@@ -77,21 +77,40 @@ func DeleteMonitor(config *conf.Config, monitor *conf.Monitor) error {
 }
 
 
-func createMonitor(config *conf.Config, monitor *datadog.Monitor) (*datadog.Monitor, error) {
-  client := getDDClient(config)
+//delete monitors containing the specified tags
+func DeleteMonitors(tags []string) error {
+  client := getDDClient()
+  monitors, err := client.GetMonitorsByTags(tags)
+
+  log.Infof("Deleting %d monitors.", len(monitors))
+  if err != nil {
+    log.Errorf("Error getting monitors: %v", err)
+    return err
+  }
+
+  for _, ddMonitor := range monitors {
+    log.Infof("Deleting monitor with id %d", *ddMonitor.Id)
+    client.DeleteMonitor(*ddMonitor.Id)
+  }
+  return nil
+}
+
+
+func createMonitor(monitor *datadog.Monitor) (*datadog.Monitor, error) {
+  client := getDDClient()
   return client.CreateMonitor(monitor)
 }
 
 
-func updateMonitor(config *conf.Config, monitor *datadog.Monitor) error {
-  client := getDDClient(config)
+func updateMonitor(monitor *datadog.Monitor) error {
+  client := getDDClient()
   return client.UpdateMonitor(monitor)
 }
 
 
-func getDDClient(config *conf.Config) *datadog.Client {
-  client := datadog.NewClient(config.DatadogApiKey, config.DatadogAppKey)
-  return client
+func getDDClient() *datadog.Client {
+  config := conf.New()
+  return datadog.NewClient(config.DatadogApiKey, config.DatadogAppKey)
 }
 
 
