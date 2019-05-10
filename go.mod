@@ -3,7 +3,9 @@ module github.com/reactiveops/dd-manager
 go 1.12
 
 require (
+	bou.ke/monkey v1.0.1
 	github.com/cenkalti/backoff v2.1.1+incompatible // indirect
+	github.com/evanphx/json-patch v4.2.0+incompatible // indirect
 	github.com/gogo/protobuf v1.2.1 // indirect
 	github.com/golang/protobuf v1.3.0 // indirect
 	github.com/google/btree v0.0.0-20180813153112-4030bb1f1f0c // indirect
@@ -14,8 +16,8 @@ require (
 	github.com/imdario/mergo v0.3.7 // indirect
 	github.com/json-iterator/go v1.1.6 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
+	github.com/onsi/gomega v1.5.0
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/sirupsen/logrus v1.4.0
 	github.com/spf13/cobra v0.0.3
@@ -31,5 +33,6 @@ require (
 	k8s.io/apimachinery v0.0.0-20190313115320-c9defaaddf6f
 	k8s.io/client-go v10.0.0+incompatible
 	k8s.io/klog v0.2.0 // indirect
+	k8s.io/kube-openapi v0.0.0-20190502190224-411b2483e503 // indirect
 	sigs.k8s.io/yaml v1.1.0 // indirect
 )

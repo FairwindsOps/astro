@@ -7,7 +7,6 @@ import (
   corev1 "k8s.io/api/core/v1"
   "github.com/reactiveops/dd-manager/conf"
   "strings"
-
   "bytes"
   "text/template"
   "fmt"

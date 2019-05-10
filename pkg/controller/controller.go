@@ -2,7 +2,6 @@ package controller
 
 import (
   log "github.com/sirupsen/logrus"
-  "github.com/reactiveops/dd-manager/pkg/util"
   "github.com/reactiveops/dd-manager/conf"
   "time"
   "k8s.io/client-go/util/workqueue"
@@ -106,9 +105,9 @@ func (watcher *KubeResourceWatcher) next() bool {
 
 
 
-func NewController(cfg *conf.Config) {
+func NewController(cfg *conf.Config, kubeClient kubernetes.Interface) {
   log.Info("Starting controller.")
-  kubeClient := util.GetKubeClient()
+  //kubeClient := util.GetKubeClient()
 
   log.Infof("Creating watcher for Deployments.")
   DeploymentInformer := cache.NewSharedIndexInformer(

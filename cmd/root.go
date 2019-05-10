@@ -4,6 +4,7 @@ import (
   "github.com/spf13/cobra"
   "github.com/reactiveops/dd-manager/conf"
   "github.com/reactiveops/dd-manager/pkg/controller"
+  "github.com/reactiveops/dd-manager/pkg/util"
   log "github.com/sirupsen/logrus"
   "os"
 )
@@ -31,5 +32,5 @@ func loadConfig(cmd *cobra.Command)(*conf.Config) {
 
 func run(cmd *cobra.Command, args []string) {
   conf := loadConfig(cmd)
-  controller.NewController(conf)
+  controller.NewController(conf, util.GetKubeClient())
 }
