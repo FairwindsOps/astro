@@ -11,10 +11,9 @@ import (
 
 func RootCmd() *cobra.Command {
   root := &cobra.Command {
-    Use: "ddmanage",
+    Use: "dd-manager",
     Short: "Kubernetes datadog monitor manager",
     Long: "A kubernetes agent that manages datadog monitors.",
-
     Run: run,
   }
   return root
