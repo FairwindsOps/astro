@@ -15,3 +15,67 @@ A combination of environment variables and a yaml file is used to configure the 
 ### Configuration File
 A configuration file is used to define your monitors.  These are organized as rulesets, which consist of the type of resource the ruleset applies to, annotations that must be present on the resource to be considered valid objects, and a set of monitors to manage for that resource.  Go templating syntax may be used in your monitors and values will be inserted from each kubernetes object that matches the ruleset.
 
+```yaml
+---
+rulesets: 
+- type: deployment
+  match_annotations:
+  - name: dd-manager/owner
+    value: dd-manager
+  monitors:
+    - name: "Deployment Replica Alert - {{ .ObjectMeta.Name }}"
+      type: metric alert
+      query: "max(last_10m):max:kubernetes_state.deployment.replicas_available{kubernetescluster:foobar,namespace:{{ .ObjectMeta.Namespace }}} by {deployment} <= 0"
+      message: |
+        {{ "{{#is_alert}}" }}
+        Available replicas is currently 0 for {{ .ObjectMeta.Name }}
+        {{ "{{/is_alert}}" }}
+        {{ "{{^is_alert}}" }}
+        Available replicas is no longer 0 for {{ .ObjectMeta.Name }}
+        {{ "{{/is_alert}}" }}
+      tags: []
+      no_data_timeframe: 60
+      notify_audit: false
+      notify_no_data: false
+      renotify_interval: 5
+      new_host_delay: 5
+      evaluation_delay: 300
+      timeout: 300
+      escalation_message: ""
+      thresholds:
+        critical: 0
+      require_full_window: true
+      locked: false
+```
+
+* `rulesets`: (List).  A collection of rulesets.  A ruleset consists of a kubernetes resource type, annotations the resource must have to be considered valid, and a collection of monitors to manage for the resource.
+  * `match_annotations`: (List).  A collection of name/value pairs pairs of annotations that must be present on the resource to manage it.
+  * `monitors`: (List).  A collection of monitors to manage for any resource that matches the rules defined.
+    * `name`: Name of the datadog monitor.
+    * `type`: The type of the monitor, chosen from:
+      - `metric alert`
+      - `service check`
+      - `event alert`
+      - `query alert`
+      - `composite`
+      - `log alert`
+    * `query`: The monitor query to notify on.
+    * `message`: A message included with in monitor notifications.
+    * `tags`: A list of tags to add to your monitor.
+    * `no_data_timeframe`: Number of minutes before a monitor will notify if data stops reporting.
+    * `notify_audit`: boolean that indicates whether tagged users are notified if the monitor changes.
+    * `notify_no_data`: boolean that indicates if the monitor notifies if data stops reporting.
+    * `renotify_interval`: Number of minutes after the last notification a monitor will re-notify.
+    * `new_host_delay`: Number of seconds to wait for a new host before evaluating the monitor status.
+    * `evaluation_delay`: Number of seconds to delay evaluation.
+    * `timeout`: Number of minutes the before the monitor will automatically resolve if it's not reporting data.
+    * `escalation_message`: Message to include with re-notifications.
+    * `thresholds`: Map of thresholds for the alert.  Valid options are:
+      - `ok`
+      - `critical`
+      - `warning`
+      - `unknown`
+      - `critical_recovery`
+      - `warning_recovery`
+    * `require_full_window`: boolean indicating if a monitor needs a full window of data to be evaluated.
+    * `locked`: boolean indicating if changes are only allowed from the creator or admins.
