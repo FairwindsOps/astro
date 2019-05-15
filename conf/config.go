@@ -9,6 +9,9 @@ import (
   "io/ioutil"
   "sync"
   "encoding/json"
+  "github.com/asaskevich/govalidator"
+  "errors"
+  "net/http"
 )
 
 type ruleset struct {
@@ -125,7 +128,8 @@ func New() *Config {
 
 func loadMonitorDefinitions(path string) *ruleset {
   rSet := &ruleset{}
-  yml, err := ioutil.ReadFile(path)
+  //yml, err := ioutil.ReadFile(path)
+  yml, err := loadFromPath(path)
   if err != nil {
     log.Fatalf("Could not load config file %s: %v", path, err)
   }
@@ -135,6 +139,21 @@ func loadMonitorDefinitions(path string) *ruleset {
     log.Fatalf("Error unmarshalling config file %s: %v", path, err)
   }
   return rSet
+}
+
+
+func loadFromPath(path string) ([]byte, error) {
+  if fPath, _ := govalidator.IsFilePath(path); fPath {
+    // path is local
+    return ioutil.ReadFile(path)
+  }
+
+  if govalidator.IsURL(path) {
+    // path is a url
+    response, _ := http.Get(path)
+    return ioutil.ReadAll(response.Body)
+  }
+  return nil, errors.New("Definitions is not a valid path or URL.")
 }
 
 
