@@ -57,6 +57,7 @@ type Monitor struct {
   Thresholds          Thresholds    `yaml:"thresholds"`
   RequireFullWindow   bool          `yaml:"require_full_window"`
   Locked              bool          `yaml:"locked"`
+  LinkedObjects       []string      `yaml:"link_objects,omitempty"`
 }
 
 
