@@ -131,7 +131,9 @@ func (config *Config) GetBoundMonitors(namespace string, objectType string) *[]M
   ns, err := config.KubeClient.CoreV1().Namespaces().Get(namespace,metav1.GetOptions{})
 
   if err != nil {
-    mSets := config.getMatchingRulesets(ns.Annotations,objectType)
+    log.Errorf("Error getting namespace %s: %+v", namespace, err)
+  } else {
+    mSets := config.getMatchingRulesets(ns.Annotations,"binding")
     for _, mSet := range *mSets {
       if contains(mSet.BoundObjects,objectType) {
         // object is linked to the ruleset

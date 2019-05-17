@@ -171,6 +171,7 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
       evt.Key, err = cache.MetaNamespaceKeyFunc(obj)
       evt.EventType = "create"
       evt.ResourceType = resource
+      evt.Namespace = objectMeta(obj).Namespace
       log.Infof("%s/%s has been added.", resource, evt.Key)
       wq.Add(evt)
     },
@@ -178,6 +179,7 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
       evt.Key, err = cache.MetaNamespaceKeyFunc(obj)
       evt.EventType = "delete"
       evt.ResourceType = resource
+      evt.Namespace = objectMeta(obj).Namespace
       log.Infof("%s/%s has been deleted.", resource, evt.Key)
       wq.Add(evt)
     },
@@ -185,6 +187,7 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
       evt.Key, err = cache.MetaNamespaceKeyFunc(new)
       evt.EventType = "update"
       evt.ResourceType = resource
+      evt.Namespace = objectMeta(new).Namespace
       log.Infof("%s/%s has been updated.", resource, evt.Key)
       wq.Add(evt)
     },
@@ -195,4 +198,17 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
     informer:     informer,
     wq:           wq,
   }
+}
+
+
+func objectMeta(obj interface{}) metav1.ObjectMeta {
+  var meta metav1.ObjectMeta
+
+  switch object := obj.(type) {
+  case *corev1.Namespace:
+    meta = object.ObjectMeta
+  case *v1.Deployment:
+    meta = object.ObjectMeta
+  }
+  return meta
 }
