@@ -17,7 +17,7 @@ import (
   "k8s.io/client-go/kubernetes"
   "k8s.io/client-go/tools/clientcmd"
   "path/filepath"
-  //metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+  metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type ruleset struct {
@@ -28,7 +28,7 @@ type ruleset struct {
 type MonitorSet struct {
   ObjectType          string        `yaml:"type"`
   Annotations         []Annotation  `yaml:"match_annotations"`
-  LinkedObjects       []string      `yaml:"link_objects,omitempty"`
+  BoundObjects        []string      `yaml:"bound_objects,omitempty"`
   Monitors            []Monitor     `yaml:"monitors"`
 }
 
@@ -124,13 +124,22 @@ func (config *Config) getMatchingRulesets(annotations map[string]string, objectT
 }
 
 
-func (config *Config) getLinkedMonitors(namespace string, objectType string) *[]Monitor {
+func (config *Config) GetBoundMonitors(namespace string, objectType string) *[]Monitor {
+  var linkedMonitors []Monitor
+
   // get info about the namespace the object resides in
   ns, err := config.KubeClient.CoreV1().Namespaces().Get(namespace,metav1.GetOptions{})
 
   if err != nil {
-    monitors := GetMatchingMonitors(ns.Annotations,objectType)
+    mSets := config.getMatchingRulesets(ns.Annotations,objectType)
+    for _, mSet := range *mSets {
+      if contains(mSet.BoundObjects,objectType) {
+        // object is linked to the ruleset
+        linkedMonitors = append(linkedMonitors, mSet.Monitors...)
+      }
+    }
   }
+  return &linkedMonitors
 }
 
 
@@ -153,6 +162,15 @@ func New() *Config {
   return instance;
 }
 
+
+func contains(slice []string, key string) bool {
+  for _, element := range slice {
+    if element == key {
+      return true
+    }
+  }
+  return false
+}
 
 func loadMonitorDefinitions(path string) *ruleset {
   rSet := &ruleset{}

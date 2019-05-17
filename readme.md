@@ -50,6 +50,7 @@ rulesets:
 
 * `rulesets`: (List).  A collection of rulesets.  A ruleset consists of a kubernetes resource type, annotations the resource must have to be considered valid, and a collection of monitors to manage for the resource.
   * `match_annotations`: (List).  A collection of name/value pairs pairs of annotations that must be present on the resource to manage it.
+  * `bound_objects`: (List).  A collection of object types that are bound to this object.  For instance, if you have a ruleset for a namespace, you can bind other objects like deployments, services, etc. Then, when the bound objects in the namespace get updated, those rulesets apply to it.
   * `monitors`: (List).  A collection of monitors to manage for any resource that matches the rules defined.
     * `name`: Name of the datadog monitor.
     * `type`: The type of the monitor, chosen from:

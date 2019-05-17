@@ -33,7 +33,7 @@ rulesets:
       require_full_window: true
       locked: false
 - type: namespace
-  link_objects:
+  bound_objects:
     - deployment
   match_annotations:
     - name: dd-manager/owner
