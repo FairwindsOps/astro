@@ -17,17 +17,18 @@ import (
   "k8s.io/client-go/kubernetes"
   "k8s.io/client-go/tools/clientcmd"
   "path/filepath"
+  //metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type ruleset struct {
   NotificationProfiles map[string]string `yaml:"notification_profiles"`
   MonitorSets         []MonitorSet  `yaml:"rulesets"`
-  LinkedObjects       []string      `yaml:"link_objects,omitempty"`
 }
 
 type MonitorSet struct {
   ObjectType          string        `yaml:"type"`
   Annotations         []Annotation  `yaml:"match_annotations"`
+  LinkedObjects       []string      `yaml:"link_objects,omitempty"`
   Monitors            []Monitor     `yaml:"monitors"`
 }
 
@@ -89,28 +90,47 @@ type Config struct {
 func (config *Config) GetMatchingMonitors(annotations map[string]string, objectType string) *[]Monitor {
   var validMonitors []Monitor
 
+  for _, mSet := range *config.getMatchingRulesets(annotations, objectType) {
+     validMonitors = append(validMonitors, mSet.Monitors...)
+  }
+  return &validMonitors
+}
+
+
+func (config *Config) getMatchingRulesets(annotations map[string]string, objectType string) *[]MonitorSet {
+  var validMSets []MonitorSet
+
   for _, monitorSet := range config.Rulesets.MonitorSets {
     if monitorSet.ObjectType == objectType {
       var hasAllAnnotations = false
 
       for _, annotation := range monitorSet.Annotations {
-          val, found := annotations[annotation.Name]
-          if found == true && val == annotation.Value {
-            log.Infof("Annotation %s with value %s exists.", annotation.Name, annotation.Value)
-            hasAllAnnotations = true
-          } else {
-            log.Infof("Annotation %s with value %s does not exist, exiting.", annotation.Name, annotation.Value)
-            break
-          }
+        val, found := annotations[annotation.Name]
+        if found && val == annotation.Value {
+          hasAllAnnotations = true
+        } else {
+          hasAllAnnotations = false
+          log.Infof("Annotation %s with value %s does not exist, exiting.", annotation.Name, annotation.Value)
+          break
+        }
       }
 
       if hasAllAnnotations {
-        // valid - add to the list of monitors
-        validMonitors = append(validMonitors, monitorSet.Monitors...)
+        validMSets = append(validMSets, monitorSet)
       }
     }
   }
-  return &validMonitors
+  return &validMSets
+}
+
+
+func (config *Config) getLinkedMonitors(namespace string, objectType string) *[]Monitor {
+  // get info about the namespace the object resides in
+  ns, err := config.KubeClient.CoreV1().Namespaces().Get(namespace,metav1.GetOptions{})
+
+  if err != nil {
+    monitors := GetMatchingMonitors(ns.Annotations,objectType)
+  }
 }
 
 
@@ -133,17 +153,6 @@ func New() *Config {
   return instance;
 }
 
-/*
-func getLinkedMonitors(namespace string, objectType string) *[]Monitor {
-  // get info about the namespace the object resides in
-  client := util.GetKubeClient()
-  ns, err := client.CoreV1().Namespaces().Get(namespace,metav1.GetOptions{})
-
-  if err != nil {
-    monitors := GetMatchingMonitors(ns.Annotations,objectType)
-  }
-}
-*/
 
 func loadMonitorDefinitions(path string) *ruleset {
   rSet := &ruleset{}
