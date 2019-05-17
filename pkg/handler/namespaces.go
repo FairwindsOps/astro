@@ -3,7 +3,7 @@ package handler
 import (
   log "github.com/sirupsen/logrus"
   corev1 "k8s.io/api/core/v1"
-  "github.com/reactiveops/dd-manager/conf"
+  "github.com/reactiveops/dd-manager/pkg/config"
   "github.com/reactiveops/dd-manager/pkg/util"
   "strings"	
   "fmt"
@@ -11,8 +11,8 @@ import (
 
 
 
-func OnNamespaceChanged(namespace *corev1.Namespace, event conf.Event) {
-	cfg := conf.New()
+func OnNamespaceChanged(namespace *corev1.Namespace, event config.Event) {
+	cfg := config.New()
 
   switch strings.ToLower(event.EventType) {
   case "delete":

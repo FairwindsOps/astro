@@ -5,7 +5,7 @@ import (
   log "github.com/sirupsen/logrus"
   appsv1 "k8s.io/api/apps/v1"
   corev1 "k8s.io/api/core/v1"
-  "github.com/reactiveops/dd-manager/conf"
+  "github.com/reactiveops/dd-manager/pkg/config"
   "strings"
   "bytes"
   "text/template"
@@ -14,7 +14,7 @@ import (
 
 
 
-func OnUpdate(obj interface{}, event conf.Event) {
+func OnUpdate(obj interface{}, event config.Event) {
   log.Infof("Handler got an OnUpdate event of type %s", event.EventType)
 
   if event.EventType == "delete" {
@@ -33,7 +33,7 @@ func OnUpdate(obj interface{}, event conf.Event) {
 }
 
 
-func onDelete(event conf.Event) {
+func onDelete(event config.Event) {
   log.Info("OnDelete()")
   switch strings.ToLower(event.ResourceType) {
   case "namespace":
@@ -46,8 +46,8 @@ func onDelete(event conf.Event) {
 }
 
 
-func applyTemplate(obj interface{}, monitor *conf.Monitor, event *conf.Event) {
-  cfg := conf.New()
+func applyTemplate(obj interface{}, monitor *config.Monitor, event *config.Event) {
+  cfg := config.New()
   var err error
   var tpl bytes.Buffer
   name, _ := template.New("name").Parse(monitor.Name)

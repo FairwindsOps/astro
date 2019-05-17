@@ -1,4 +1,4 @@
-package conf
+package config
 
 import (
   "os"
@@ -12,6 +12,12 @@ import (
   "github.com/asaskevich/govalidator"
   "errors"
   "net/http"
+  homedir "github.com/mitchellh/go-homedir"
+  "k8s.io/client-go/rest"
+  "k8s.io/client-go/kubernetes"
+  "k8s.io/client-go/tools/clientcmd"
+  "path/filepath"
+  metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type ruleset struct {
@@ -22,6 +28,7 @@ type ruleset struct {
 type MonitorSet struct {
   ObjectType          string        `yaml:"type"`
   Annotations         []Annotation  `yaml:"match_annotations"`
+  BoundObjects        []string      `yaml:"bound_objects,omitempty"`
   Monitors            []Monitor     `yaml:"monitors"`
 }
 
@@ -57,7 +64,6 @@ type Monitor struct {
   Thresholds          Thresholds    `yaml:"thresholds"`
   RequireFullWindow   bool          `yaml:"require_full_window"`
   Locked              bool          `yaml:"locked"`
-  LinkedObjects       []string      `yaml:"link_objects,omitempty"`
 }
 
 
@@ -77,34 +83,65 @@ type Config struct {
   OwnerTag string
   MonitorDefinitionsPath string
   Rulesets *ruleset
+  KubeClient kubernetes.Interface
 }
 
 
 func (config *Config) GetMatchingMonitors(annotations map[string]string, objectType string) *[]Monitor {
   var validMonitors []Monitor
 
+  for _, mSet := range *config.getMatchingRulesets(annotations, objectType) {
+     validMonitors = append(validMonitors, mSet.Monitors...)
+  }
+  return &validMonitors
+}
+
+
+func (config *Config) getMatchingRulesets(annotations map[string]string, objectType string) *[]MonitorSet {
+  var validMSets []MonitorSet
+
   for _, monitorSet := range config.Rulesets.MonitorSets {
     if monitorSet.ObjectType == objectType {
       var hasAllAnnotations = false
 
       for _, annotation := range monitorSet.Annotations {
-          val, found := annotations[annotation.Name]
-          if found == true && val == annotation.Value {
-            log.Infof("Annotation %s with value %s exists.", annotation.Name, annotation.Value)
-            hasAllAnnotations = true
-          } else {
-            log.Infof("Annotation %s with value %s does not exist, exiting.", annotation.Name, annotation.Value)
-            break
-          }
+        val, found := annotations[annotation.Name]
+        if found && val == annotation.Value {
+          hasAllAnnotations = true
+        } else {
+          hasAllAnnotations = false
+          log.Infof("Annotation %s with value %s does not exist, exiting.", annotation.Name, annotation.Value)
+          break
+        }
       }
 
       if hasAllAnnotations {
-        // valid - add to the list of monitors
-        validMonitors = append(validMonitors, monitorSet.Monitors...)
+        validMSets = append(validMSets, monitorSet)
       }
     }
   }
-  return &validMonitors
+  return &validMSets
+}
+
+
+func (config *Config) GetBoundMonitors(namespace string, objectType string) *[]Monitor {
+  var linkedMonitors []Monitor
+
+  // get info about the namespace the object resides in
+  ns, err := config.KubeClient.CoreV1().Namespaces().Get(namespace,metav1.GetOptions{})
+
+  if err != nil {
+    log.Errorf("Error getting namespace %s: %+v", namespace, err)
+  } else {
+    mSets := config.getMatchingRulesets(ns.Annotations,"binding")
+    for _, mSet := range *mSets {
+      if contains(mSet.BoundObjects,objectType) {
+        // object is linked to the ruleset
+        linkedMonitors = append(linkedMonitors, mSet.Monitors...)
+      }
+    }
+  }
+  return &linkedMonitors
 }
 
 
@@ -121,11 +158,21 @@ func New() *Config {
       OwnerTag: getEnv("OWNER","dd-manager"),
       MonitorDefinitionsPath: getEnv("DEFINITIONS_PATH", "conf.yml"),
       Rulesets: loadMonitorDefinitions(getEnv("DEFINITIONS_PATH", "conf.yml")),
+      KubeClient: getKubeClient(),
     }
   })
   return instance;
 }
 
+
+func contains(slice []string, key string) bool {
+  for _, element := range slice {
+    if element == key {
+      return true
+    }
+  }
+  return false
+}
 
 func loadMonitorDefinitions(path string) *ruleset {
   rSet := &ruleset{}
@@ -184,4 +231,42 @@ func envAsInt(key string, defaultVal int) int {
   }
   log.Info(fmt.Sprintf("Using default value %d for %s", defaultVal, key))
   return defaultVal
+}
+
+
+func getKubeClient() kubernetes.Interface {
+  config, err := rest.InClusterConfig()
+  if err != nil {
+    // not in cluster
+    kubeconfig := getKubeConfigPath()
+    localConfig, _ := clientcmd.BuildConfigFromFlags("", kubeconfig)
+    clientset, _ := kubernetes.NewForConfig(localConfig)
+    return clientset
+  } else {
+    // in cluster
+    clientset, _ := kubernetes.NewForConfig(config)
+    return clientset
+  }
+}
+
+
+// getKubeConfigPath returns a valid kubeconfig path.
+func getKubeConfigPath() string {
+  var path string
+
+  if os.Getenv("KUBECONFIG") != "" {
+    path = os.Getenv("KUBECONFIG")
+  } else if home, err := homedir.Dir(); err == nil {
+    path = filepath.Join(home, ".kube", "config")
+  } else {
+    log.Fatal("kubeconfig not found.  Please ensure ~/.kube/config exists or KUBECONFIG is set.")
+    os.Exit(1)
+  }
+
+  // kubeconfig doesn't exist
+  if _, err := os.Stat(path); err != nil {
+    log.Fatalf("%s doesn't exist - do you have a kubeconfig configured?\n", path)
+    os.Exit(1)
+  }
+  return path
 }
