@@ -3,14 +3,14 @@ package util
 
 import (
   log "github.com/sirupsen/logrus"
-  "github.com/reactiveops/dd-manager/conf"
+  "github.com/reactiveops/dd-manager/pkg/config"
   "github.com/zorkian/go-datadog-api"
   "errors"
   "reflect"
 )
 
 
-func AddOrUpdate(monitor *conf.Monitor) (*int, error) {
+func AddOrUpdate(monitor *config.Monitor) (*int, error) {
   log.Infof("Update templated monitor:\n\n%+v", monitor)
   // check if monitor exists
   ddMonitor, err := GetProvisionedMonitor(monitor)
@@ -45,7 +45,7 @@ func AddOrUpdate(monitor *conf.Monitor) (*int, error) {
 }
 
 
-func GetProvisionedMonitor(monitor *conf.Monitor) (*datadog.Monitor, error) {
+func GetProvisionedMonitor(monitor *config.Monitor) (*datadog.Monitor, error) {
   monitors, err := GetProvisionedMonitors()
   if err != nil {
     log.Errorf("Error getting monitors: %v", err)
@@ -63,11 +63,11 @@ func GetProvisionedMonitor(monitor *conf.Monitor) (*datadog.Monitor, error) {
 
 func GetProvisionedMonitors() ([]datadog.Monitor, error) {
   client := getDDClient()
-  return client.GetMonitorsByTags([]string{conf.New().OwnerTag})
+  return client.GetMonitorsByTags([]string{config.New().OwnerTag})
 }
 
 
-func DeleteMonitor(monitor *conf.Monitor) error {
+func DeleteMonitor(monitor *config.Monitor) error {
   client := getDDClient()
   ddMonitor, err := GetProvisionedMonitor(monitor)
   if err != nil {
@@ -109,12 +109,12 @@ func updateMonitor(monitor *datadog.Monitor) error {
 
 
 func getDDClient() *datadog.Client {
-  config := conf.New()
+  config := config.New()
   return datadog.NewClient(config.DatadogApiKey, config.DatadogAppKey)
 }
 
 
-func toDdMonitor(in *conf.Monitor) *datadog.Monitor {
+func toDdMonitor(in *config.Monitor) *datadog.Monitor {
   monitor := datadog.Monitor {
     Type:     &in.Type,
     Query:    &in.Query,
@@ -146,8 +146,8 @@ func toDdMonitor(in *conf.Monitor) *datadog.Monitor {
 }
 
 
-func toMonitor(in *datadog.Monitor) *conf.Monitor {
-  thresholds := conf.Thresholds {
+func toMonitor(in *datadog.Monitor) *config.Monitor {
+  thresholds := config.Thresholds {
     Ok:               in.Options.Thresholds.Ok,
     Critical:         in.Options.Thresholds.Critical,
     Warning:          in.Options.Thresholds.Warning,
@@ -156,7 +156,7 @@ func toMonitor(in *datadog.Monitor) *conf.Monitor {
     WarningRecovery:  in.Options.Thresholds.WarningRecovery,
   }
 
-  monitor := conf.Monitor {
+  monitor := config.Monitor {
     Name:               *in.Name,
     Type:               *in.Type,
     Query:              *in.Query,

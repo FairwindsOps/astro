@@ -2,9 +2,8 @@ package cmd
 
 import (
   "github.com/spf13/cobra"
-  "github.com/reactiveops/dd-manager/conf"
+  "github.com/reactiveops/dd-manager/pkg/config"
   "github.com/reactiveops/dd-manager/pkg/controller"
-  "github.com/reactiveops/dd-manager/pkg/util"
   log "github.com/sirupsen/logrus"
   "os"
 )
@@ -21,16 +20,16 @@ func RootCmd() *cobra.Command {
 }
 
 
-func loadConfig(cmd *cobra.Command)(*conf.Config) {
+func loadConfig(cmd *cobra.Command)(*config.Config) {
   log.SetReportCaller(true)
   log.SetOutput(os.Stdout)
 
-  config := conf.New()
+  config := config.New()
   return config
 }
 
 
 func run(cmd *cobra.Command, args []string) {
   conf := loadConfig(cmd)
-  controller.NewController(conf, util.GetKubeClient())
+  controller.NewController(conf)
 }

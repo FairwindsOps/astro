@@ -1,4 +1,4 @@
-package conf
+package config
 
 import (
   "os"
@@ -12,11 +12,17 @@ import (
   "github.com/asaskevich/govalidator"
   "errors"
   "net/http"
+  homedir "github.com/mitchellh/go-homedir"
+  "k8s.io/client-go/rest"
+  "k8s.io/client-go/kubernetes"
+  "k8s.io/client-go/tools/clientcmd"
+  "path/filepath"
 )
 
 type ruleset struct {
   NotificationProfiles map[string]string `yaml:"notification_profiles"`
   MonitorSets         []MonitorSet  `yaml:"rulesets"`
+  LinkedObjects       []string      `yaml:"link_objects,omitempty"`
 }
 
 type MonitorSet struct {
@@ -57,7 +63,6 @@ type Monitor struct {
   Thresholds          Thresholds    `yaml:"thresholds"`
   RequireFullWindow   bool          `yaml:"require_full_window"`
   Locked              bool          `yaml:"locked"`
-  LinkedObjects       []string      `yaml:"link_objects,omitempty"`
 }
 
 
@@ -77,6 +82,7 @@ type Config struct {
   OwnerTag string
   MonitorDefinitionsPath string
   Rulesets *ruleset
+  KubeClient kubernetes.Interface
 }
 
 
@@ -121,11 +127,23 @@ func New() *Config {
       OwnerTag: getEnv("OWNER","dd-manager"),
       MonitorDefinitionsPath: getEnv("DEFINITIONS_PATH", "conf.yml"),
       Rulesets: loadMonitorDefinitions(getEnv("DEFINITIONS_PATH", "conf.yml")),
+      KubeClient: getKubeClient(),
     }
   })
   return instance;
 }
 
+/*
+func getLinkedMonitors(namespace string, objectType string) *[]Monitor {
+  // get info about the namespace the object resides in
+  client := util.GetKubeClient()
+  ns, err := client.CoreV1().Namespaces().Get(namespace,metav1.GetOptions{})
+
+  if err != nil {
+    monitors := GetMatchingMonitors(ns.Annotations,objectType)
+  }
+}
+*/
 
 func loadMonitorDefinitions(path string) *ruleset {
   rSet := &ruleset{}
@@ -184,4 +202,42 @@ func envAsInt(key string, defaultVal int) int {
   }
   log.Info(fmt.Sprintf("Using default value %d for %s", defaultVal, key))
   return defaultVal
+}
+
+
+func getKubeClient() kubernetes.Interface {
+  config, err := rest.InClusterConfig()
+  if err != nil {
+    // not in cluster
+    kubeconfig := getKubeConfigPath()
+    localConfig, _ := clientcmd.BuildConfigFromFlags("", kubeconfig)
+    clientset, _ := kubernetes.NewForConfig(localConfig)
+    return clientset
+  } else {
+    // in cluster
+    clientset, _ := kubernetes.NewForConfig(config)
+    return clientset
+  }
+}
+
+
+// getKubeConfigPath returns a valid kubeconfig path.
+func getKubeConfigPath() string {
+  var path string
+
+  if os.Getenv("KUBECONFIG") != "" {
+    path = os.Getenv("KUBECONFIG")
+  } else if home, err := homedir.Dir(); err == nil {
+    path = filepath.Join(home, ".kube", "config")
+  } else {
+    log.Fatal("kubeconfig not found.  Please ensure ~/.kube/config exists or KUBECONFIG is set.")
+    os.Exit(1)
+  }
+
+  // kubeconfig doesn't exist
+  if _, err := os.Stat(path); err != nil {
+    log.Fatalf("%s doesn't exist - do you have a kubeconfig configured?\n", path)
+    os.Exit(1)
+  }
+  return path
 }

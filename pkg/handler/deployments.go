@@ -4,15 +4,15 @@ package handler
 import (
 	log "github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
-  "github.com/reactiveops/dd-manager/conf"
+  "github.com/reactiveops/dd-manager/pkg/config"
   "github.com/reactiveops/dd-manager/pkg/util"
   "strings"
   "fmt"
 )
 
 
-func OnDeploymentChanged(deployment *appsv1.Deployment, event conf.Event) {
-  cfg := conf.New()
+func OnDeploymentChanged(deployment *appsv1.Deployment, event config.Event) {
+  cfg := config.New()
 
   switch strings.ToLower(event.EventType) {
   case "delete":
