@@ -23,6 +23,7 @@ jobs:
       - checkout
       - setup_remote_docker
       - *set_environment_variables
+      - *docker_build_and_push
 
 
 workflows:
