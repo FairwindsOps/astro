@@ -13,7 +13,7 @@ references:
       command: |
         docker login quay.io -u="reactiveops+circleci" -p="${quay_token}"
         docker build -t $REPO:$CIRCLE_TAG .
-        docker push $REPO:$CIRLCE_TAG
+        docker push $REPO:$CIRCLE_TAG
 
 jobs:
   build:
