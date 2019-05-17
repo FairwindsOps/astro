@@ -12,7 +12,7 @@ references:
       name: build and push
       command: |
         docker login quay.io -u="reactiveops+circleci" -p="${quay_token}"
-        docker build -t $REPO:dev-$CIRCLE_SHA1 .
+        docker build -t $REPO:$CIRCLE_TAG .
         docker push $REPO:dev-$CIRLCE_SHA1
 
 jobs:
