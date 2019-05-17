@@ -1,3 +1,17 @@
+// Copyright 2019 ReactiveOps
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package util
 
 
@@ -9,7 +23,8 @@ import (
   "reflect"
 )
 
-
+// AddOrUpdate will create a monitor if it doesn't exist or update one if it does.
+// It returns the Id of the monitor created or updated.
 func AddOrUpdate(monitor *config.Monitor) (*int, error) {
   log.Infof("Update templated monitor:\n\n%+v", monitor)
   // check if monitor exists
@@ -44,7 +59,7 @@ func AddOrUpdate(monitor *config.Monitor) (*int, error) {
   return ddMonitor.Id, nil
 }
 
-
+// GetProvisionedMonitor returns a monitor with the same name from Datadog.
 func GetProvisionedMonitor(monitor *config.Monitor) (*datadog.Monitor, error) {
   monitors, err := GetProvisionedMonitors()
   if err != nil {
@@ -60,7 +75,7 @@ func GetProvisionedMonitor(monitor *config.Monitor) (*datadog.Monitor, error) {
   return nil, errors.New("Monitor does not exist.")
 }
 
-
+// GetProvisionedMonitors returns a collection of monitors managed by dd-manager.
 func GetProvisionedMonitors() ([]datadog.Monitor, error) {
   client := getDDClient()
   return client.GetMonitorsByTags([]string{config.New().OwnerTag})
@@ -76,8 +91,7 @@ func DeleteMonitor(monitor *config.Monitor) error {
   return nil
 }
 
-
-//delete monitors containing the specified tags
+// DeleteMonitors deletes monitors containing the specified tags.
 func DeleteMonitors(tags []string) error {
   client := getDDClient()
   monitors, err := client.GetMonitorsByTags(tags)
