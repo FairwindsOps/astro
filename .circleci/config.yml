@@ -1,0 +1,36 @@
+version: 2
+
+references:
+  set_environment_variables: &set_environment_variables
+    run:
+      name: Set Environment Variables
+      command: |
+        echo 'export REPO=quay.io/reactiveops/dd-manager' >> ${BASH_ENV}
+
+  docker_build_and_push: &docker_build_and_push
+    run:
+      name: build and push
+      command: |
+        docker login quay.io -u="reactiveops+circleci" -p="${quay_token}"
+        docker build -t $REPO:dev-$CIRCLE_SHA1 .
+        docker push $REPO:dev-$CIRLCE_SHA1
+
+jobs:
+  build:
+    docker:
+      - image: quay.io/reactiveops/ci-images:v8.0-alpine
+    steps:
+      - checkout
+      - setup_remote_docker
+      - *set_environment_variables
+
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build
+          context: org-global
+          filters:
+            tags:
+              only: /^dev-.*/
