@@ -231,6 +231,7 @@ func loadFromPath(path string) ([]byte, error) {
 
 
 func getEnv(key string, defaultVal string) string {
+  log.Infof("Getting environment variable %s", key)
   if value, exists := os.LookupEnv(key); exists {
     return value
   }
