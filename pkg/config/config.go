@@ -174,10 +174,11 @@ func New() *Config {
       ClusterName: getEnv("CLUSTER_NAME", ""),
       OwnerTag: getEnv("OWNER","dd-manager"),
       MonitorDefinitionsPath: getEnv("DEFINITIONS_PATH", "conf.yml"),
-      Rulesets: loadMonitorDefinitions(getEnv("DEFINITIONS_PATH", "conf.yml")),
       KubeClient: getKubeClient(),
       DryRun: envAsBool("DRY_RUN", false),
     }
+
+    instance.Rulesets = loadMonitorDefinitions(instance.MonitorDefinitionsPath)
 
     if instance.DatadogApiKey == "" || instance.DatadogAppKey == "" {
       log.Warnf("Datadog keys are not set, setting mode to dry run.")
@@ -202,7 +203,8 @@ func loadMonitorDefinitions(path string) *ruleset {
   //yml, err := ioutil.ReadFile(path)
   yml, err := loadFromPath(path)
   if err != nil {
-    log.Fatalf("Could not load config file %s: %v", path, err)
+    log.Errorf("Could not load config file %s: %v", path, err)
+    return rSet
   }
 
   err = yaml.Unmarshal(yml, rSet)
