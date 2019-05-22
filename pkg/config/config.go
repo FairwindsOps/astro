@@ -100,6 +100,7 @@ type Config struct {
   MonitorDefinitionsPath string  // A url or local path for the configuration file.
   Rulesets *ruleset  // The collection of rulesets to manage.
   KubeClient kubernetes.Interface  // A kubernetes client to interact with the cluster.
+  DryRun bool // when set to true monitors will not be managed in datadog.
 }
 
 // GetMatchingMonitors returns a collection of monitors that apply to the specified objectType and annotations.
@@ -175,6 +176,12 @@ func New() *Config {
       MonitorDefinitionsPath: getEnv("DEFINITIONS_PATH", "conf.yml"),
       Rulesets: loadMonitorDefinitions(getEnv("DEFINITIONS_PATH", "conf.yml")),
       KubeClient: getKubeClient(),
+      DryRun: envAsBool("DRY_RUN", false),
+    }
+
+    if instance.DatadogApiKey == "" || instance.DatadogAppKey == "" {
+      log.Warnf("Datadog keys are not set, setting mode to dry run.")
+      instance.DryRun = true
     }
   })
   return instance;

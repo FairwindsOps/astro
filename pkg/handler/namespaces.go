@@ -30,14 +30,17 @@ func OnNamespaceChanged(namespace *corev1.Namespace, event config.Event) {
 
   switch strings.ToLower(event.EventType) {
   case "delete":
-    log.Info("Deleting resource monitors.")
-    util.DeleteMonitors([]string{cfg.OwnerTag, fmt.Sprintf("dd-manager:object_type:%s", event.ResourceType), fmt.Sprintf("dd-manager:resource:%s", event.Key)})
+    if cfg.DryRun == false {
+      log.Info("Deleting resource monitors.")
+      util.DeleteMonitors([]string{cfg.OwnerTag, fmt.Sprintf("dd-manager:object_type:%s", event.ResourceType), fmt.Sprintf("dd-manager:resource:%s", event.Key)})
+    }
   case "create", "update":
     for _, monitor := range *cfg.GetMatchingMonitors(namespace.Annotations, event.ResourceType) {
       log.Infof("Reconcile monitor %s", monitor.Name)
       applyTemplate(namespace, &monitor, &event)
-
-      util.AddOrUpdate(&monitor)
+      if cfg.DryRun == false {
+        util.AddOrUpdate(&monitor)
+      }
     }
   default:
     log.Warnf("Update type %s is not valid, skipping.", event.EventType)
