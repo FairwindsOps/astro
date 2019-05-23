@@ -241,7 +241,7 @@ func getEnv(key string, defaultVal string) string {
 
 
 func envAsBool(key string, defaultVal bool) bool {
-  val := getEnv(key, "")
+  val := getEnv(key, strconv.FormatBool(defaultVal))
   if val, err := strconv.ParseBool(val); err == nil {
     return val
   }
