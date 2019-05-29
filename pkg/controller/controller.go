@@ -52,7 +52,7 @@ func (watcher *KubeResourceWatcher) Watch(term <-chan struct{}) {
 	go watcher.informer.Run(term)
 
 	if !cache.WaitForCacheSync(term, watcher.HasSynced) {
-		rt.HandleError(fmt.Errorf("Timeout waiting for cache sync."))
+		rt.HandleError(fmt.Errorf("timeout waiting for cache sync"))
 		return
 	}
 

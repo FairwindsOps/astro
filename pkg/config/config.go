@@ -222,7 +222,7 @@ func loadFromPath(path string) ([]byte, error) {
 		response, _ := http.Get(path)
 		return ioutil.ReadAll(response.Body)
 	}
-	return nil, errors.New("Definitions is not a valid path or URL.")
+	return nil, errors.New("definitions is not a valid path or URL")
 }
 
 func getEnv(key string, defaultVal string) string {

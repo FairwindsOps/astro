@@ -71,7 +71,7 @@ func GetProvisionedMonitor(monitor *config.Monitor) (*datadog.Monitor, error) {
 			return &ddMonitor, nil
 		}
 	}
-	return nil, errors.New("Monitor does not exist.")
+	return nil, errors.New("monitor does not exist")
 }
 
 // GetProvisionedMonitors returns a collection of monitors managed by dd-manager.
