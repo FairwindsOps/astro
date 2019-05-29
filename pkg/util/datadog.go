@@ -120,7 +120,7 @@ func updateMonitor(monitor *datadog.Monitor) error {
 
 func getDDClient() *datadog.Client {
 	config := config.New()
-	return datadog.NewClient(config.DatadogApiKey, config.DatadogAppKey)
+	return datadog.NewClient(config.DatadogAPIKey, config.DatadogAppKey)
 }
 
 func toDdMonitor(in *config.Monitor) *datadog.Monitor {
