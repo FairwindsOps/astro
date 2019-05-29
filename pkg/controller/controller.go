@@ -15,213 +15,203 @@
 package controller
 
 import (
-  log "github.com/sirupsen/logrus"
-  "github.com/reactiveops/dd-manager/pkg/config"
-  "time"
-  "k8s.io/client-go/util/workqueue"
-  "k8s.io/client-go/tools/cache"
-  metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-  "k8s.io/api/apps/v1"
-  corev1 "k8s.io/api/core/v1"
-  "k8s.io/apimachinery/pkg/util/wait"
-  "os"
-  "os/signal"
-  "k8s.io/client-go/kubernetes"
-  "k8s.io/apimachinery/pkg/runtime"
-  "k8s.io/apimachinery/pkg/watch"
-  "syscall"
-  rt "k8s.io/apimachinery/pkg/util/runtime"
-  "fmt"
-  handler "github.com/reactiveops/dd-manager/pkg/handler"
+	"fmt"
+	"github.com/reactiveops/dd-manager/pkg/config"
+	handler "github.com/reactiveops/dd-manager/pkg/handler"
+	log "github.com/sirupsen/logrus"
+	"k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	rt "k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/util/workqueue"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
-
 
 // KubeResourceWatcher contains the informer that watches Kubernetes objects and the queue that processes updates.
 type KubeResourceWatcher struct {
-  kubeClient  kubernetes.Interface
-  informer    cache.SharedIndexInformer
-  wq          workqueue.RateLimitingInterface
+	kubeClient kubernetes.Interface
+	informer   cache.SharedIndexInformer
+	wq         workqueue.RateLimitingInterface
 }
 
-
+// Watch tells the KubeResourceWatcher to start waiting for events
 func (watcher *KubeResourceWatcher) Watch(term <-chan struct{}) {
-  log.Infof("Starting watcher.")
+	log.Infof("Starting watcher.")
 
-  defer watcher.wq.ShutDown()
-  defer rt.HandleCrash()
+	defer watcher.wq.ShutDown()
+	defer rt.HandleCrash()
 
-  go watcher.informer.Run(term)
+	go watcher.informer.Run(term)
 
-  if !cache.WaitForCacheSync(term, watcher.HasSynced) {
-    rt.HandleError(fmt.Errorf("Timeout waiting for cache sync."))
-    return
-  }
+	if !cache.WaitForCacheSync(term, watcher.HasSynced) {
+		rt.HandleError(fmt.Errorf("timeout waiting for cache sync"))
+		return
+	}
 
-  log.Infof("Watcher synced.")
-  wait.Until(watcher.waitForEvents, time.Second, term)
+	log.Infof("Watcher synced.")
+	wait.Until(watcher.waitForEvents, time.Second, term)
 }
-
 
 func (watcher *KubeResourceWatcher) waitForEvents() {
-  // just keep running forever
-  for watcher.next() {
+	// just keep running forever
+	for watcher.next() {
 
-  }
+	}
 }
 
-
+// HasSynced determines whether the informer has synced
 func (watcher *KubeResourceWatcher) HasSynced() bool {
-  return watcher.informer.HasSynced()
+	return watcher.informer.HasSynced()
 }
 
-
+// LastSyncResourceVersion returns the last sync resource version
 func (watcher *KubeResourceWatcher) LastSyncResourceVersion() string {
-  return watcher.informer.LastSyncResourceVersion()
+	return watcher.informer.LastSyncResourceVersion()
 }
-
 
 func (watcher *KubeResourceWatcher) process(evt config.Event) error {
-  info, _, err := watcher.informer.GetIndexer().GetByKey(evt.Key)
+	info, _, err := watcher.informer.GetIndexer().GetByKey(evt.Key)
 
-  if err != nil {
-    //TODO - need some better error handling here
-    return err
-  }
+	if err != nil {
+		//TODO - need some better error handling here
+		return err
+	}
 
-  handler.OnUpdate(info, evt)
-  return nil
+	handler.OnUpdate(info, evt)
+	return nil
 }
-
 
 func (watcher *KubeResourceWatcher) next() bool {
-  evt, err := watcher.wq.Get()
+	evt, err := watcher.wq.Get()
 
-  if err {
-    return false
-  }
+	if err {
+		return false
+	}
 
-  defer watcher.wq.Done(evt)
-  processErr := watcher.process(evt.(config.Event))
-  if processErr != nil {
-    // limit the number of retries
-    if watcher.wq.NumRequeues(evt) < 5 {
-      log.Errorf("Error running queued item %s: %v", evt.(config.Event).Key, processErr)
-      log.Infof("Retry processing item %s", evt.(config.Event).Key)
-      watcher.wq.AddRateLimited(evt)
-    } else {
-      log.Errorf("Giving up trying to run queued item %s: %v", evt.(config.Event).Key, processErr)
-      watcher.wq.Forget(evt)
-      rt.HandleError(processErr)
-    }
-  }
-  return true
+	defer watcher.wq.Done(evt)
+	processErr := watcher.process(evt.(config.Event))
+	if processErr != nil {
+		// limit the number of retries
+		if watcher.wq.NumRequeues(evt) < 5 {
+			log.Errorf("Error running queued item %s: %v", evt.(config.Event).Key, processErr)
+			log.Infof("Retry processing item %s", evt.(config.Event).Key)
+			watcher.wq.AddRateLimited(evt)
+		} else {
+			log.Errorf("Giving up trying to run queued item %s: %v", evt.(config.Event).Key, processErr)
+			watcher.wq.Forget(evt)
+			rt.HandleError(processErr)
+		}
+	}
+	return true
 }
 
-
-//  NewController starts a controller for watching Kubernetes objects.
+// NewController starts a controller for watching Kubernetes objects.
 func NewController(cfg *config.Config) {
-  log.Info("Starting controller.")
+	log.Info("Starting controller.")
 
-  log.Infof("Creating watcher for Deployments.")
-  DeploymentInformer := cache.NewSharedIndexInformer(
-    &cache.ListWatch{
-      ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-        return cfg.KubeClient.AppsV1().Deployments("").List(metav1.ListOptions{})
-      },
-      WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-        return cfg.KubeClient.AppsV1().Deployments("").Watch(metav1.ListOptions{})
-      },
-    },
-    &v1.Deployment{},
-    0,
-    cache.Indexers{},
-  )
+	log.Infof("Creating watcher for Deployments.")
+	DeploymentInformer := cache.NewSharedIndexInformer(
+		&cache.ListWatch{
+			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+				return cfg.KubeClient.AppsV1().Deployments("").List(metav1.ListOptions{})
+			},
+			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+				return cfg.KubeClient.AppsV1().Deployments("").Watch(metav1.ListOptions{})
+			},
+		},
+		&v1.Deployment{},
+		0,
+		cache.Indexers{},
+	)
 
-  DeployWatcher := createController(cfg.KubeClient, DeploymentInformer, "deployment")
-  dTerm := make(chan struct{})
-  defer close(dTerm)
-  go DeployWatcher.Watch(dTerm)
+	DeployWatcher := createController(cfg.KubeClient, DeploymentInformer, "deployment")
+	dTerm := make(chan struct{})
+	defer close(dTerm)
+	go DeployWatcher.Watch(dTerm)
 
+	log.Infof("Creating watcher for Namespaces.")
+	NSInformer := cache.NewSharedIndexInformer(
+		&cache.ListWatch{
+			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+				return cfg.KubeClient.CoreV1().Namespaces().List(metav1.ListOptions{})
+			},
+			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+				return cfg.KubeClient.CoreV1().Namespaces().Watch(metav1.ListOptions{})
+			},
+		},
+		&corev1.Namespace{},
+		0,
+		cache.Indexers{},
+	)
 
+	NSWatcher := createController(cfg.KubeClient, NSInformer, "namespace")
+	nsTerm := make(chan struct{})
+	defer close(nsTerm)
+	go NSWatcher.Watch(nsTerm)
 
-  log.Infof("Creating watcher for Namespaces.")
-  NSInformer := cache.NewSharedIndexInformer(
-    &cache.ListWatch{
-      ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-        return cfg.KubeClient.CoreV1().Namespaces().List(metav1.ListOptions{})
-      },
-      WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-        return cfg.KubeClient.CoreV1().Namespaces().Watch(metav1.ListOptions{})
-      },
-    },
-    &corev1.Namespace{},
-    0,
-    cache.Indexers{},
-  )
-
-  NSWatcher := createController(cfg.KubeClient, NSInformer, "namespace")
-  nsTerm := make(chan struct{})
-  defer close(nsTerm)
-  go NSWatcher.Watch(nsTerm)
-
-
-  // create a channel to respond to SIGTERMs
-  signals := make(chan os.Signal, 1)
-  signal.Notify(signals, syscall.SIGTERM)
-  signal.Notify(signals, syscall.SIGINT)
-  <-signals
+	// create a channel to respond to SIGTERMs
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGTERM)
+	signal.Notify(signals, syscall.SIGINT)
+	<-signals
 }
-
 
 func createController(kubeClient kubernetes.Interface, informer cache.SharedIndexInformer, resource string) *KubeResourceWatcher {
-  log.Infof("Creating controller for resource type %s", resource)
-  wq := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
-  var err error
-  var evt config.Event
+	log.Infof("Creating controller for resource type %s", resource)
+	wq := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
+	var err error
+	var evt config.Event
 
-  informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
-    AddFunc: func(obj interface{}) {
-      evt.Key, err = cache.MetaNamespaceKeyFunc(obj)
-      evt.EventType = "create"
-      evt.ResourceType = resource
-      evt.Namespace = objectMeta(obj).Namespace
-      log.Infof("%s/%s has been added.", resource, evt.Key)
-      wq.Add(evt)
-    },
-    DeleteFunc: func(obj interface{}) {
-      evt.Key, err = cache.MetaNamespaceKeyFunc(obj)
-      evt.EventType = "delete"
-      evt.ResourceType = resource
-      evt.Namespace = objectMeta(obj).Namespace
-      log.Infof("%s/%s has been deleted.", resource, evt.Key)
-      wq.Add(evt)
-    },
-    UpdateFunc: func(old interface{}, new interface{}) {
-      evt.Key, err = cache.MetaNamespaceKeyFunc(new)
-      evt.EventType = "update"
-      evt.ResourceType = resource
-      evt.Namespace = objectMeta(new).Namespace
-      log.Infof("%s/%s has been updated.", resource, evt.Key)
-      wq.Add(evt)
-    },
-  })
+	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			evt.Key, err = cache.MetaNamespaceKeyFunc(obj)
+			evt.EventType = "create"
+			evt.ResourceType = resource
+			evt.Namespace = objectMeta(obj).Namespace
+			log.Infof("%s/%s has been added.", resource, evt.Key)
+			wq.Add(evt)
+		},
+		DeleteFunc: func(obj interface{}) {
+			evt.Key, err = cache.MetaNamespaceKeyFunc(obj)
+			evt.EventType = "delete"
+			evt.ResourceType = resource
+			evt.Namespace = objectMeta(obj).Namespace
+			log.Infof("%s/%s has been deleted.", resource, evt.Key)
+			wq.Add(evt)
+		},
+		UpdateFunc: func(old interface{}, new interface{}) {
+			evt.Key, err = cache.MetaNamespaceKeyFunc(new)
+			evt.EventType = "update"
+			evt.ResourceType = resource
+			evt.Namespace = objectMeta(new).Namespace
+			log.Infof("%s/%s has been updated.", resource, evt.Key)
+			wq.Add(evt)
+		},
+	})
 
-  return &KubeResourceWatcher{
-    kubeClient: kubeClient,
-    informer:     informer,
-    wq:           wq,
-  }
+	return &KubeResourceWatcher{
+		kubeClient: kubeClient,
+		informer:   informer,
+		wq:         wq,
+	}
 }
 
-
 func objectMeta(obj interface{}) metav1.ObjectMeta {
-  var meta metav1.ObjectMeta
+	var meta metav1.ObjectMeta
 
-  switch object := obj.(type) {
-  case *corev1.Namespace:
-    meta = object.ObjectMeta
-  case *v1.Deployment:
-    meta = object.ObjectMeta
-  }
-  return meta
+	switch object := obj.(type) {
+	case *corev1.Namespace:
+		meta = object.ObjectMeta
+	case *v1.Deployment:
+		meta = object.ObjectMeta
+	}
+	return meta
 }
