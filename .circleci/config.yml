@@ -16,6 +16,16 @@ references:
         docker push $REPO:$CIRCLE_TAG
 
 jobs:
+  test:
+    working_directory: /go/src/github.com/reactiveops/dd-manager
+    docker:
+      - image: circleci/golang:1.12
+    steps:
+      - checkout
+      - run: go get -u golang.org/x/lint/golint
+      - run: golint -set_exit_code ./...
+      - run: test -z $(go fmt ./...)
+
   build:
     docker:
       - image: quay.io/reactiveops/ci-images:v8.0-alpine
