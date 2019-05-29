@@ -58,42 +58,55 @@ func onDelete(event config.Event) {
 	}
 }
 
-func applyTemplate(obj interface{}, monitor *config.Monitor, event *config.Event) {
+func applyTemplate(obj interface{}, monitor *config.Monitor, event *config.Event) error {
 	cfg := config.New()
 	var err error
 	var tpl bytes.Buffer
-	name, _ := template.New("name").Parse(monitor.Name)
-	query, _ := template.New("query").Parse(monitor.Query)
-	msg, _ := template.New("message").Parse(monitor.Message)
-	em, _ := template.New("escalation_message").Parse(monitor.EscalationMessage)
+	name, err := template.New("name").Parse(monitor.Name)
+	if err != nil {
+		return err
+	}
+	query, err := template.New("query").Parse(monitor.Query)
+	if err != nil {
+		return err
+	}
+	msg, err := template.New("message").Parse(monitor.Message)
+	if err != nil {
+		return err
+	}
+	em, err := template.New("escalation_message").Parse(monitor.EscalationMessage)
+	if err != nil {
+		return err
+	}
 
 	err = name.Execute(&tpl, obj)
 	if err != nil {
-		log.Errorf("Error templating name: %s", err)
+		return err
 	}
 	monitor.Name = tpl.String()
 	tpl.Reset()
 
 	err = query.Execute(&tpl, obj)
 	if err != nil {
-		log.Errorf("Error templating query: %s", err)
+		return err
 	}
 	monitor.Query = tpl.String()
 	tpl.Reset()
 
 	err = msg.Execute(&tpl, obj)
 	if err != nil {
-		log.Error("Error templating message: %s", err)
+		return err
 	}
 	monitor.Message = tpl.String()
 	tpl.Reset()
 
 	err = em.Execute(&tpl, obj)
 	if err != nil {
-		log.Errorf("Error templating escalation message: %s", err)
+		return err
 	}
 	monitor.EscalationMessage = tpl.String()
 
 	// apply identifying tags
 	monitor.Tags = append(monitor.Tags, cfg.OwnerTag, fmt.Sprintf("dd-manager:object_type:%s", event.ResourceType), fmt.Sprintf("dd-manager:resource:%s", event.Key))
+	return nil
 }

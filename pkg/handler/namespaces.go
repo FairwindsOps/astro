@@ -35,8 +35,12 @@ func OnNamespaceChanged(namespace *corev1.Namespace, event config.Event) {
 		}
 	case "create", "update":
 		for _, monitor := range *cfg.GetMatchingMonitors(namespace.Annotations, event.ResourceType) {
+			err := applyTemplate(namespace, &monitor, &event)
+			if err != nil {
+				log.Errorf("Error applying template for monitor %s: %v", monitor.Name, err)
+				return
+			}
 			log.Infof("Reconcile monitor %s", monitor.Name)
-			applyTemplate(namespace, &monitor, &event)
 			if cfg.DryRun == false {
 				util.AddOrUpdate(&monitor)
 			}

@@ -18,7 +18,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/asaskevich/govalidator"
 	homedir "github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
@@ -31,6 +30,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"sync"
 )
 
@@ -116,7 +116,7 @@ func (config *Config) GetMatchingMonitors(annotations map[string]string, objectT
 func (config *Config) getMatchingRulesets(annotations map[string]string, objectType string) *[]MonitorSet {
 	var validMSets []MonitorSet
 
-	for _, monitorSet := range config.Rulesets.MonitorSets {
+	for monitorSetIdx, monitorSet := range config.Rulesets.MonitorSets {
 		if monitorSet.ObjectType == objectType {
 			var hasAllAnnotations = false
 
@@ -126,7 +126,7 @@ func (config *Config) getMatchingRulesets(annotations map[string]string, objectT
 					hasAllAnnotations = true
 				} else {
 					hasAllAnnotations = false
-					log.Infof("Annotation %s with value %s does not exist, exiting.", annotation.Name, annotation.Value)
+					log.Infof("Annotation %s with value %s does not exist, so monitor %d does not match", annotation.Name, annotation.Value, monitorSetIdx)
 					break
 				}
 			}
@@ -200,7 +200,7 @@ func loadMonitorDefinitions(path string) *ruleset {
 	//yml, err := ioutil.ReadFile(path)
 	yml, err := loadFromPath(path)
 	if err != nil {
-		log.Errorf("Could not load config file %s: %v", path, err)
+		log.Fatalf("Could not load config file %s: %v", path, err)
 		return rSet
 	}
 
@@ -212,17 +212,21 @@ func loadMonitorDefinitions(path string) *ruleset {
 }
 
 func loadFromPath(path string) ([]byte, error) {
-	if fPath, _ := govalidator.IsFilePath(path); fPath {
+	if strings.HasPrefix(path, "http://") || strings.HasPrefix(path, "https://") {
+		// path is a url
+		response, err := http.Get(path)
+		if err != nil {
+			return nil, err
+		}
+		return ioutil.ReadAll(response.Body)
+	}
+
+	if _, err := os.Stat(path); err == nil {
 		// path is local
 		return ioutil.ReadFile(path)
 	}
 
-	if govalidator.IsURL(path) {
-		// path is a url
-		response, _ := http.Get(path)
-		return ioutil.ReadAll(response.Body)
-	}
-	return nil, errors.New("definitions is not a valid path or URL")
+	return nil, errors.New("not a valid path or URL")
 }
 
 func getEnv(key string, defaultVal string) string {
@@ -257,12 +261,21 @@ func getKubeClient() kubernetes.Interface {
 	if err != nil {
 		// not in cluster
 		kubeconfig := getKubeConfigPath()
-		localConfig, _ := clientcmd.BuildConfigFromFlags("", kubeconfig)
-		clientset, _ := kubernetes.NewForConfig(localConfig)
+		localConfig, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
+		if err != nil {
+			panic(err)
+		}
+		clientset, err := kubernetes.NewForConfig(localConfig)
+		if err != nil {
+			panic(err)
+		}
 		return clientset
 	}
 	// in cluster
-	clientset, _ := kubernetes.NewForConfig(config)
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		panic(err)
+	}
 	return clientset
 }
 

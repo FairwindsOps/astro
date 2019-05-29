@@ -167,12 +167,16 @@ func NewController(cfg *config.Config) {
 func createController(kubeClient kubernetes.Interface, informer cache.SharedIndexInformer, resource string) *KubeResourceWatcher {
 	log.Infof("Creating controller for resource type %s", resource)
 	wq := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
-	var err error
-	var evt config.Event
 
 	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
+			var evt config.Event
+			var err error
 			evt.Key, err = cache.MetaNamespaceKeyFunc(obj)
+			if err != nil {
+				log.Errorf("Error handling add event")
+				return
+			}
 			evt.EventType = "create"
 			evt.ResourceType = resource
 			evt.Namespace = objectMeta(obj).Namespace
@@ -180,7 +184,13 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
 			wq.Add(evt)
 		},
 		DeleteFunc: func(obj interface{}) {
+			var evt config.Event
+			var err error
 			evt.Key, err = cache.MetaNamespaceKeyFunc(obj)
+			if err != nil {
+				log.Errorf("Error handling delete event")
+				return
+			}
 			evt.EventType = "delete"
 			evt.ResourceType = resource
 			evt.Namespace = objectMeta(obj).Namespace
@@ -188,7 +198,13 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
 			wq.Add(evt)
 		},
 		UpdateFunc: func(old interface{}, new interface{}) {
+			var evt config.Event
+			var err error
 			evt.Key, err = cache.MetaNamespaceKeyFunc(new)
+			if err != nil {
+				log.Errorf("Error handling update event")
+				return
+			}
 			evt.EventType = "update"
 			evt.ResourceType = resource
 			evt.Namespace = objectMeta(new).Namespace

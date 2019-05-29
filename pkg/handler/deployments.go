@@ -37,10 +37,16 @@ func OnDeploymentChanged(deployment *appsv1.Deployment, event config.Event) {
 		var monitors []config.Monitor
 		monitors = append(*cfg.GetMatchingMonitors(deployment.Annotations, event.ResourceType), *cfg.GetBoundMonitors(event.Namespace, event.ResourceType)...)
 		for _, monitor := range monitors {
+			err := applyTemplate(deployment, &monitor, &event)
+			if err != nil {
+				log.Errorf("Error applying template for monitor %s: %v", monitor.Name, err)
+				return
+			}
 			log.Infof("Reconcile monitor %s", monitor.Name)
-			applyTemplate(deployment, &monitor, &event)
 			if cfg.DryRun == false {
 				util.AddOrUpdate(&monitor)
+			} else {
+				log.Info("Running as DryRun, skipping DataDog update")
 			}
 		}
 	default:
