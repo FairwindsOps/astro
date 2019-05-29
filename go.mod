@@ -4,7 +4,6 @@ go 1.12
 
 require (
 	bou.ke/monkey v1.0.1
-	github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a
 	github.com/cenkalti/backoff v2.1.1+incompatible // indirect
 	github.com/evanphx/json-patch v4.2.0+incompatible // indirect
 	github.com/gogo/protobuf v1.2.1 // indirect
