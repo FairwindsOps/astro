@@ -14,14 +14,14 @@ import (
 var kubeClient kubernetes.Interface
 var once sync.Once
 
-func New() kubernetes.Interface {
+// GetInstance returns a Kubernetes interface based on the current configuration
+func GetInstance() kubernetes.Interface {
 	once.Do(func() {
 		kubeClient = getKubeClient()
 	})
 	return kubeClient
 }
 
-// getKubeClient returns a Kubernetes interface based on the current configuration
 func getKubeClient() kubernetes.Interface {
 	config, err := rest.InClusterConfig()
 	if err != nil {

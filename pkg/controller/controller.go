@@ -117,7 +117,7 @@ func (watcher *KubeResourceWatcher) next() bool {
 // NewController starts a controller for watching Kubernetes objects.
 func NewController() {
 	log.Info("Starting controller.")
-	kubeClient := kube.New()
+	kubeClient := kube.GetInstance()
 	log.Infof("Creating watcher for Deployments.")
 	DeploymentInformer := cache.NewSharedIndexInformer(
 		&cache.ListWatch{

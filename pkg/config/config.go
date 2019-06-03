@@ -138,7 +138,7 @@ func (config *Config) getMatchingRulesets(annotations map[string]string, objectT
 // GetBoundMonitors returns a collection of monitors that are indirectly bound to objectTypes in the namespace specified.
 func (config *Config) GetBoundMonitors(namespace string, objectType string) *[]Monitor {
 	var linkedMonitors []Monitor
-	client := kube.New()
+	client := kube.GetInstance()
 
 	// get info about the namespace the object resides in
 	ns, err := client.CoreV1().Namespaces().Get(namespace, metav1.GetOptions{})
@@ -197,20 +197,20 @@ func contains(slice []string, key string) bool {
 	return false
 }
 
-func (instance *Config) reloadRulesets() {
-	log.Infof("Loading rulesets from %s", instance.MonitorDefinitionsPath)
+func (config *Config) reloadRulesets() {
+	log.Infof("Loading rulesets from %s", config.MonitorDefinitionsPath)
 	rSet := &ruleset{}
-	yml, err := loadFromPath(instance.MonitorDefinitionsPath)
+	yml, err := loadFromPath(config.MonitorDefinitionsPath)
 	if err != nil {
-		log.Fatalf("Could not load config file %s: %v", instance.MonitorDefinitionsPath, err)
+		log.Fatalf("Could not load config file %s: %v", config.MonitorDefinitionsPath, err)
 		return
 	}
 
 	err = yaml.Unmarshal(yml, rSet)
 	if err != nil {
-		log.Fatalf("Error unmarshalling config file %s: %v", instance.MonitorDefinitionsPath, err)
+		log.Fatalf("Error unmarshalling config file %s: %v", config.MonitorDefinitionsPath, err)
 	}
-	instance.Rulesets = rSet
+	config.Rulesets = rSet
 }
 
 func loadFromPath(path string) ([]byte, error) {
