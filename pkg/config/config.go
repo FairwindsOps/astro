@@ -28,6 +28,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 type ruleset struct {
@@ -171,12 +172,18 @@ func New() *Config {
 			DryRun:                 envAsBool("DRY_RUN", false),
 		}
 
-		instance.Rulesets = loadMonitorDefinitions(instance.MonitorDefinitionsPath)
+		instance.reloadRulesets()
 
 		if instance.DatadogAPIKey == "" || instance.DatadogAppKey == "" {
 			log.Warnf("Datadog keys are not set, setting mode to dry run.")
 			instance.DryRun = true
 		}
+		ticker := time.NewTicker(time.Minute)
+		go func() {
+			for range ticker.C {
+				instance.reloadRulesets()
+			}
+		}()
 	})
 	return instance
 }
@@ -190,20 +197,20 @@ func contains(slice []string, key string) bool {
 	return false
 }
 
-func loadMonitorDefinitions(path string) *ruleset {
+func (instance *Config) reloadRulesets() {
+	log.Infof("Loading rulesets from %s", instance.MonitorDefinitionsPath)
 	rSet := &ruleset{}
-	//yml, err := ioutil.ReadFile(path)
-	yml, err := loadFromPath(path)
+	yml, err := loadFromPath(instance.MonitorDefinitionsPath)
 	if err != nil {
-		log.Fatalf("Could not load config file %s: %v", path, err)
-		return rSet
+		log.Fatalf("Could not load config file %s: %v", instance.MonitorDefinitionsPath, err)
+		return
 	}
 
 	err = yaml.Unmarshal(yml, rSet)
 	if err != nil {
-		log.Fatalf("Error unmarshalling config file %s: %v", path, err)
+		log.Fatalf("Error unmarshalling config file %s: %v", instance.MonitorDefinitionsPath, err)
 	}
-	return rSet
+	instance.Rulesets = rSet
 }
 
 func loadFromPath(path string) ([]byte, error) {
