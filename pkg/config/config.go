@@ -18,17 +18,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	homedir "github.com/mitchellh/go-homedir"
+	"github.com/reactiveops/dd-manager/pkg/kube"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -93,14 +89,13 @@ type Event struct {
 
 // Config represents the application configuration.
 type Config struct {
-	DatadogAPIKey          string               // datadog api key for the datadog account.
-	DatadogAppKey          string               // datadog app key for the datadog account.
-	ClusterName            string               // A unique name for the cluster.
-	OwnerTag               string               // A unique tag to identify the owner of monitors.
-	MonitorDefinitionsPath string               // A url or local path for the configuration file.
-	Rulesets               *ruleset             // The collection of rulesets to manage.
-	KubeClient             kubernetes.Interface // A kubernetes client to interact with the cluster.
-	DryRun                 bool                 // when set to true monitors will not be managed in datadog.
+	DatadogAPIKey          string   // datadog api key for the datadog account.
+	DatadogAppKey          string   // datadog app key for the datadog account.
+	ClusterName            string   // A unique name for the cluster.
+	OwnerTag               string   // A unique tag to identify the owner of monitors.
+	MonitorDefinitionsPath string   // A url or local path for the configuration file.
+	Rulesets               *ruleset // The collection of rulesets to manage.
+	DryRun                 bool     // when set to true monitors will not be managed in datadog.
 }
 
 // GetMatchingMonitors returns a collection of monitors that apply to the specified objectType and annotations.
@@ -142,9 +137,10 @@ func (config *Config) getMatchingRulesets(annotations map[string]string, objectT
 // GetBoundMonitors returns a collection of monitors that are indirectly bound to objectTypes in the namespace specified.
 func (config *Config) GetBoundMonitors(namespace string, objectType string) *[]Monitor {
 	var linkedMonitors []Monitor
+	client := kube.New()
 
 	// get info about the namespace the object resides in
-	ns, err := config.KubeClient.CoreV1().Namespaces().Get(namespace, metav1.GetOptions{})
+	ns, err := client.CoreV1().Namespaces().Get(namespace, metav1.GetOptions{})
 
 	if err != nil {
 		log.Errorf("Error getting namespace %s: %+v", namespace, err)
@@ -172,7 +168,6 @@ func New() *Config {
 			ClusterName:            getEnv("CLUSTER_NAME", ""),
 			OwnerTag:               getEnv("OWNER", "dd-manager"),
 			MonitorDefinitionsPath: getEnv("DEFINITIONS_PATH", "conf.yml"),
-			KubeClient:             getKubeClient(),
 			DryRun:                 envAsBool("DRY_RUN", false),
 		}
 
@@ -254,48 +249,4 @@ func envAsInt(key string, defaultVal int) int {
 	}
 	log.Info(fmt.Sprintf("Using default value %d for %s", defaultVal, key))
 	return defaultVal
-}
-
-func getKubeClient() kubernetes.Interface {
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		// not in cluster
-		kubeconfig := getKubeConfigPath()
-		localConfig, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
-		if err != nil {
-			panic(err)
-		}
-		clientset, err := kubernetes.NewForConfig(localConfig)
-		if err != nil {
-			panic(err)
-		}
-		return clientset
-	}
-	// in cluster
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err)
-	}
-	return clientset
-}
-
-// getKubeConfigPath returns a valid kubeconfig path.
-func getKubeConfigPath() string {
-	var path string
-
-	if os.Getenv("KUBECONFIG") != "" {
-		path = os.Getenv("KUBECONFIG")
-	} else if home, err := homedir.Dir(); err == nil {
-		path = filepath.Join(home, ".kube", "config")
-	} else {
-		log.Fatal("kubeconfig not found.  Please ensure ~/.kube/config exists or KUBECONFIG is set.")
-		os.Exit(1)
-	}
-
-	// kubeconfig doesn't exist
-	if _, err := os.Stat(path); err != nil {
-		log.Fatalf("%s doesn't exist - do you have a kubeconfig configured?\n", path)
-		os.Exit(1)
-	}
-	return path
 }

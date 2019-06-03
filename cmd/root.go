@@ -15,7 +15,6 @@
 package cmd
 
 import (
-	"github.com/reactiveops/dd-manager/pkg/config"
 	"github.com/reactiveops/dd-manager/pkg/controller"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -33,15 +32,8 @@ func RootCmd() *cobra.Command {
 	return root
 }
 
-func loadConfig(cmd *cobra.Command) *config.Config {
+func run(cmd *cobra.Command, args []string) {
 	log.SetReportCaller(true)
 	log.SetOutput(os.Stdout)
-
-	config := config.New()
-	return config
-}
-
-func run(cmd *cobra.Command, args []string) {
-	conf := loadConfig(cmd)
-	controller.NewController(conf)
+	controller.NewController()
 }
