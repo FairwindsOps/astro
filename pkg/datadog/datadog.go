@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package util
+package datadog
 
 import (
 	"errors"
@@ -22,20 +22,43 @@ import (
 	"reflect"
 )
 
+type DatadogAPI interface {
+	GetMonitorsByTags(tags []string) ([]datadog.Monitor, error)
+	CreateMonitor(*datadog.Monitor) (*datadog.Monitor, error)
+	UpdateMonitor(*datadog.Monitor) error
+	DeleteMonitor(id int) error
+}
+
+type DDMonitorManager struct {
+	Datadog DatadogAPI
+}
+
+var ddMonitorManagerInstance *DDMonitorManager
+
+func GetInstance() *DDMonitorManager {
+	if ddMonitorManagerInstance == nil {
+		config := config.GetInstance()
+		ddMonitorManagerInstance = &DDMonitorManager{
+			Datadog: datadog.NewClient(config.DatadogAPIKey, config.DatadogAppKey),
+		}
+	}
+	return ddMonitorManagerInstance
+}
+
 // AddOrUpdate will create a monitor if it doesn't exist or update one if it does.
 // It returns the Id of the monitor created or updated.
-func AddOrUpdate(monitor *config.Monitor) (*int, error) {
+func (ddman *DDMonitorManager) AddOrUpdate(monitor *config.Monitor) (*datadog.Monitor, error) {
 	log.Infof("Update templated monitor:\n\n%+v", monitor)
 	// check if monitor exists
-	ddMonitor, err := GetProvisionedMonitor(monitor)
+	ddMonitor, err := ddman.GetProvisionedMonitor(monitor)
 	if err != nil {
 		//monitor doesn't exist
-		provisioned, err := createMonitor(toDdMonitor(monitor))
+		provisioned, err := ddman.Datadog.CreateMonitor(toDdMonitor(monitor))
 		if err != nil {
 			log.Errorf("Error creating monitor %s: %s", monitor.Name, err)
 			return nil, err
 		}
-		return provisioned.Id, nil
+		return provisioned, nil
 	}
 
 	//monitor exists
@@ -49,18 +72,18 @@ func AddOrUpdate(monitor *config.Monitor) (*int, error) {
 		updated := toDdMonitor(monitor)
 		updated.Id = ddMonitor.Id
 
-		err := updateMonitor(updated)
+		err := ddman.Datadog.UpdateMonitor(updated)
 		if err != nil {
 			log.Errorf("Could not update monitor %d: %s", ddMonitor.Id, err)
-			return ddMonitor.Id, err
+			return ddMonitor, err
 		}
 	}
-	return ddMonitor.Id, nil
+	return ddMonitor, nil
 }
 
 // GetProvisionedMonitor returns a monitor with the same name from Datadog.
-func GetProvisionedMonitor(monitor *config.Monitor) (*datadog.Monitor, error) {
-	monitors, err := GetProvisionedMonitors()
+func (ddman *DDMonitorManager) GetProvisionedMonitor(monitor *config.Monitor) (*datadog.Monitor, error) {
+	monitors, err := ddman.GetProvisionedMonitors()
 	if err != nil {
 		log.Errorf("Error getting monitors: %v", err)
 		return nil, err
@@ -75,25 +98,22 @@ func GetProvisionedMonitor(monitor *config.Monitor) (*datadog.Monitor, error) {
 }
 
 // GetProvisionedMonitors returns a collection of monitors managed by dd-manager.
-func GetProvisionedMonitors() ([]datadog.Monitor, error) {
-	client := getDDClient()
-	return client.GetMonitorsByTags([]string{config.New().OwnerTag})
+func (ddman *DDMonitorManager) GetProvisionedMonitors() ([]datadog.Monitor, error) {
+	return ddman.Datadog.GetMonitorsByTags([]string{config.GetInstance().OwnerTag})
 }
 
 // DeleteMonitor deletes a monitor
-func DeleteMonitor(monitor *config.Monitor) error {
-	client := getDDClient()
-	ddMonitor, err := GetProvisionedMonitor(monitor)
+func (ddman *DDMonitorManager) DeleteMonitor(monitor *config.Monitor) error {
+	ddMonitor, err := ddman.GetProvisionedMonitor(monitor)
 	if err != nil {
-		return client.DeleteMonitor(*ddMonitor.Id)
+		return ddman.Datadog.DeleteMonitor(*ddMonitor.Id)
 	}
 	return nil
 }
 
 // DeleteMonitors deletes monitors containing the specified tags.
-func DeleteMonitors(tags []string) error {
-	client := getDDClient()
-	monitors, err := client.GetMonitorsByTags(tags)
+func (ddman *DDMonitorManager) DeleteMonitors(tags []string) error {
+	monitors, err := ddman.Datadog.GetMonitorsByTags(tags)
 
 	log.Infof("Deleting %d monitors.", len(monitors))
 	if err != nil {
@@ -103,24 +123,9 @@ func DeleteMonitors(tags []string) error {
 
 	for _, ddMonitor := range monitors {
 		log.Infof("Deleting monitor with id %d", *ddMonitor.Id)
-		client.DeleteMonitor(*ddMonitor.Id)
+		ddman.Datadog.DeleteMonitor(*ddMonitor.Id)
 	}
 	return nil
-}
-
-func createMonitor(monitor *datadog.Monitor) (*datadog.Monitor, error) {
-	client := getDDClient()
-	return client.CreateMonitor(monitor)
-}
-
-func updateMonitor(monitor *datadog.Monitor) error {
-	client := getDDClient()
-	return client.UpdateMonitor(monitor)
-}
-
-func getDDClient() *datadog.Client {
-	config := config.New()
-	return datadog.NewClient(config.DatadogAPIKey, config.DatadogAppKey)
 }
 
 func toDdMonitor(in *config.Monitor) *datadog.Monitor {

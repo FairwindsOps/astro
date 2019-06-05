@@ -122,10 +122,10 @@ func NewController() {
 	DeploymentInformer := cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-				return kubeClient.AppsV1().Deployments("").List(metav1.ListOptions{})
+				return kubeClient.Client.AppsV1().Deployments("").List(metav1.ListOptions{})
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-				return kubeClient.AppsV1().Deployments("").Watch(metav1.ListOptions{})
+				return kubeClient.Client.AppsV1().Deployments("").Watch(metav1.ListOptions{})
 			},
 		},
 		&v1.Deployment{},
@@ -133,7 +133,7 @@ func NewController() {
 		cache.Indexers{},
 	)
 
-	DeployWatcher := createController(kubeClient, DeploymentInformer, "deployment")
+	DeployWatcher := createController(kubeClient.Client, DeploymentInformer, "deployment")
 	dTerm := make(chan struct{})
 	defer close(dTerm)
 	go DeployWatcher.Watch(dTerm)
@@ -142,10 +142,10 @@ func NewController() {
 	NSInformer := cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-				return kubeClient.CoreV1().Namespaces().List(metav1.ListOptions{})
+				return kubeClient.Client.CoreV1().Namespaces().List(metav1.ListOptions{})
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-				return kubeClient.CoreV1().Namespaces().Watch(metav1.ListOptions{})
+				return kubeClient.Client.CoreV1().Namespaces().Watch(metav1.ListOptions{})
 			},
 		},
 		&corev1.Namespace{},
@@ -153,7 +153,7 @@ func NewController() {
 		cache.Indexers{},
 	)
 
-	NSWatcher := createController(kubeClient, NSInformer, "namespace")
+	NSWatcher := createController(kubeClient.Client, NSInformer, "namespace")
 	nsTerm := make(chan struct{})
 	defer close(nsTerm)
 	go NSWatcher.Watch(nsTerm)

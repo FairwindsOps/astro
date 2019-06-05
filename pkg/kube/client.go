@@ -11,15 +11,28 @@ import (
 	"sync"
 )
 
-var kubeClient kubernetes.Interface
+type KubeClient struct {
+	Client kubernetes.Interface
+}
+
+var kubeClient *KubeClient
 var once sync.Once
 
 // GetInstance returns a Kubernetes interface based on the current configuration
-func GetInstance() kubernetes.Interface {
+func GetInstance() *KubeClient {
 	once.Do(func() {
-		kubeClient = getKubeClient()
+		if kubeClient == nil {
+			kubeClient = &KubeClient{
+				Client: getKubeClient(),
+			}
+		}
 	})
 	return kubeClient
+}
+
+// SetInstance sets the Kuberentes interface to use - this is for testing only
+func SetInstance(kc KubeClient) {
+	kubeClient = &kc
 }
 
 func getKubeClient() kubernetes.Interface {
