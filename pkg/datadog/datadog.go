@@ -22,19 +22,22 @@ import (
 	"reflect"
 )
 
-type DatadogAPI interface {
+// ClientAPI defines the interface for the Datadog client, for testing purposes
+type ClientAPI interface {
 	GetMonitorsByTags(tags []string) ([]datadog.Monitor, error)
 	CreateMonitor(*datadog.Monitor) (*datadog.Monitor, error)
 	UpdateMonitor(*datadog.Monitor) error
 	DeleteMonitor(id int) error
 }
 
+// DDMonitorManager is a higher-level wrapper around the Datadog API
 type DDMonitorManager struct {
-	Datadog DatadogAPI
+	Datadog ClientAPI
 }
 
 var ddMonitorManagerInstance *DDMonitorManager
 
+// GetInstance returns a singleton DDMonitorManager, creating it if necessary
 func GetInstance() *DDMonitorManager {
 	if ddMonitorManagerInstance == nil {
 		config := config.GetInstance()

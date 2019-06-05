@@ -10,31 +10,31 @@ import (
 	reflect "reflect"
 )
 
-// MockDatadogAPI is a mock of DatadogAPI interface
-type MockDatadogAPI struct {
+// MockClientAPI is a mock of ClientAPI interface
+type MockClientAPI struct {
 	ctrl     *gomock.Controller
-	recorder *MockDatadogAPIMockRecorder
+	recorder *MockClientAPIMockRecorder
 }
 
-// MockDatadogAPIMockRecorder is the mock recorder for MockDatadogAPI
-type MockDatadogAPIMockRecorder struct {
-	mock *MockDatadogAPI
+// MockClientAPIMockRecorder is the mock recorder for MockClientAPI
+type MockClientAPIMockRecorder struct {
+	mock *MockClientAPI
 }
 
-// NewMockDatadogAPI creates a new mock instance
-func NewMockDatadogAPI(ctrl *gomock.Controller) *MockDatadogAPI {
-	mock := &MockDatadogAPI{ctrl: ctrl}
-	mock.recorder = &MockDatadogAPIMockRecorder{mock}
+// NewMockClientAPI creates a new mock instance
+func NewMockClientAPI(ctrl *gomock.Controller) *MockClientAPI {
+	mock := &MockClientAPI{ctrl: ctrl}
+	mock.recorder = &MockClientAPIMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockDatadogAPI) EXPECT() *MockDatadogAPIMockRecorder {
+func (m *MockClientAPI) EXPECT() *MockClientAPIMockRecorder {
 	return m.recorder
 }
 
 // GetMonitorsByTags mocks base method
-func (m *MockDatadogAPI) GetMonitorsByTags(tags []string) ([]go_datadog_api.Monitor, error) {
+func (m *MockClientAPI) GetMonitorsByTags(tags []string) ([]go_datadog_api.Monitor, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetMonitorsByTags", tags)
 	ret0, _ := ret[0].([]go_datadog_api.Monitor)
@@ -43,13 +43,13 @@ func (m *MockDatadogAPI) GetMonitorsByTags(tags []string) ([]go_datadog_api.Moni
 }
 
 // GetMonitorsByTags indicates an expected call of GetMonitorsByTags
-func (mr *MockDatadogAPIMockRecorder) GetMonitorsByTags(tags interface{}) *gomock.Call {
+func (mr *MockClientAPIMockRecorder) GetMonitorsByTags(tags interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMonitorsByTags", reflect.TypeOf((*MockDatadogAPI)(nil).GetMonitorsByTags), tags)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMonitorsByTags", reflect.TypeOf((*MockClientAPI)(nil).GetMonitorsByTags), tags)
 }
 
 // CreateMonitor mocks base method
-func (m *MockDatadogAPI) CreateMonitor(arg0 *go_datadog_api.Monitor) (*go_datadog_api.Monitor, error) {
+func (m *MockClientAPI) CreateMonitor(arg0 *go_datadog_api.Monitor) (*go_datadog_api.Monitor, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateMonitor", arg0)
 	ret0, _ := ret[0].(*go_datadog_api.Monitor)
@@ -58,13 +58,13 @@ func (m *MockDatadogAPI) CreateMonitor(arg0 *go_datadog_api.Monitor) (*go_datado
 }
 
 // CreateMonitor indicates an expected call of CreateMonitor
-func (mr *MockDatadogAPIMockRecorder) CreateMonitor(arg0 interface{}) *gomock.Call {
+func (mr *MockClientAPIMockRecorder) CreateMonitor(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMonitor", reflect.TypeOf((*MockDatadogAPI)(nil).CreateMonitor), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMonitor", reflect.TypeOf((*MockClientAPI)(nil).CreateMonitor), arg0)
 }
 
 // UpdateMonitor mocks base method
-func (m *MockDatadogAPI) UpdateMonitor(arg0 *go_datadog_api.Monitor) error {
+func (m *MockClientAPI) UpdateMonitor(arg0 *go_datadog_api.Monitor) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateMonitor", arg0)
 	ret0, _ := ret[0].(error)
@@ -72,13 +72,13 @@ func (m *MockDatadogAPI) UpdateMonitor(arg0 *go_datadog_api.Monitor) error {
 }
 
 // UpdateMonitor indicates an expected call of UpdateMonitor
-func (mr *MockDatadogAPIMockRecorder) UpdateMonitor(arg0 interface{}) *gomock.Call {
+func (mr *MockClientAPIMockRecorder) UpdateMonitor(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMonitor", reflect.TypeOf((*MockDatadogAPI)(nil).UpdateMonitor), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMonitor", reflect.TypeOf((*MockClientAPI)(nil).UpdateMonitor), arg0)
 }
 
 // DeleteMonitor mocks base method
-func (m *MockDatadogAPI) DeleteMonitor(id int) error {
+func (m *MockClientAPI) DeleteMonitor(id int) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteMonitor", id)
 	ret0, _ := ret[0].(error)
@@ -86,7 +86,7 @@ func (m *MockDatadogAPI) DeleteMonitor(id int) error {
 }
 
 // DeleteMonitor indicates an expected call of DeleteMonitor
-func (mr *MockDatadogAPIMockRecorder) DeleteMonitor(id interface{}) *gomock.Call {
+func (mr *MockClientAPIMockRecorder) DeleteMonitor(id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMonitor", reflect.TypeOf((*MockDatadogAPI)(nil).DeleteMonitor), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMonitor", reflect.TypeOf((*MockClientAPI)(nil).DeleteMonitor), id)
 }

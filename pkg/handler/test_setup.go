@@ -11,18 +11,18 @@ import (
 	"os"
 )
 
-func setupTests(ctrl *gomock.Controller) (*kube.KubeClient, *mocks.MockDatadogAPI) {
+func setupTests(ctrl *gomock.Controller) (*kube.ClientInstance, *mocks.MockClientAPI) {
 	os.Setenv("DEFINITIONS_PATH", "../../conf.yml")
 	os.Setenv("DD_API_KEY", "test")
 	os.Setenv("DD_APP_KEY", "test")
 
-	kubeClient := kube.KubeClient{
+	kubeClient := kube.ClientInstance{
 		Client: fake.NewSimpleClientset(),
 	}
 	kube.SetInstance(kubeClient)
 
 	ddMon := datadog.GetInstance()
-	ddMock := mocks.NewMockDatadogAPI(ctrl)
+	ddMock := mocks.NewMockClientAPI(ctrl)
 	ddMon.Datadog = ddMock
 
 	ns := &corev1.Namespace{
