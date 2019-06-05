@@ -3,29 +3,29 @@ package handler
 import (
 	"github.com/golang/mock/gomock"
 	"github.com/reactiveops/dd-manager/pkg/config"
-	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"testing"
 )
 
-func TestDeploymentChange(t *testing.T) {
+func TestNamespaceChange(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	kubeClient, ddMock := setupTests(ctrl)
 	defer ctrl.Finish()
 
 	annotations := make(map[string]string, 1)
 	annotations["dd-manager/owner"] = "dd-manager"
-	dep := &appsv1.Deployment{
+	ns := &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        "foo",
+			Name:        "owned-namespace",
 			Annotations: annotations,
 		},
 	}
-	kubeClient.Client.AppsV1().Deployments("foo").Create(dep)
+	kubeClient.Client.CoreV1().Namespaces().Create(ns)
 	event := config.Event{
 		EventType:    "create",
-		Namespace:    "foo",
-		ResourceType: "deployment",
+		Namespace:    "owned-namespace",
+		ResourceType: "namespace",
 	}
 
 	tags := []string{"dd-manager"}
@@ -37,30 +37,30 @@ func TestDeploymentChange(t *testing.T) {
 		CreateMonitor(gomock.Any()).
 		After(getTagsCall)
 
-	OnDeploymentChanged(dep, event)
+	OnNamespaceChanged(ns, event)
 }
 
-func TestDeploymentChangeNoMatch(t *testing.T) {
+func TestNamespaceChangeNoMatch(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	kubeClient, _ := setupTests(ctrl)
 	defer ctrl.Finish()
 
 	annotations := make(map[string]string, 1)
 	annotations["dd-manager/owner"] = "not-dd-manager"
-	dep := &appsv1.Deployment{
+	ns := &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        "foo",
+			Name:        "unowned-namespace",
 			Annotations: annotations,
 		},
 	}
-	kubeClient.Client.AppsV1().Deployments("foo").Create(dep)
+	kubeClient.Client.CoreV1().Namespaces().Create(ns)
 	event := config.Event{
 		EventType:    "create",
-		Namespace:    "foo",
-		ResourceType: "deployment",
+		Namespace:    "owned-namespace",
+		ResourceType: "namespace",
 	}
 
 	// Don't expect any calls to Datadog
 
-	OnDeploymentChanged(dep, event)
+	OnNamespaceChanged(ns, event)
 }
