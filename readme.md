@@ -81,3 +81,19 @@ rulesets:
       - `warning_recovery`
     * `require_full_window`: boolean indicating if a monitor needs a full window of data to be evaluated.
     * `locked`: boolean indicating if changes are only allowed from the creator or admins.
+
+# Development
+
+## Testing
+```
+go test ./pkg/...
+```
+
+### Datadog Mocking
+We mock the interface for the Datadog API client library in `./pkg/datadog/datadog.go`.
+If you're adding a new function to the interface there, you'll need to regenerate the
+mocks using
+```
+go install github.com/golang/mock/mockgen
+mockgen -source=pkg/datadog/datadog.go -destination=pkg/mocks/datadog_mock.go
+```

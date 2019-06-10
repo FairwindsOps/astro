@@ -17,7 +17,7 @@ package handler
 import (
 	"fmt"
 	"github.com/reactiveops/dd-manager/pkg/config"
-	"github.com/reactiveops/dd-manager/pkg/util"
+	"github.com/reactiveops/dd-manager/pkg/datadog"
 	log "github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
 	"strings"
@@ -25,13 +25,14 @@ import (
 
 // OnDeploymentChanged is a handler that should be called when a deployment chanages.
 func OnDeploymentChanged(deployment *appsv1.Deployment, event config.Event) {
-	cfg := config.New()
+	cfg := config.GetInstance()
+	dd := datadog.GetInstance()
 
 	switch strings.ToLower(event.EventType) {
 	case "delete":
 		if cfg.DryRun == false {
 			log.Info("Deleting resource monitors.")
-			util.DeleteMonitors([]string{cfg.OwnerTag, fmt.Sprintf("dd-manager:object_type:%s", event.ResourceType), fmt.Sprintf("dd-manager:resource:%s", event.Key)})
+			dd.DeleteMonitors([]string{cfg.OwnerTag, fmt.Sprintf("dd-manager:object_type:%s", event.ResourceType), fmt.Sprintf("dd-manager:resource:%s", event.Key)})
 		}
 	case "create", "update":
 		var monitors []config.Monitor
@@ -44,7 +45,10 @@ func OnDeploymentChanged(deployment *appsv1.Deployment, event config.Event) {
 			}
 			log.Infof("Reconcile monitor %s", monitor.Name)
 			if cfg.DryRun == false {
-				util.AddOrUpdate(&monitor)
+				_, err := dd.AddOrUpdate(&monitor)
+				if err != nil {
+					log.Errorf("Error adding/updating monitor")
+				}
 			} else {
 				log.Info("Running as DryRun, skipping DataDog update")
 			}

@@ -138,10 +138,10 @@ func (config *Config) getMatchingRulesets(annotations map[string]string, objectT
 // GetBoundMonitors returns a collection of monitors that are indirectly bound to objectTypes in the namespace specified.
 func (config *Config) GetBoundMonitors(namespace string, objectType string) *[]Monitor {
 	var linkedMonitors []Monitor
-	client := kube.GetInstance()
+	kubeClient := kube.GetInstance()
 
 	// get info about the namespace the object resides in
-	ns, err := client.CoreV1().Namespaces().Get(namespace, metav1.GetOptions{})
+	ns, err := kubeClient.Client.CoreV1().Namespaces().Get(namespace, metav1.GetOptions{})
 
 	if err != nil {
 		log.Errorf("Error getting namespace %s: %+v", namespace, err)
@@ -160,8 +160,8 @@ func (config *Config) GetBoundMonitors(namespace string, objectType string) *[]M
 var instance *Config
 var once sync.Once
 
-// New is a singleton that returns the Configuration for the application.
-func New() *Config {
+// GetInstance is a singleton that returns the Configuration for the application.
+func GetInstance() *Config {
 	once.Do(func() {
 		instance = &Config{
 			DatadogAPIKey:          getEnv("DD_API_KEY", ""),

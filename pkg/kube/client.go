@@ -11,15 +11,29 @@ import (
 	"sync"
 )
 
-var kubeClient kubernetes.Interface
+// ClientInstance is a wrapper around the kubernetes interface for testing purposes
+type ClientInstance struct {
+	Client kubernetes.Interface
+}
+
+var kubeClient *ClientInstance
 var once sync.Once
 
 // GetInstance returns a Kubernetes interface based on the current configuration
-func GetInstance() kubernetes.Interface {
+func GetInstance() *ClientInstance {
 	once.Do(func() {
-		kubeClient = getKubeClient()
+		if kubeClient == nil {
+			kubeClient = &ClientInstance{
+				Client: getKubeClient(),
+			}
+		}
 	})
 	return kubeClient
+}
+
+// SetInstance sets the Kuberentes interface to use - this is for testing only
+func SetInstance(kc ClientInstance) {
+	kubeClient = &kc
 }
 
 func getKubeClient() kubernetes.Interface {

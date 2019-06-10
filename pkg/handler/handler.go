@@ -59,7 +59,7 @@ func onDelete(event config.Event) {
 }
 
 func applyTemplate(obj interface{}, monitor *config.Monitor, event *config.Event) error {
-	cfg := config.New()
+	cfg := config.GetInstance()
 	var err error
 	var tpl bytes.Buffer
 	name, err := template.New("name").Parse(monitor.Name)
