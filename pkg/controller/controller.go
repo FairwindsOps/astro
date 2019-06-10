@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"github.com/reactiveops/dd-manager/pkg/config"
 	handler "github.com/reactiveops/dd-manager/pkg/handler"
+	"github.com/reactiveops/dd-manager/pkg/kube"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -114,17 +115,17 @@ func (watcher *KubeResourceWatcher) next() bool {
 }
 
 // NewController starts a controller for watching Kubernetes objects.
-func NewController(cfg *config.Config) {
+func NewController() {
 	log.Info("Starting controller.")
-
+	kubeClient := kube.GetInstance()
 	log.Infof("Creating watcher for Deployments.")
 	DeploymentInformer := cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-				return cfg.KubeClient.AppsV1().Deployments("").List(metav1.ListOptions{})
+				return kubeClient.AppsV1().Deployments("").List(metav1.ListOptions{})
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-				return cfg.KubeClient.AppsV1().Deployments("").Watch(metav1.ListOptions{})
+				return kubeClient.AppsV1().Deployments("").Watch(metav1.ListOptions{})
 			},
 		},
 		&v1.Deployment{},
@@ -132,7 +133,7 @@ func NewController(cfg *config.Config) {
 		cache.Indexers{},
 	)
 
-	DeployWatcher := createController(cfg.KubeClient, DeploymentInformer, "deployment")
+	DeployWatcher := createController(kubeClient, DeploymentInformer, "deployment")
 	dTerm := make(chan struct{})
 	defer close(dTerm)
 	go DeployWatcher.Watch(dTerm)
@@ -141,10 +142,10 @@ func NewController(cfg *config.Config) {
 	NSInformer := cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-				return cfg.KubeClient.CoreV1().Namespaces().List(metav1.ListOptions{})
+				return kubeClient.CoreV1().Namespaces().List(metav1.ListOptions{})
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-				return cfg.KubeClient.CoreV1().Namespaces().Watch(metav1.ListOptions{})
+				return kubeClient.CoreV1().Namespaces().Watch(metav1.ListOptions{})
 			},
 		},
 		&corev1.Namespace{},
@@ -152,7 +153,7 @@ func NewController(cfg *config.Config) {
 		cache.Indexers{},
 	)
 
-	NSWatcher := createController(cfg.KubeClient, NSInformer, "namespace")
+	NSWatcher := createController(kubeClient, NSInformer, "namespace")
 	nsTerm := make(chan struct{})
 	defer close(nsTerm)
 	go NSWatcher.Watch(nsTerm)
