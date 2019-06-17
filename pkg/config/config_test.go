@@ -23,7 +23,7 @@ func TestGetDeploymentRulesets(t *testing.T) {
 	mSet := (*mSets)[0]
 	assert.Equal(t, objectType, mSet.ObjectType)
 	assert.Equal(t, 1, len(mSet.Monitors))
-	assert.Equal(t, "Deployment Replica Alert - {{ .ObjectMeta.Name }}", mSet.Monitors[0].Name)
+	assert.Equal(t, "Deployment Replica Alert - {{ .ObjectMeta.Name }}", *mSet.Monitors[0].Name)
 
 	monitors := cfg.GetMatchingMonitors(annotations, objectType)
 	assert.Equal(t, mSet.Monitors, *monitors)
@@ -47,7 +47,7 @@ func TestGetNamespaceRulesets(t *testing.T) {
 	mSet := (*mSets)[0]
 	assert.Equal(t, objectType, mSet.ObjectType)
 	assert.Equal(t, 1, len(mSet.Monitors))
-	assert.Equal(t, "Namespaced Deployment Replica Alert - {{ .ObjectMeta.Name }}", mSet.Monitors[0].Name)
+	assert.Equal(t, "Namespaced Deployment Replica Alert - {{ .ObjectMeta.Name }}", *mSet.Monitors[0].Name)
 
 	monitors := cfg.GetMatchingMonitors(annotations, objectType)
 	assert.Equal(t, mSet.Monitors, *monitors)

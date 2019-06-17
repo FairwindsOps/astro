@@ -20,18 +20,19 @@ rulesets:
         {{ "{{/is_alert}}" }}
       tags:
         - dd-manager
-      no_data_timeframe: 60
-      notify_audit: false
-      notify_no_data: false
-      renotify_interval: 5
-      new_host_delay: 5
-      evaluation_delay: 300
-      timeout: 300
-      escalation_message: ""
-      thresholds:
-        critical: 0
-      require_full_window: true
-      locked: false
+      options:
+        no_data_timeframe: 60
+        notify_audit: false
+        notify_no_data: false
+        renotify_interval: 5
+        new_host_delay: 5
+        evaluation_delay: 300
+        timeout: 300
+        escalation_message: ""
+        threshold_count:
+          critical: 0
+        require_full_window: true
+        locked: false
 - type: namespace
   match_annotations:
     - name: dd-manager/owner
@@ -49,18 +50,19 @@ rulesets:
         {{ "{{/is_alert}}" }}
       tags:
         - dd-manager
-      no_data_timeframe: 60
-      notify_audit: false
-      notify_no_data: false
-      renotify_interval: 5
-      new_host_delay: 5
-      evaluation_delay: 300
-      timeout: 300
-      escalation_message: ""
-      thresholds:
-        critical: 0
-      require_full_window: true
-      locked: false
+      options:
+        no_data_timeframe: 60
+        notify_audit: false
+        notify_no_data: false
+        renotify_interval: 5
+        new_host_delay: 5
+        evaluation_delay: 300
+        timeout: 300
+        escalation_message: ""
+        threshold_count:
+          critical: 0
+        require_full_window: true
+        locked: false
 - type: binding
   bound_objects:
     - deployment
@@ -80,15 +82,16 @@ rulesets:
         {{ "{{/is_alert}}" }}
       tags:
         - dd-manager
-      no_data_timeframe: 60
-      notify_audit: false
-      notify_no_data: false
-      renotify_interval: 5
-      new_host_delay: 5
-      evaluation_delay: 300
-      timeout: 300
-      escalation_message: ""
-      thresholds:
-        critical: 0
-      require_full_window: true
-      locked: false
+      options:
+        no_data_timeframe: 60
+        notify_audit: false
+        notify_no_data: false
+        renotify_interval: 5
+        new_host_delay: 5
+        evaluation_delay: 300
+        timeout: 300
+        escalation_message: ""
+        threshold_count:
+          critical: 0
+        require_full_window: true
+        locked: false

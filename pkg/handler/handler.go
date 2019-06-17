@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"github.com/reactiveops/dd-manager/pkg/config"
 	log "github.com/sirupsen/logrus"
+	"github.com/zorkian/go-datadog-api"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"strings"
@@ -58,55 +59,57 @@ func onDelete(event config.Event) {
 	}
 }
 
-func applyTemplate(obj interface{}, monitor *config.Monitor, event *config.Event) error {
-	cfg := config.GetInstance()
-	var err error
-	var tpl bytes.Buffer
-	name, err := template.New("name").Parse(monitor.Name)
+func applyTemplateToField(obj interface{}, tmplString string) (string, error) {
+	var buf bytes.Buffer
+	tpl, err := template.New("").Parse(tmplString)
 	if err != nil {
-		return err
+		return "", err
 	}
-	query, err := template.New("query").Parse(monitor.Query)
+	err = tpl.Execute(&buf, obj)
 	if err != nil {
-		return err
+		return "", err
 	}
-	msg, err := template.New("message").Parse(monitor.Message)
-	if err != nil {
-		return err
-	}
-	em, err := template.New("escalation_message").Parse(monitor.EscalationMessage)
-	if err != nil {
-		return err
+	return buf.String(), nil
+}
+
+func applyTemplate(obj interface{}, monitor *datadog.Monitor, event *config.Event) error {
+	if monitor.Name != nil {
+		name, err := applyTemplateToField(obj, *monitor.Name)
+		if err != nil {
+			return err
+		}
+		monitor.Name = &name
 	}
 
-	err = name.Execute(&tpl, obj)
-	if err != nil {
-		return err
+	if monitor.Query != nil {
+		query, err := applyTemplateToField(obj, *monitor.Query)
+		if err != nil {
+			return err
+		}
+		monitor.Query = &query
 	}
-	monitor.Name = tpl.String()
-	tpl.Reset()
 
-	err = query.Execute(&tpl, obj)
-	if err != nil {
-		return err
+	if monitor.Message != nil {
+		message, err := applyTemplateToField(obj, *monitor.Message)
+		if err != nil {
+			return err
+		}
+		monitor.Message = &message
 	}
-	monitor.Query = tpl.String()
-	tpl.Reset()
 
-	err = msg.Execute(&tpl, obj)
-	if err != nil {
-		return err
+	if monitor.Options != nil && monitor.Options.EscalationMessage != nil {
+		message, err := applyTemplateToField(obj, *monitor.Options.EscalationMessage)
+		if err != nil {
+			return err
+		}
+		monitor.Options.EscalationMessage = &message
 	}
-	monitor.Message = tpl.String()
-	tpl.Reset()
-
-	err = em.Execute(&tpl, obj)
-	if err != nil {
-		return err
-	}
-	monitor.EscalationMessage = tpl.String()
 
 	// apply identifying tags
-	monitor.Tags = append(monitor.Tags, cfg.OwnerTag, fmt.Sprintf("dd-manager:object_type:%s", event.ResourceType), fmt.Sprintf("dd-manager:resource:%s", event.Key))
+	cfg := config.GetInstance()
+	monitor.Tags = append(monitor.Tags,
+		cfg.OwnerTag,
+		fmt.Sprintf("dd-manager:object_type:%s", event.ResourceType),
+		fmt.Sprintf("dd-manager:resource:%s", event.Key))
 	return nil
 }
