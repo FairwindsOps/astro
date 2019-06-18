@@ -15,11 +15,11 @@
 package config
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/reactiveops/dd-manager/pkg/kube"
 	log "github.com/sirupsen/logrus"
+	"github.com/zorkian/go-datadog-api"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -38,46 +38,16 @@ type ruleset struct {
 
 // A MonitorSet represents a collection of Monitors that applies to an object.
 type MonitorSet struct {
-	ObjectType   string       `yaml:"type"`                    // The type of object.  Example: deployment
-	Annotations  []Annotation `yaml:"match_annotations"`       // Annotations an object must possess to be considered applicable for the monitors.
-	BoundObjects []string     `yaml:"bound_objects,omitempty"` // A collection of ObjectTypes that are bound to the MonitorSet.
-	Monitors     []Monitor    `yaml:"monitors"`                // A collection of Monitors.
+	ObjectType   string            `yaml:"type"`                    // The type of object.  Example: deployment
+	Annotations  []Annotation      `yaml:"match_annotations"`       // Annotations an object must possess to be considered applicable for the monitors.
+	BoundObjects []string          `yaml:"bound_objects,omitempty"` // A collection of ObjectTypes that are bound to the MonitorSet.
+	Monitors     []datadog.Monitor `yaml:"monitors"`                // A collection of Monitors.
 }
 
 // An Annotation represent a kubernetes annotation.
 type Annotation struct {
 	Name  string `yaml:"name"`  // The annotation name.
 	Value string `yaml:"value"` // The value of the annotation.
-}
-
-// Thresholds represent the alerting thresholds for a monitor.
-type Thresholds struct {
-	Ok               *json.Number `yaml:"ok"`                // The threshold to return to OK status.
-	Critical         *json.Number `yaml:"critical"`          // The threshold to trigger a Critical state.
-	Warning          *json.Number `yaml:"warning"`           // The threshold to trigger a Warning state.
-	Unknown          *json.Number `yaml:"unknown"`           // The threshold to trigger an Unknown state.
-	CriticalRecovery *json.Number `yaml:"critical_recovery"` // The threshold to clear a Critical state.
-	WarningRecovery  *json.Number `yaml:"warning_recovery"`  // The threshold to clear a Warning state.
-}
-
-// A Monitor represents a datadog Monitor.
-type Monitor struct {
-	Name              string     `yaml:"name"`                // The name of the monitor.
-	Type              string     `yaml:"type"`                // The type of montior.  Must be a valid datadog monitor type.
-	Query             string     `yaml:"query"`               // The monitor query.
-	Message           string     `yaml:"message"`             // A message included with monitor notifications.
-	Tags              []string   `yaml:"tags"`                // A collection of tags to add to your monitor.
-	NoDataTimeframe   int        `yaml:"no_data_timeframe"`   // Number of minutes before a monitor will notify if data stops reporting.
-	NotifyAudit       bool       `yaml:"notify_audit"`        // boolean that indicates whether tagged users are notified if the monitor changes.
-	NotifyNoData      bool       `yaml:"notify_no_data"`      // boolean that indicates if the monitor notifies if data stops reporting.
-	RenotifyInterval  int        `yaml:"renotify_interval"`   // Number of minutes after the last notification a monitor will re-notify.
-	NewHostDelay      int        `yaml:"new_host_delay"`      // Number of seconds to wait for a new host before evaluating the monitor status.
-	EvaluationDelay   int        `yaml:"evaluation_delay"`    // Number of seconds to delay evaluation.
-	Timeout           int        `yaml:"timeout"`             // Number of minutes before the monitor will automatically resolve if it's not reporting data.
-	EscalationMessage string     `yaml:"escalation_message"`  // Message to include with re-notifications.
-	Thresholds        Thresholds `yaml:"thresholds"`          // Map of thresholds for the alert.
-	RequireFullWindow bool       `yaml:"require_full_window"` // boolean indicating if a monitor needs a full window of data to be evaluated.
-	Locked            bool       `yaml:"locked"`              // boolean indicating if changes are only allowed form the creator or admins.
 }
 
 // An Event represents an update of a Kubernetes object and contains metadata about the update.
@@ -100,8 +70,8 @@ type Config struct {
 }
 
 // GetMatchingMonitors returns a collection of monitors that apply to the specified objectType and annotations.
-func (config *Config) GetMatchingMonitors(annotations map[string]string, objectType string) *[]Monitor {
-	var validMonitors []Monitor
+func (config *Config) GetMatchingMonitors(annotations map[string]string, objectType string) *[]datadog.Monitor {
+	var validMonitors []datadog.Monitor
 
 	for _, mSet := range *config.getMatchingRulesets(annotations, objectType) {
 		validMonitors = append(validMonitors, mSet.Monitors...)
@@ -136,8 +106,8 @@ func (config *Config) getMatchingRulesets(annotations map[string]string, objectT
 }
 
 // GetBoundMonitors returns a collection of monitors that are indirectly bound to objectTypes in the namespace specified.
-func (config *Config) GetBoundMonitors(namespace string, objectType string) *[]Monitor {
-	var linkedMonitors []Monitor
+func (config *Config) GetBoundMonitors(namespace string, objectType string) *[]datadog.Monitor {
+	var linkedMonitors []datadog.Monitor
 	kubeClient := kube.GetInstance()
 
 	// get info about the namespace the object resides in

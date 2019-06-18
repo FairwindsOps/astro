@@ -50,32 +50,32 @@ func GetInstance() *DDMonitorManager {
 
 // AddOrUpdate will create a monitor if it doesn't exist or update one if it does.
 // It returns the Id of the monitor created or updated.
-func (ddman *DDMonitorManager) AddOrUpdate(monitor *config.Monitor) (*datadog.Monitor, error) {
+func (ddman *DDMonitorManager) AddOrUpdate(monitor *datadog.Monitor) (*datadog.Monitor, error) {
 	log.Infof("Update templated monitor:\n\n%+v", monitor)
 	// check if monitor exists
 	ddMonitor, err := ddman.GetProvisionedMonitor(monitor)
 	if err != nil {
 		//monitor doesn't exist
-		provisioned, err := ddman.Datadog.CreateMonitor(toDdMonitor(monitor))
+		provisioned, err := ddman.Datadog.CreateMonitor(monitor)
 		if err != nil {
-			log.Errorf("Error creating monitor %s: %s", monitor.Name, err)
+			log.Errorf("Error creating monitor %s: %s", *monitor.Name, err)
 			return nil, err
 		}
 		return provisioned, nil
 	}
 
 	//monitor exists
-	if reflect.DeepEqual(monitor, toMonitor(ddMonitor)) {
+	if reflect.DeepEqual(monitor, ddMonitor) {
 		log.Infof("Monitor %d exists and is up to date.", ddMonitor.Id)
 	} else {
 		// monitor exists and needs updating.
 		log.Infof("Monitor %d needs updating.", ddMonitor.Id)
 
 		//TODO - do a deep merge of monitors
-		updated := toDdMonitor(monitor)
+		updated := datadog.Monitor(*monitor)
 		updated.Id = ddMonitor.Id
 
-		err := ddman.Datadog.UpdateMonitor(updated)
+		err := ddman.Datadog.UpdateMonitor(&updated)
 		if err != nil {
 			log.Errorf("Could not update monitor %d: %s", ddMonitor.Id, err)
 			return ddMonitor, err
@@ -85,7 +85,7 @@ func (ddman *DDMonitorManager) AddOrUpdate(monitor *config.Monitor) (*datadog.Mo
 }
 
 // GetProvisionedMonitor returns a monitor with the same name from Datadog.
-func (ddman *DDMonitorManager) GetProvisionedMonitor(monitor *config.Monitor) (*datadog.Monitor, error) {
+func (ddman *DDMonitorManager) GetProvisionedMonitor(monitor *datadog.Monitor) (*datadog.Monitor, error) {
 	monitors, err := ddman.GetProvisionedMonitors()
 	if err != nil {
 		log.Errorf("Error getting monitors: %v", err)
@@ -93,7 +93,7 @@ func (ddman *DDMonitorManager) GetProvisionedMonitor(monitor *config.Monitor) (*
 	}
 
 	for _, ddMonitor := range monitors {
-		if *ddMonitor.Name == monitor.Name {
+		if *ddMonitor.Name == *monitor.Name {
 			return &ddMonitor, nil
 		}
 	}
@@ -106,7 +106,7 @@ func (ddman *DDMonitorManager) GetProvisionedMonitors() ([]datadog.Monitor, erro
 }
 
 // DeleteMonitor deletes a monitor
-func (ddman *DDMonitorManager) DeleteMonitor(monitor *config.Monitor) error {
+func (ddman *DDMonitorManager) DeleteMonitor(monitor *datadog.Monitor) error {
 	ddMonitor, err := ddman.GetProvisionedMonitor(monitor)
 	if err != nil {
 		return ddman.Datadog.DeleteMonitor(*ddMonitor.Id)
@@ -129,65 +129,4 @@ func (ddman *DDMonitorManager) DeleteMonitors(tags []string) error {
 		ddman.Datadog.DeleteMonitor(*ddMonitor.Id)
 	}
 	return nil
-}
-
-func toDdMonitor(in *config.Monitor) *datadog.Monitor {
-	monitor := datadog.Monitor{
-		Type:    &in.Type,
-		Query:   &in.Query,
-		Name:    &in.Name,
-		Message: &in.Message,
-		Tags:    in.Tags,
-		Options: &datadog.Options{
-			NoDataTimeframe:   datadog.NoDataTimeframe(in.NoDataTimeframe),
-			NotifyAudit:       &in.NotifyAudit,
-			NotifyNoData:      &in.NotifyNoData,
-			RenotifyInterval:  &in.RenotifyInterval,
-			NewHostDelay:      &in.NewHostDelay,
-			EvaluationDelay:   &in.EvaluationDelay,
-			TimeoutH:          &in.Timeout,
-			EscalationMessage: &in.EscalationMessage,
-			Thresholds: &datadog.ThresholdCount{
-				Ok:               in.Thresholds.Ok,
-				Critical:         in.Thresholds.Critical,
-				Warning:          in.Thresholds.Warning,
-				Unknown:          in.Thresholds.Unknown,
-				CriticalRecovery: in.Thresholds.CriticalRecovery,
-				WarningRecovery:  in.Thresholds.WarningRecovery,
-			},
-			RequireFullWindow: &in.RequireFullWindow,
-			Locked:            &in.Locked,
-		},
-	}
-	return &monitor
-}
-
-func toMonitor(in *datadog.Monitor) *config.Monitor {
-	thresholds := config.Thresholds{
-		Ok:               in.Options.Thresholds.Ok,
-		Critical:         in.Options.Thresholds.Critical,
-		Warning:          in.Options.Thresholds.Warning,
-		Unknown:          in.Options.Thresholds.Unknown,
-		CriticalRecovery: in.Options.Thresholds.CriticalRecovery,
-		WarningRecovery:  in.Options.Thresholds.WarningRecovery,
-	}
-
-	monitor := config.Monitor{
-		Name:              *in.Name,
-		Type:              *in.Type,
-		Query:             *in.Query,
-		Message:           *in.Message,
-		Tags:              in.Tags,
-		NoDataTimeframe:   int(in.Options.NoDataTimeframe),
-		NotifyAudit:       *in.Options.NotifyAudit,
-		NotifyNoData:      *in.Options.NotifyNoData,
-		RenotifyInterval:  *in.Options.RenotifyInterval,
-		NewHostDelay:      *in.Options.NewHostDelay,
-		EvaluationDelay:   *in.Options.EvaluationDelay,
-		Timeout:           *in.Options.TimeoutH,
-		EscalationMessage: *in.Options.EscalationMessage,
-		Thresholds:        thresholds,
-		RequireFullWindow: *in.Options.RequireFullWindow,
-	}
-	return &monitor
 }
