@@ -16,12 +16,13 @@ package handler
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/reactiveops/dd-manager/pkg/config"
 	"github.com/reactiveops/dd-manager/pkg/datadog"
 	log "github.com/sirupsen/logrus"
 	ddapi "github.com/zorkian/go-datadog-api"
 	appsv1 "k8s.io/api/apps/v1"
-	"strings"
 )
 
 // OnDeploymentChanged is a handler that should be called when a deployment chanages.
@@ -36,6 +37,7 @@ func OnDeploymentChanged(deployment *appsv1.Deployment, event config.Event) {
 			dd.DeleteMonitors([]string{cfg.OwnerTag, fmt.Sprintf("dd-manager:object_type:%s", event.ResourceType), fmt.Sprintf("dd-manager:resource:%s", event.Key)})
 		}
 	case "create", "update":
+		var record []string
 		var monitors []ddapi.Monitor
 		monitors = append(*cfg.GetMatchingMonitors(deployment.Annotations, event.ResourceType), *cfg.GetBoundMonitors(event.Namespace, event.ResourceType)...)
 		for _, monitor := range monitors {
@@ -47,12 +49,19 @@ func OnDeploymentChanged(deployment *appsv1.Deployment, event config.Event) {
 			log.Infof("Reconcile monitor %s", *monitor.Name)
 			if cfg.DryRun == false {
 				_, err := dd.AddOrUpdate(&monitor)
+				record = append(record, *monitor.Name)
 				if err != nil {
 					log.Errorf("Error adding/updating monitor")
 				}
 			} else {
 				log.Info("Running as DryRun, skipping DataDog update")
 			}
+		}
+
+		if strings.ToLower(event.EventType) == "update" && !cfg.DryRun {
+			// if there are any additional monitors, they should be removed.  This could happen if an object
+			// was previously monitored and now no longer is.
+			datadog.DeleteExtinctMonitors(record, []string{cfg.OwnerTag, fmt.Sprintf("dd-manager:object_type:%s", event.ResourceType), fmt.Sprintf("dd-manager:resource:%s", event.Key)})
 		}
 	default:
 		log.Warnf("Update type %s is not valid, skipping.", event.EventType)

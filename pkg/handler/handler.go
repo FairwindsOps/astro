@@ -17,13 +17,14 @@ package handler
 import (
 	"bytes"
 	"fmt"
-	"github.com/reactiveops/dd-manager/pkg/config"
-	log "github.com/sirupsen/logrus"
-	"github.com/zorkian/go-datadog-api"
-	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 	"strings"
 	"text/template"
+
+	"github.com/reactiveops/dd-manager/pkg/config"
+	log "github.com/sirupsen/logrus"
+	ddapi "github.com/zorkian/go-datadog-api"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 // OnUpdate is a handler that should be called when an object is updated.
@@ -72,7 +73,7 @@ func applyTemplateToField(obj interface{}, tmplString string) (string, error) {
 	return buf.String(), nil
 }
 
-func applyTemplate(obj interface{}, monitor *datadog.Monitor, event *config.Event) error {
+func applyTemplate(obj interface{}, monitor *ddapi.Monitor, event *config.Event) error {
 	if monitor.Name != nil {
 		name, err := applyTemplateToField(obj, *monitor.Name)
 		if err != nil {

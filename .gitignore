@@ -13,3 +13,6 @@
 
 
 local.sh
+
+.vscode
+.vscode/*

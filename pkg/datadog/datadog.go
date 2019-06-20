@@ -16,10 +16,11 @@ package datadog
 
 import (
 	"errors"
+	"reflect"
+
 	"github.com/reactiveops/dd-manager/pkg/config"
 	log "github.com/sirupsen/logrus"
 	"github.com/zorkian/go-datadog-api"
-	"reflect"
 )
 
 // ClientAPI defines the interface for the Datadog client, for testing purposes
@@ -129,4 +130,37 @@ func (ddman *DDMonitorManager) DeleteMonitors(tags []string) error {
 		ddman.Datadog.DeleteMonitor(*ddMonitor.Id)
 	}
 	return nil
+}
+
+// DeleteExtinctMonitors gathers monitors configured with all tags in variable tags;  If any are not present in variable monitors they get deleted.
+func DeleteExtinctMonitors(monitors []string, tags []string) error {
+	ddMan := GetInstance()
+	existing, err := ddMan.Datadog.GetMonitorsByTags(tags)
+	if err != nil {
+		log.Infof("Error getting monitors: %v", err)
+		return err
+	}
+
+	for _, monitor := range existing {
+		if !contains(monitors, monitor) {
+			// monitor should no longer exist
+			log.Infof("Found monitor %s that shouldn't exist.", *monitor.Name)
+			err = ddMan.Datadog.DeleteMonitor(*monitor.Id)
+			if err != nil {
+				log.Warnf("Error deleting extinct monitor %d: %v", *monitor.Id, err)
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// contains returns a boolean indicating whether a collection of strings contains a monitor with the name of monitor item.
+func contains(collection []string, item datadog.Monitor) bool {
+	for _, name := range collection {
+		if name == *item.Name {
+			return true
+		}
+	}
+	return false
 }

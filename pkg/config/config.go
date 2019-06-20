@@ -17,18 +17,19 @@ package config
 import (
 	"errors"
 	"fmt"
-	"github.com/reactiveops/dd-manager/pkg/kube"
-	log "github.com/sirupsen/logrus"
-	"github.com/zorkian/go-datadog-api"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/reactiveops/dd-manager/pkg/kube"
+	log "github.com/sirupsen/logrus"
+	"github.com/zorkian/go-datadog-api"
+	"gopkg.in/yaml.v2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type ruleset struct {
@@ -117,14 +118,26 @@ func (config *Config) GetBoundMonitors(namespace string, objectType string) *[]d
 		log.Errorf("Error getting namespace %s: %+v", namespace, err)
 	} else {
 		mSets := config.getMatchingRulesets(ns.Annotations, "binding")
+
 		for _, mSet := range *mSets {
 			if contains(mSet.BoundObjects, objectType) {
 				// object is linked to the ruleset
+				mSet.AppendTag("dd-manager:bound_object")
+				for _, m := range mSet.Monitors {
+					m.Tags = append(m.Tags, "dd-manager:bound_object")
+				}
 				linkedMonitors = append(linkedMonitors, mSet.Monitors...)
 			}
 		}
 	}
 	return &linkedMonitors
+}
+
+// AppendTag appends a tag to every monitor in a MonitorSet
+func (mSet *MonitorSet) AppendTag(tag string) {
+	for _, monitor := range mSet.Monitors {
+		monitor.Tags = append(monitor.Tags, tag)
+	}
 }
 
 var instance *Config
