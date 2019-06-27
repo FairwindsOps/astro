@@ -1,3 +1,8 @@
+[![CircleCI](https://circleci.com/gh/reactiveops/dd-manager/tree/master.svg?style=svg&circle-token=77f1eb3b95b59a0372b19fdefbbd28ebfaa9d0c0)](https://circleci.com/gh/reactiveops/dd-manager/tree/master)
+[![codecov](https://codecov.io/gh/reactiveops/dd-manager/branch/master/graph/badge.svg?token=6zutKJd2Gy)](https://codecov.io/gh/reactiveops/dd-manager)
+
+
+
 # dd-manager
 DD-Manager was designed to simplify datadog monitor administration.  This is an operator that emits datadog monitors based on kubernetes state.  The operator responds to changes of resources in your kubernetes cluster and will manage datadog monitors based on the configured state.
 
