@@ -22,10 +22,17 @@ jobs:
       - image: circleci/golang:1.12
     steps:
       - checkout
-      - run: GO111MODULE=on go test ./pkg/...
-      - run: go get -u golang.org/x/lint/golint
-      - run: golint -set_exit_status ./...
-      - run: test -z $(go fmt ./...)
+      - run:
+          name: lint
+          command: |
+            golint -set_exit_status ./... | tee golint-report.out
+            test -z $(go fmt ./...)
+      - run:
+          name: test
+          command: |
+            GO111MODULE=on go test -v --bench --benchmem -coverprofile=coverage.txt -covermode=atomic ./pkg/...
+            GO111MODULE=on go vet 2> govet-report.out
+            GO111MODULE=on go tool cover -html=coverage.txt -o cover-report.html
       - run: bash <(curl -s https://codecov.io/bash) -t $CODECOV_TOKEN
 
   build:
