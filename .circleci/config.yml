@@ -26,6 +26,7 @@ jobs:
       - run: go get -u golang.org/x/lint/golint
       - run: golint -set_exit_status ./...
       - run: test -z $(go fmt ./...)
+      - run: bash <(curl -s https://codecov.io/bash) -t $CODECOV_TOKEN
 
   build:
     docker:
@@ -48,4 +49,4 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              only: /^dev-.*/
+              only: /.*/
