@@ -105,7 +105,7 @@ mockgen -source=pkg/datadog/datadog.go -destination=pkg/mocks/datadog_mock.go
 
 # Roadmap
 
-![Roadmap][static/roadmap.png]
+![Roadmap](static/roadmap.png)
 
 
 - in-cluster controller
