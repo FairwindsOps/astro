@@ -63,16 +63,6 @@ Each new pull request should:
 
 ## Creating a new release
 
-### Minor/patch releases
-Minor and patch releases only need to change this repo. The Helm chart and deploy scripts
-will automatically pull in the latest changes.
-
-To deploy a minor or patch release, follow steps 2 and 3 from "Major releases" below.
-
-### Major releases
-Major releases need to change both this repository and the
-[Helm chart repo](https://github.com/reactiveops/charts/).
-
 The steps are:
 1. Create a PR for this repo
     1. Bump the version number in:
