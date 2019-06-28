@@ -23,7 +23,7 @@ A configuration file is used to define your monitors.  These are organized as ru
 
 ```yaml
 ---
-rulesets: 
+rulesets:
 - type: deployment
   match_annotations:
   - name: dd-manager/owner
@@ -87,18 +87,15 @@ rulesets:
     * `require_full_window`: boolean indicating if a monitor needs a full window of data to be evaluated.
     * `locked`: boolean indicating if changes are only allowed from the creator or admins.
 
-# Development
+## Contributing
+PRs welcome! Check out the [Contributing Guidelines](CONTRIBUTING.md),
+[Code of Conduct](CODE_OF_CONDUCT.md), and [Roadmap](ROADMAP.md) for more information.
 
-## Testing
-```
-go test ./pkg/...
-```
+## Further Information
+A history of changes to this project can be viewed in the [Changelog](CHANGELOG.md)
 
-### Datadog Mocking
-We mock the interface for the Datadog API client library in `./pkg/datadog/datadog.go`.
-If you're adding a new function to the interface there, you'll need to regenerate the
-mocks using
-```
-go install github.com/golang/mock/mockgen
-mockgen -source=pkg/datadog/datadog.go -destination=pkg/mocks/datadog_mock.go
-```
+If you'd like to learn more about dd-manager, or if you'd like to speak with
+a Kubernetes expert, you can contact `info@reactiveops.com` or [visit our website](https://reactiveops.com)
+
+## License
+Apache License 2.0
