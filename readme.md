@@ -40,18 +40,25 @@ rulesets:
         Available replicas is no longer 0 for {{ .ObjectMeta.Name }}
         {{ "{{/is_alert}}" }}
       tags: []
-      no_data_timeframe: 60
-      notify_audit: false
-      notify_no_data: false
-      renotify_interval: 5
-      new_host_delay: 5
-      evaluation_delay: 300
-      timeout: 300
-      escalation_message: ""
-      thresholds:
-        critical: 0
-      require_full_window: true
-      locked: false
+      options:
+        no_data_timeframe: 60
+        notify_audit: false
+        notify_no_data: false
+        renotify_interval: 5
+        new_host_delay: 5
+        evaluation_delay: 300
+        timeout_h: 1
+        escalation_message: ""
+        thresholds:
+          critical: 2
+          warning: 1
+          unknown: -1
+          ok: 0
+          critical_recovery: 0
+          warning_recovery: 0
+        include_tags: true
+        require_full_window: true
+        locked: false
 ```
 
 * `rulesets`: (List).  A collection of rulesets.  A ruleset consists of a kubernetes resource type, annotations the resource must have to be considered valid, and a collection of monitors to manage for the resource.
@@ -69,23 +76,32 @@ rulesets:
     * `query`: The monitor query to notify on.
     * `message`: A message included with in monitor notifications.
     * `tags`: A list of tags to add to your monitor.
-    * `no_data_timeframe`: Number of minutes before a monitor will notify if data stops reporting.
-    * `notify_audit`: boolean that indicates whether tagged users are notified if the monitor changes.
-    * `notify_no_data`: boolean that indicates if the monitor notifies if data stops reporting.
-    * `renotify_interval`: Number of minutes after the last notification a monitor will re-notify.
-    * `new_host_delay`: Number of seconds to wait for a new host before evaluating the monitor status.
-    * `evaluation_delay`: Number of seconds to delay evaluation.
-    * `timeout`: Number of minutes the before the monitor will automatically resolve if it's not reporting data.
-    * `escalation_message`: Message to include with re-notifications.
-    * `thresholds`: Map of thresholds for the alert.  Valid options are:
-      - `ok`
-      - `critical`
-      - `warning`
-      - `unknown`
-      - `critical_recovery`
-      - `warning_recovery`
-    * `require_full_window`: boolean indicating if a monitor needs a full window of data to be evaluated.
-    * `locked`: boolean indicating if changes are only allowed from the creator or admins.
+    * `options`: A dict of options, consisting of the following:
+      * `no_data_timeframe`: Number of minutes before a monitor will notify if data stops reporting.
+      * `notify_audit`: boolean that indicates whether tagged users are notified if the monitor changes.
+      * `notify_no_data`: boolean that indicates if the monitor notifies if data stops reporting.
+      * `renotify_interval`: Number of minutes after the last notification a monitor will re-notify.
+      * `new_host_delay`: Number of seconds to wait for a new host before evaluating the monitor status.
+      * `evaluation_delay`: Number of seconds to delay evaluation.
+      * `timeout_h`: Number of hours the before the monitor will automatically resolve if it's not reporting data.
+      * `escalation_message`: Message to include with re-notifications.
+      * `thresholds`: Map of thresholds for the alert.  Valid options are:
+        - `ok`
+        - `critical`
+        - `warning`
+        - `unknown`
+        - `critical_recovery`
+        - `warning_recovery`
+      * `include_tags`: When true, notifications from this monitor automatically insert triggering tags into the title.
+      * `require_full_window`: boolean indicating if a monitor needs a full window of data to be evaluated.
+      * `locked`: boolean indicating if changes are only allowed from the creator or admins.
+
+#### A Note on Templating
+Since datadog uses a very similar templating language to go templating, to pass a template variable to datadog it must be "escaped" by inserting it as a template literal:
+
+```
+{{ "{{/is_alert}}" }}
+```
 
 ## Contributing
 PRs welcome! Check out the [Contributing Guidelines](CONTRIBUTING.md),
