@@ -96,4 +96,4 @@ rulesets:
 Use of a CRD to store configuration could be attractive because it would easily enable automatic updates to configuration.  However, one of the potential benefits of this project would be having a global configuration broad enough to apply to multiple clusters.  In this case, it is not desirable to have it live in the cluster and should be stored somewhere easily accessible for all clusters using it to access it.
 
 ### Using the Terraform Datadog provider
-Datadog providers a terraform provider that can be used to manage monitors.  This is especially beneficial when you already use terraform to manage existing infrastructure.  The disadvantage to this method is that all changes in state must be applied manually.  Using dd-manager, manually intervention can be significantly reduced.
+Datadog providers a terraform provider that can be used to manage monitors.  This is especially beneficial when you already use terraform to manage existing infrastructure.  The disadvantage to this method is that all changes in state must be applied manually.  Using dd-manager, manual intervention can be significantly reduced.
