@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/reactiveops/dd-manager/tree/master.svg?style=svg&circle-token=77f1eb3b95b59a0372b19fdefbbd28ebfaa9d0c0)](https://circleci.com/gh/reactiveops/dd-manager/tree/master)
+[![CircleCI](https://circleci.com/gh/FairwindsOps/dd-manager.svg?style=svg&circle-token=77f1eb3b95b59a0372b19fdefbbd28ebfaa9d0c0)](https://circleci.com/gh/FairwindsOps/dd-manager)
 [![codecov](https://codecov.io/gh/reactiveops/dd-manager/branch/master/graph/badge.svg?token=6zutKJd2Gy)](https://codecov.io/gh/reactiveops/dd-manager)
 
 
