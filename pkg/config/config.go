@@ -34,7 +34,7 @@ import (
 
 type ruleset struct {
 	ClusterVariables map[string]string `yaml:"cluster_variables,omitempty"`
-	MonitorSets      []MonitorSet      `yaml:"rulesets"`
+	MonitorSets      []MonitorSet      `yaml:"rulesets,omitempty"`
 }
 
 // A MonitorSet represents a collection of Monitors that applies to an object.
@@ -181,10 +181,12 @@ func contains(slice []string, key string) bool {
 }
 
 func (config *Config) reloadRulesets() {
-	rulesetCollection := &ruleset{}
+	rulesetCollection := &ruleset{
+		ClusterVariables: make(map[string]string),
+	}
 
 	for _, cfg := range config.MonitorDefinitionsPath {
-		log.Infof("Loading rulesets from %s", config.MonitorDefinitionsPath)
+		log.Infof("Loading rulesets from %s", cfg)
 		rSet := &ruleset{}
 
 		yml, err := loadFromPath(cfg)
@@ -198,9 +200,15 @@ func (config *Config) reloadRulesets() {
 			log.Errorf("Error unmarshalling config file %s: %v", cfg, err)
 			continue
 		}
-		rulesetCollection.MonitorSets = append(rulesetCollection.MonitorSets, rSet.MonitorSets...)
-		for k, v := range rSet.ClusterVariables {
-			rulesetCollection.ClusterVariables[k] = v
+
+		if rSet.MonitorSets != nil {
+			rulesetCollection.MonitorSets = append(rulesetCollection.MonitorSets, rSet.MonitorSets...)
+		}
+
+		if rSet.ClusterVariables != nil {
+			for k, v := range rSet.ClusterVariables {
+				rulesetCollection.ClusterVariables[k] = v
+			}
 		}
 	}
 	config.Rulesets = rulesetCollection

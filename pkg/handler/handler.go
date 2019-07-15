@@ -62,7 +62,7 @@ func onDelete(event config.Event) {
 
 func applyTemplateToField(obj interface{}, tmplString string) (string, error) {
 	var buf bytes.Buffer
-	tpl, err := template.New("").Parse(tmplString)
+	tpl, err := template.New("").Funcs(ancillaryVariables()).Parse(tmplString)
 	if err != nil {
 		return "", err
 	}
@@ -113,4 +113,10 @@ func applyTemplate(obj interface{}, monitor *ddapi.Monitor, event *config.Event)
 		fmt.Sprintf("dd-manager:object_type:%s", event.ResourceType),
 		fmt.Sprintf("dd-manager:resource:%s", event.Key))
 	return nil
+}
+
+func ancillaryVariables() map[string]interface{} {
+	return map[string]interface{}{
+		"ClusterVariables": func() map[string]string { return config.GetInstance().Rulesets.ClusterVariables },
+	}
 }
