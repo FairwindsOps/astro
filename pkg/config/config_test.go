@@ -8,7 +8,7 @@ import (
 
 func TestGetDeploymentRulesets(t *testing.T) {
 	cfg := &Config{
-		MonitorDefinitionsPath: "../../conf.yml",
+		MonitorDefinitionsPath: []string{"../../conf.yml"},
 	}
 	cfg.reloadRulesets()
 
@@ -32,7 +32,7 @@ func TestGetDeploymentRulesets(t *testing.T) {
 
 func TestGetNamespaceRulesets(t *testing.T) {
 	cfg := &Config{
-		MonitorDefinitionsPath: "../../conf.yml",
+		MonitorDefinitionsPath: []string{"../../conf.yml"},
 	}
 	cfg.reloadRulesets()
 
