@@ -1,0 +1,97 @@
+---
+notification_profiles:
+  default: "@slack-foo-default"
+  severe: "@pagerduty-foobar"
+rulesets:
+- type: deployment
+  match_annotations:
+    - name: dd-manager/owner
+      value: dd-manager
+  monitors:
+    - name: "Deployment Replica Alert - {{ .ObjectMeta.Name }}"
+      type: metric alert
+      query: "max(last_10m):max:kubernetes_state.deployment.replicas_available{kubernetescluster:foobar,namespace:{{ .ObjectMeta.Namespace }}} by {deployment} <= 0"
+      message: |
+        {{ "{{#is_alert}}" }}
+        Available replicas is currently 0 for {{ .ObjectMeta.Name }}
+        {{ "{{/is_alert}}" }}
+        {{ "{{^is_alert}}" }}
+        Available replicas is no longer 0 for {{ .ObjectMeta.Name }}
+        {{ "{{/is_alert}}" }}
+      tags:
+        - dd-manager
+      options:
+        no_data_timeframe: 60
+        notify_audit: false
+        notify_no_data: false
+        renotify_interval: 5
+        new_host_delay: 5
+        evaluation_delay: 300
+        timeout: 300
+        escalation_message: ""
+        threshold_count:
+          critical: 0
+        require_full_window: true
+        locked: false
+- type: namespace
+  match_annotations:
+    - name: dd-manager/owner
+      value: dd-manager
+  monitors:
+    - name: "Namespaced Deployment Replica Alert - {{ .ObjectMeta.Name }}"
+      type: metric alert
+      query: "max(last_10m):max:kubernetes_state.deployment.replicas_available{kubernetescluster:foobar,namespace:{{ .ObjectMeta.Namespace }}} by {deployment} <= 0"
+      message: |
+        {{ "{{#is_alert}}" }}
+        Available replicas is currently 0 for {{ .ObjectMeta.Name }}
+        {{ "{{/is_alert}}" }}
+        {{ "{{^is_alert}}" }}
+        Available replicas is no longer 0 for {{ .ObjectMeta.Name }}
+        {{ "{{/is_alert}}" }}
+      tags:
+        - dd-manager
+      options:
+        no_data_timeframe: 60
+        notify_audit: false
+        notify_no_data: false
+        renotify_interval: 5
+        new_host_delay: 5
+        evaluation_delay: 300
+        timeout: 300
+        escalation_message: ""
+        threshold_count:
+          critical: 0
+        require_full_window: true
+        locked: false
+- type: binding
+  bound_objects:
+    - deployment
+  match_annotations:
+    - name: test
+      value: yup
+  monitors:
+    - name: "Bound Deployment Replica Alert - {{ .ObjectMeta.Name }}"
+      type: metric alert
+      query: "max(last_10m):max:kubernetes_state.deployment.replicas_available{kubernetescluster:foobar,namespace:{{ .ObjectMeta.Namespace }}} by {deployment} <= 0"
+      message: |
+        {{ "{{#is_alert}}" }}
+        Available replicas is currently 0 for {{ .ObjectMeta.Name }}
+        {{ "{{/is_alert}}" }}
+        {{ "{{^is_alert}}" }}
+        Available replicas is no longer 0 for {{ .ObjectMeta.Name }}
+        {{ "{{/is_alert}}" }}
+      tags:
+        - dd-manager
+      options:
+        no_data_timeframe: 60
+        notify_audit: false
+        notify_no_data: false
+        renotify_interval: 5
+        new_host_delay: 5
+        evaluation_delay: 300
+        timeout: 300
+        escalation_message: ""
+        threshold_count:
+          critical: 0
+        require_full_window: true
+        locked: false

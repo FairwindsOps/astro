@@ -25,7 +25,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 )
 
-// OnDeploymentChanged is a handler that should be called when a deployment chanages.
+// OnDeploymentChanged is a handler that should be called when a deployment changes.
 func OnDeploymentChanged(deployment *appsv1.Deployment, event config.Event) {
 	cfg := config.GetInstance()
 	dd := datadog.GetInstance()

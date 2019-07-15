@@ -27,7 +27,7 @@ import (
 
 	"github.com/reactiveops/dd-manager/pkg/kube"
 	log "github.com/sirupsen/logrus"
-	"github.com/zorkian/go-datadog-api"
+	datadog "github.com/zorkian/go-datadog-api"
 	"gopkg.in/yaml.v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -123,9 +123,6 @@ func (config *Config) GetBoundMonitors(namespace string, objectType string) *[]d
 			if contains(mSet.BoundObjects, objectType) {
 				// object is linked to the ruleset
 				mSet.AppendTag("dd-manager:bound_object")
-				for _, m := range mSet.Monitors {
-					m.Tags = append(m.Tags, "dd-manager:bound_object")
-				}
 				linkedMonitors = append(linkedMonitors, mSet.Monitors...)
 			}
 		}
@@ -135,8 +132,8 @@ func (config *Config) GetBoundMonitors(namespace string, objectType string) *[]d
 
 // AppendTag appends a tag to every monitor in a MonitorSet
 func (mSet *MonitorSet) AppendTag(tag string) {
-	for _, monitor := range mSet.Monitors {
-		monitor.Tags = append(monitor.Tags, tag)
+	for i, monitor := range mSet.Monitors {
+		mSet.Monitors[i].Tags = append(monitor.Tags, tag)
 	}
 }
 
