@@ -15,14 +15,17 @@ A combination of environment variables and a yaml file is used to configure the 
 | `DD_API_KEY` | The datadog api key for your datadog account. | `Y` ||
 | `DD_APP_KEY` | The datadog app key for your datadog account. | `Y` ||
 | `OWNER`      | A unique name to designate as the owner.  This will be applied as a tag to identified managed monitors. | `N`| `dd-manager` |
-| `DEFINITIONS_PATH` | The path to the monitor definitions configuration.  This can be a local path or a URL. | `N` | `conf.yml` |
+| `DEFINITIONS_PATH` | The path to monitor definition configurations.  This can be a local path or a URL.  Multiple paths shoudl be separated by a `;` | `N` | `conf.yml` |
 | `DRY_RUN` | when set to true monitors will not be managed in datadog. | `N` | `false` |
 
 ### Configuration File
-A configuration file is used to define your monitors.  These are organized as rulesets, which consist of the type of resource the ruleset applies to, annotations that must be present on the resource to be considered valid objects, and a set of monitors to manage for that resource.  Go templating syntax may be used in your monitors and values will be inserted from each kubernetes object that matches the ruleset.
+A configuration file is used to define your monitors.  These are organized as rulesets, which consist of the type of resource the ruleset applies to, annotations that must be present on the resource to be considered valid objects, and a set of monitors to manage for that resource.  Go templating syntax may be used in your monitors and values will be inserted from each kubernetes object that matches the ruleset.  There is also a section called `cluster_variables` that you can use to define your own variables.  These variables can be inserted into the monitor templates.
 
 ```yaml
 ---
+cluster_variables:
+  var1: test
+  var2: test2
 rulesets:
 - type: deployment
   match_annotations:
@@ -61,6 +64,7 @@ rulesets:
         locked: false
 ```
 
+* `cluster_variables`: (dict).  A collection of variables that can be used in monitors.  They can be used in monitors by prepending with `ClusterVariables`, eg `{{ ClusterVariables.var1 }}`.
 * `rulesets`: (List).  A collection of rulesets.  A ruleset consists of a kubernetes resource type, annotations the resource must have to be considered valid, and a collection of monitors to manage for the resource.
   * `match_annotations`: (List).  A collection of name/value pairs pairs of annotations that must be present on the resource to manage it.
   * `bound_objects`: (List).  A collection of object types that are bound to this object.  For instance, if you have a ruleset for a namespace, you can bind other objects like deployments, services, etc. Then, when the bound objects in the namespace get updated, those rulesets apply to it.
