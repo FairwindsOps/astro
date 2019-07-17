@@ -56,7 +56,7 @@ func TestGetInstance(t *testing.T) {
 	os.Setenv("DD_APP_KEY", "dummy")
 	os.Setenv("CLUSTER_NAME", "dummy")
 	os.Setenv("OWNER", "dummy")
-	os.Setenv("DEFINITIONS_PATH", "./test_conf.yml")
+	os.Setenv("DEFINITIONS_PATH", "./test_conf.yml;./test_conf_variables.yml")
 	os.Setenv("DRY_RUN", "false")
 
 	cfg := GetInstance()
@@ -65,7 +65,13 @@ func TestGetInstance(t *testing.T) {
 	assert.Equal(t, "dummy", (*cfg).ClusterName)
 	assert.Equal(t, "dummy", (*cfg).OwnerTag)
 	assert.Equal(t, false, (*cfg).DryRun)
-	assert.Equal(t, []string{"./test_conf.yml"}, (*cfg).MonitorDefinitionsPath)
+	assert.Equal(t, []string{"./test_conf.yml", "./test_conf_variables.yml"}, (*cfg).MonitorDefinitionsPath)
+}
+
+func TestGetClusterVariables(t *testing.T) {
+	cfg := GetInstance()
+	assert.Contains(t, cfg.Rulesets.ClusterVariables, "TEST_FOO")
+	assert.Equal(t, cfg.Rulesets.ClusterVariables["TEST_FOO"], "BAR")
 }
 
 func TestGetRulesetsValid(t *testing.T) {

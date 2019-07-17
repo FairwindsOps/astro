@@ -189,7 +189,7 @@ func (config *Config) reloadRulesets() {
 		yml, err := loadFromPath(cfg)
 		if err != nil {
 			log.Errorf("Could not load config file %s: %v", cfg, err)
-			continue
+			return
 		}
 
 		err = yaml.Unmarshal(yml, rSet)

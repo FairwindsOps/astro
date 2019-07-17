@@ -15,7 +15,7 @@ A combination of environment variables and a yaml file is used to configure the 
 | `DD_API_KEY` | The datadog api key for your datadog account. | `Y` ||
 | `DD_APP_KEY` | The datadog app key for your datadog account. | `Y` ||
 | `OWNER`      | A unique name to designate as the owner.  This will be applied as a tag to identified managed monitors. | `N`| `dd-manager` |
-| `DEFINITIONS_PATH` | The path to monitor definition configurations.  This can be a local path or a URL.  Multiple paths shoudl be separated by a `;` | `N` | `conf.yml` |
+| `DEFINITIONS_PATH` | The path to monitor definition configurations.  This can be a local path or a URL.  Multiple paths should be separated by a `;` | `N` | `conf.yml` |
 | `DRY_RUN` | when set to true monitors will not be managed in datadog. | `N` | `false` |
 
 ### Configuration File
