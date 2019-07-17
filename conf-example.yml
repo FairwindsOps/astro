@@ -1,4 +1,6 @@
 ---
+cluster_variables:
+  warning_notifications: "@slack"
 rulesets:
 - type: binding
   bound_objects:
@@ -17,6 +19,7 @@ rulesets:
         {{ "{{^is_alert}}" }}
         Available replicas is no longer 0 for {{ "{{deployment.name}}" }}
         {{ "{{/is_alert}}" }}
+        {{ ClusterVariables.warning_notifications }}
       tags:
         - dd-manager
       options:
