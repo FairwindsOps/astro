@@ -8,6 +8,7 @@ import (
 	"github.com/reactiveops/dd-manager/pkg/kube"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	datadog "github.com/zorkian/go-datadog-api"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,9 +27,11 @@ var annotationCases = map[string]map[string]string{
 var typeCases = map[string]map[string]string{
 	"deployment": {
 		"title": "Deployment Replica Alert - {{ .ObjectMeta.Name }}",
+		"name":  "dep_replica_alert",
 	},
 	"namespace": {
 		"title": "Namespaced Deployment Replica Alert - {{ .ObjectMeta.Name }}",
+		"name":  "namespaced_replica_alert",
 	},
 }
 
@@ -82,10 +85,14 @@ func TestGetRulesetsValid(t *testing.T) {
 		mSet := (*mSets)[0]
 		assert.Equal(t, objectType, mSet.ObjectType)
 		assert.Equal(t, 1, len(mSet.Monitors))
-		assert.Equal(t, items["title"], *mSet.Monitors[0].Name)
+		assert.Equal(t, items["title"], *mSet.Monitors[items["name"]].Name)
 
 		monitors := cfg.GetMatchingMonitors(annotations, objectType)
-		assert.Equal(t, mSet.Monitors, *monitors)
+		expected := []datadog.Monitor{}
+		for _, value := range mSet.Monitors {
+			expected = append(expected, value)
+		}
+		assert.Equal(t, expected, *monitors)
 	}
 }
 
@@ -94,7 +101,6 @@ func TestGetRulesetsInvalid(t *testing.T) {
 		annotations := annotationCases["fail"]
 		mSets := cfg.getMatchingRulesets(annotations, objectType)
 		assert.Equal(t, 0, len(*mSets))
-
 	}
 }
 
