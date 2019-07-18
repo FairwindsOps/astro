@@ -15,10 +15,11 @@
 package cmd
 
 import (
+	"os"
+
 	"github.com/reactiveops/dd-manager/pkg/controller"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 // RootCmd is the base dd-manager command
