@@ -33,8 +33,8 @@ import (
 )
 
 type ruleset struct {
-	NotificationProfiles map[string]string `yaml:"notification_profiles"`
-	MonitorSets          []MonitorSet      `yaml:"rulesets"`
+	ClusterVariables map[string]string `yaml:"cluster_variables,omitempty"`
+	MonitorSets      []MonitorSet      `yaml:"rulesets,omitempty"`
 }
 
 // A MonitorSet represents a collection of Monitors that applies to an object.
@@ -65,7 +65,7 @@ type Config struct {
 	DatadogAppKey          string   // datadog app key for the datadog account.
 	ClusterName            string   // A unique name for the cluster.
 	OwnerTag               string   // A unique tag to identify the owner of monitors.
-	MonitorDefinitionsPath string   // A url or local path for the configuration file.
+	MonitorDefinitionsPath []string // A url or local path for the configuration file.
 	Rulesets               *ruleset // The collection of rulesets to manage.
 	DryRun                 bool     // when set to true monitors will not be managed in datadog.
 }
@@ -148,7 +148,7 @@ func GetInstance() *Config {
 			DatadogAppKey:          getEnv("DD_APP_KEY", ""),
 			ClusterName:            getEnv("CLUSTER_NAME", ""),
 			OwnerTag:               getEnv("OWNER", "dd-manager"),
-			MonitorDefinitionsPath: getEnv("DEFINITIONS_PATH", "conf.yml"),
+			MonitorDefinitionsPath: envAsMap("DEFINITIONS_PATH", []string{"conf.yml"}, ";"),
 			DryRun:                 envAsBool("DRY_RUN", false),
 		}
 
@@ -178,19 +178,37 @@ func contains(slice []string, key string) bool {
 }
 
 func (config *Config) reloadRulesets() {
-	log.Infof("Loading rulesets from %s", config.MonitorDefinitionsPath)
-	rSet := &ruleset{}
-	yml, err := loadFromPath(config.MonitorDefinitionsPath)
-	if err != nil {
-		log.Fatalf("Could not load config file %s: %v", config.MonitorDefinitionsPath, err)
-		return
+	rulesetCollection := &ruleset{
+		ClusterVariables: make(map[string]string),
 	}
 
-	err = yaml.Unmarshal(yml, rSet)
-	if err != nil {
-		log.Fatalf("Error unmarshalling config file %s: %v", config.MonitorDefinitionsPath, err)
+	for _, cfg := range config.MonitorDefinitionsPath {
+		log.Infof("Loading rulesets from %s", cfg)
+		rSet := &ruleset{}
+
+		yml, err := loadFromPath(cfg)
+		if err != nil {
+			log.Errorf("Could not load config file %s: %v", cfg, err)
+			return
+		}
+
+		err = yaml.Unmarshal(yml, rSet)
+		if err != nil {
+			log.Errorf("Error unmarshalling config file %s: %v", cfg, err)
+			continue
+		}
+
+		if rSet.MonitorSets != nil {
+			rulesetCollection.MonitorSets = append(rulesetCollection.MonitorSets, rSet.MonitorSets...)
+		}
+
+		if rSet.ClusterVariables != nil {
+			for k, v := range rSet.ClusterVariables {
+				rulesetCollection.ClusterVariables[k] = v
+			}
+		}
 	}
-	config.Rulesets = rSet
+	config.Rulesets = rulesetCollection
 }
 
 func loadFromPath(path string) ([]byte, error) {
@@ -217,6 +235,13 @@ func getEnv(key string, defaultVal string) string {
 		return value
 	}
 	log.Info(fmt.Sprintf("Using default value %s for %s", defaultVal, key))
+	return defaultVal
+}
+
+func envAsMap(key string, defaultVal []string, delimiter string) []string {
+	if value, exists := os.LookupEnv(key); exists {
+		return strings.Split(value, delimiter)
+	}
 	return defaultVal
 }
 

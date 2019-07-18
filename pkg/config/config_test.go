@@ -40,7 +40,7 @@ func mockKube() *kube.ClientInstance {
 	return &kubeClient
 }
 
-func getConf(confPath string) *Config {
+func getConf(confPath []string) *Config {
 	config := &Config{
 		MonitorDefinitionsPath: confPath,
 	}
@@ -48,7 +48,7 @@ func getConf(confPath string) *Config {
 	return config
 }
 
-var cfg = getConf("./test_conf.yml")
+var cfg = getConf([]string{"./test_conf.yml"})
 
 // Because we use sync.Once.Do() to load the config it's difficult to test the logic when DD_API_KEY or DD_APP_KEY env vars are not present
 func TestGetInstance(t *testing.T) {
@@ -56,7 +56,7 @@ func TestGetInstance(t *testing.T) {
 	os.Setenv("DD_APP_KEY", "dummy")
 	os.Setenv("CLUSTER_NAME", "dummy")
 	os.Setenv("OWNER", "dummy")
-	os.Setenv("DEFINITIONS_PATH", "./test_conf.yml")
+	os.Setenv("DEFINITIONS_PATH", "./test_conf.yml;./test_conf_variables.yml")
 	os.Setenv("DRY_RUN", "false")
 
 	cfg := GetInstance()
@@ -65,7 +65,13 @@ func TestGetInstance(t *testing.T) {
 	assert.Equal(t, "dummy", (*cfg).ClusterName)
 	assert.Equal(t, "dummy", (*cfg).OwnerTag)
 	assert.Equal(t, false, (*cfg).DryRun)
-	assert.Equal(t, "./test_conf.yml", (*cfg).MonitorDefinitionsPath)
+	assert.Equal(t, []string{"./test_conf.yml", "./test_conf_variables.yml"}, (*cfg).MonitorDefinitionsPath)
+}
+
+func TestGetClusterVariables(t *testing.T) {
+	cfg := GetInstance()
+	assert.Contains(t, cfg.Rulesets.ClusterVariables, "TEST_FOO")
+	assert.Equal(t, cfg.Rulesets.ClusterVariables["TEST_FOO"], "BAR")
 }
 
 func TestGetRulesetsValid(t *testing.T) {

@@ -1,0 +1,3 @@
+---
+cluster_variables:
+  TEST_FOO: BAR
