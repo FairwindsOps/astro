@@ -70,11 +70,17 @@ type Config struct {
 	DryRun                 bool     // when set to true monitors will not be managed in datadog.
 }
 
+// Override represents any datadog monitor fields annotations can be overridden
+type Override struct {
+	Field string
+	Value string
+}
+
 // GetMatchingMonitors returns a collection of monitors that apply to the specified objectType and annotations.
-func (config *Config) GetMatchingMonitors(annotations map[string]string, objectType string) *[]datadog.Monitor {
+func (config *Config) GetMatchingMonitors(annotations map[string]string, objectType string, overrides map[string][]Override) *[]datadog.Monitor {
 	var validMonitors []datadog.Monitor
 
-	for _, mSet := range *config.getMatchingRulesets(annotations, objectType) {
+	for _, mSet := range *config.getMatchingRulesets(annotations, objectType, overrides) {
 		for _, v := range mSet.Monitors {
 			validMonitors = append(validMonitors, v)
 		}
@@ -82,7 +88,7 @@ func (config *Config) GetMatchingMonitors(annotations map[string]string, objectT
 	return &validMonitors
 }
 
-func (config *Config) getMatchingRulesets(annotations map[string]string, objectType string) *[]MonitorSet {
+func (config *Config) getMatchingRulesets(annotations map[string]string, objectType string, overrides map[string][]Override) *[]MonitorSet {
 	var validMSets []MonitorSet
 
 	for monitorSetIdx, monitorSet := range config.Rulesets.MonitorSets {
@@ -101,6 +107,30 @@ func (config *Config) getMatchingRulesets(annotations map[string]string, objectT
 			}
 
 			if hasAllAnnotations {
+				for name := range monitorSet.Monitors {
+					if _, exists := overrides[name]; exists {
+						tmpMonitor := monitorSet.Monitors[name]
+						tmpOverrides := overrides[name]
+						for i, o := range overrides[name] {
+							log.Warnf("\nUpdating %s:\nField: %s,\nValue: %s\n", name, o.Field, o.Value)
+							switch o.Field {
+							case "name":
+								tmpMonitor.Name = &tmpOverrides[i].Value
+							case "type":
+								tmpMonitor.Type = &tmpOverrides[i].Value
+							case "query":
+								tmpMonitor.Query = &tmpOverrides[i].Value
+							case "message":
+								tmpMonitor.Message = &tmpOverrides[i].Value
+							default:
+								log.Warnf("override provided does mot match and monitor fields. provided field: %s", o.Field)
+							}
+						}
+						monitorSet.Monitors[name] = tmpMonitor
+					} else {
+						config.reloadRulesets()
+					}
+				}
 				validMSets = append(validMSets, monitorSet)
 			}
 		}
@@ -109,7 +139,7 @@ func (config *Config) getMatchingRulesets(annotations map[string]string, objectT
 }
 
 // GetBoundMonitors returns a collection of monitors that are indirectly bound to objectTypes in the namespace specified.
-func (config *Config) GetBoundMonitors(namespace string, objectType string) *[]datadog.Monitor {
+func (config *Config) GetBoundMonitors(namespace string, objectType string, overrides map[string][]Override) *[]datadog.Monitor {
 	var linkedMonitors []datadog.Monitor
 	kubeClient := kube.GetInstance()
 
@@ -119,7 +149,7 @@ func (config *Config) GetBoundMonitors(namespace string, objectType string) *[]d
 	if err != nil {
 		log.Errorf("Error getting namespace %s: %+v", namespace, err)
 	} else {
-		mSets := config.getMatchingRulesets(ns.Annotations, "binding")
+		mSets := config.getMatchingRulesets(ns.Annotations, "binding", overrides)
 
 		for _, mSet := range *mSets {
 			if contains(mSet.BoundObjects, objectType) {

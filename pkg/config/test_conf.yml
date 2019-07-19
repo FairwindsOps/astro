@@ -8,7 +8,7 @@ rulesets:
     - name: dd-manager/owner
       value: dd-manager
   monitors:
-    dep_replica_alert:
+    dep-replica-alert:
       name: "Deployment Replica Alert - {{ .ObjectMeta.Name }}"
       type: metric alert
       query: "max(last_10m):max:kubernetes_state.deployment.replicas_available{kubernetescluster:foobar,namespace:{{ .ObjectMeta.Namespace }}} by {deployment} <= 0"
@@ -39,7 +39,7 @@ rulesets:
     - name: dd-manager/owner
       value: dd-manager
   monitors:
-    namespaced_replica_alert:
+    namespaced-replica-alert:
       name: "Namespaced Deployment Replica Alert - {{ .ObjectMeta.Name }}"
       type: metric alert
       query: "max(last_10m):max:kubernetes_state.deployment.replicas_available{kubernetescluster:foobar,namespace:{{ .ObjectMeta.Namespace }}} by {deployment} <= 0"
@@ -72,7 +72,7 @@ rulesets:
     - name: test
       value: yup
   monitors:
-    bound_dep_replica_alert:
+    bound-dep-replica-alert:
       name: "Bound Deployment Replica Alert - {{ .ObjectMeta.Name }}"
       type: metric alert
       query: "max(last_10m):max:kubernetes_state.deployment.replicas_available{kubernetescluster:foobar,namespace:{{ .ObjectMeta.Namespace }}} by {deployment} <= 0"
