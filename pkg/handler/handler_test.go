@@ -1,12 +1,13 @@
 package handler
 
 import (
+	"testing"
+
 	"github.com/reactiveops/dd-manager/pkg/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/zorkian/go-datadog-api"
 	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"testing"
 )
 
 func TestApplyTemplate(t *testing.T) {
@@ -39,4 +40,23 @@ func TestApplyTemplate(t *testing.T) {
 	assert.Equal(t, "Query foo", *monitor.Query, "Query template should be filled")
 	assert.Equal(t, "Message foo", *monitor.Message, "Message template should be filled")
 	assert.Equal(t, "EM foo", *monitor.Options.EscalationMessage, "EM template should be filled")
+}
+
+func TestParseOverrides(t *testing.T) {
+	annotations := map[string]string{
+		"dd-manager.override.dep-monitor/name": "Deployment Monitor Name Override",
+	}
+	deployment := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        "foo",
+			Annotations: annotations,
+		},
+	}
+	overrides := parseOverrides(deployment)
+	assert.Equal(t, len(overrides), 1)
+	assert.IsType(t, map[string][]config.Override{}, overrides)
+	for k := range overrides {
+		assert.Equal(t, "dep-monitor", k)
+		assert.Equal(t, []config.Override{config.Override{Field: "name", Value: "Deployment Monitor Name Override"}}, overrides[k])
+	}
 }
