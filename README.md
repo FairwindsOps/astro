@@ -32,7 +32,8 @@ rulesets:
   - name: dd-manager/owner
     value: dd-manager
   monitors:
-    - name: "Deployment Replica Alert - {{ .ObjectMeta.Name }}"
+    dep-replica-alert:
+      name: "Deployment Replica Alert - {{ .ObjectMeta.Name }}"
       type: metric alert
       query: "max(last_10m):max:kubernetes_state.deployment.replicas_available{kubernetescluster:foobar,namespace:{{ .ObjectMeta.Namespace }}} by {deployment} <= 0"
       message: |
@@ -68,37 +69,38 @@ rulesets:
 * `rulesets`: (List).  A collection of rulesets.  A ruleset consists of a kubernetes resource type, annotations the resource must have to be considered valid, and a collection of monitors to manage for the resource.
   * `match_annotations`: (List).  A collection of name/value pairs pairs of annotations that must be present on the resource to manage it.
   * `bound_objects`: (List).  A collection of object types that are bound to this object.  For instance, if you have a ruleset for a namespace, you can bind other objects like deployments, services, etc. Then, when the bound objects in the namespace get updated, those rulesets apply to it.
-  * `monitors`: (List).  A collection of monitors to manage for any resource that matches the rules defined.
-    * `name`: Name of the datadog monitor.
-    * `type`: The type of the monitor, chosen from:
-      - `metric alert`
-      - `service check`
-      - `event alert`
-      - `query alert`
-      - `composite`
-      - `log alert`
-    * `query`: The monitor query to notify on.
-    * `message`: A message included with in monitor notifications.
-    * `tags`: A list of tags to add to your monitor.
-    * `options`: A dict of options, consisting of the following:
-      * `no_data_timeframe`: Number of minutes before a monitor will notify if data stops reporting.
-      * `notify_audit`: boolean that indicates whether tagged users are notified if the monitor changes.
-      * `notify_no_data`: boolean that indicates if the monitor notifies if data stops reporting.
-      * `renotify_interval`: Number of minutes after the last notification a monitor will re-notify.
-      * `new_host_delay`: Number of seconds to wait for a new host before evaluating the monitor status.
-      * `evaluation_delay`: Number of seconds to delay evaluation.
-      * `timeout_h`: Number of hours the before the monitor will automatically resolve if it's not reporting data.
-      * `escalation_message`: Message to include with re-notifications.
-      * `thresholds`: Map of thresholds for the alert.  Valid options are:
-        - `ok`
-        - `critical`
-        - `warning`
-        - `unknown`
-        - `critical_recovery`
-        - `warning_recovery`
-      * `include_tags`: When true, notifications from this monitor automatically insert triggering tags into the title.
-      * `require_full_window`: boolean indicating if a monitor needs a full window of data to be evaluated.
-      * `locked`: boolean indicating if changes are only allowed from the creator or admins.
+  * `monitors`: (Map).  A collection of monitors to manage for any resource that matches the rules defined.
+    * Monitor Identifier (map key: unique and arbitrary, it should only include alpha characters and -)
+      * `name`: Name of the datadog monitor.
+      * `type`: The type of the monitor, chosen from:
+        - `metric alert`
+        - `service check`
+        - `event alert`
+        - `query alert`
+        - `composite`
+        - `log alert`
+      * `query`: The monitor query to notify on.
+      * `message`: A message included with in monitor notifications.
+      * `tags`: A list of tags to add to your monitor.
+      * `options`: A dict of options, consisting of the following:
+        * `no_data_timeframe`: Number of minutes before a monitor will notify if data stops reporting.
+        * `notify_audit`: boolean that indicates whether tagged users are notified if the monitor changes.
+        * `notify_no_data`: boolean that indicates if the monitor notifies if data stops reporting.
+        * `renotify_interval`: Number of minutes after the last notification a monitor will re-notify.
+        * `new_host_delay`: Number of seconds to wait for a new host before evaluating the monitor status.
+        * `evaluation_delay`: Number of seconds to delay evaluation.
+        * `timeout_h`: Number of hours the before the monitor will automatically resolve if it's not reporting data.
+        * `escalation_message`: Message to include with re-notifications.
+        * `thresholds`: Map of thresholds for the alert.  Valid options are:
+          - `ok`
+          - `critical`
+          - `warning`
+          - `unknown`
+          - `critical_recovery`
+          - `warning_recovery`
+        * `include_tags`: When true, notifications from this monitor automatically insert triggering tags into the title.
+        * `require_full_window`: boolean indicating if a monitor needs a full window of data to be evaluated.
+        * `locked`: boolean indicating if changes are only allowed from the creator or admins.
 
 #### A Note on Templating
 Since datadog uses a very similar templating language to go templating, to pass a template variable to datadog it must be "escaped" by inserting it as a template literal:
@@ -106,6 +108,22 @@ Since datadog uses a very similar templating language to go templating, to pass 
 ```
 {{ "{{/is_alert}}" }}
 ```
+## Overriding Configuration
+
+It is possible to override monitor elements using kubernetes resource annotations.
+
+You can annotate an object like so to override the name of the monitor:
+```yaml
+annotations:
+  dd-manager.override.dep-replica-alert/name: "Deployment Replicas Alert"
+```
+
+In the example above we will be modifying the `dep-replica-alert` monitor (which is the Monitor Identifier from the config) to have a new `name`
+As of now, the only fields that can be overridden are:
+* name
+* message
+* query
+* type
 
 ## Contributing
 PRs welcome! Check out the [Contributing Guidelines](CONTRIBUTING.md),
