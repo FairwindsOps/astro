@@ -112,7 +112,6 @@ func (config *Config) getMatchingRulesets(annotations map[string]string, objectT
 						tmpMonitor := monitorSet.Monitors[name]
 						tmpOverrides := overrides[name]
 						for i, o := range overrides[name] {
-							log.Warnf("\nUpdating %s:\nField: %s,\nValue: %s\n", name, o.Field, o.Value)
 							switch o.Field {
 							case "name":
 								tmpMonitor.Name = &tmpOverrides[i].Value

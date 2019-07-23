@@ -7,7 +7,7 @@ rulesets:
     - name: dd-manager/owner
       value: dd-manager
   monitors:
-    dep-replica-alert:
+    deploy-replica-alert:
       name: "Deployment Replica Alert - {{ .ObjectMeta.Name }}"
       type: metric alert
       query: "max(last_10m):max:kubernetes_state.deployment.replicas_available{namespace:{{ .ObjectMeta.Namespace }}} by {deployment} <= 0"
@@ -40,7 +40,7 @@ rulesets:
     - name: dd-manager/admin
       value: reactiveops
   monitors:
-    deploy-replica-alert:
+    bound-deploy-replica-alert:
       name: "Deployment Replica Alert - {{ .ObjectMeta.Name }}"
       type: metric alert
       query: "max(last_10m):max:kubernetes_state.deployment.replicas_available{deployment:{{ .ObjectMeta.Name }}} <= 0"

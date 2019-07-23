@@ -153,19 +153,19 @@ func parseOverrides(obj interface{}) map[string][]config.Override {
 }
 
 func parseOverrideKey(key string) (string, string) {
-	split := strings.Split(key, ".")
+	split := strings.Split(key, "/")
 	override := split[len(split)-1]
-	splitOverride := strings.Split(override, "/")
-	return splitOverride[0], splitOverride[1]
+	splitOverride := strings.Split(override, ".")
+	return splitOverride[len(splitOverride)-2], splitOverride[len(splitOverride)-1]
 }
 
 func isOverride(annotationKey string) bool {
-	matched, err := regexp.Match(`^dd-manager\.override\..*`, []byte(annotationKey))
+	matched, err := regexp.Match(`^dd-manager\.fairwinds\.com/override\..*`, []byte(annotationKey))
 	if err != nil {
 		log.Errorf("Error parsing regexp of annotation key: %v", annotationKey)
 	}
 	if matched {
-		log.Warnf("Override found with annotation '%s'", annotationKey)
+		log.Infof("Override found with annotation '%s'", annotationKey)
 	}
 	return matched
 }

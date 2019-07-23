@@ -44,7 +44,7 @@ func TestApplyTemplate(t *testing.T) {
 
 func TestParseOverrides(t *testing.T) {
 	annotations := map[string]string{
-		"dd-manager.override.dep-monitor/name": "Deployment Monitor Name Override",
+		"dd-manager.fairwinds.com/override.dep-monitor.name": "Deployment Monitor Name Override",
 	}
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{

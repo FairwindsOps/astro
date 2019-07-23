@@ -115,7 +115,7 @@ It is possible to override monitor elements using kubernetes resource annotation
 You can annotate an object like so to override the name of the monitor:
 ```yaml
 annotations:
-  dd-manager.override.dep-replica-alert/name: "Deployment Replicas Alert"
+  dd-manager.fairwinds.com/override.dep-replica-alert.name: "Deployment Replicas Alert"
 ```
 
 In the example above we will be modifying the `dep-replica-alert` monitor (which is the Monitor Identifier from the config) to have a new `name`
