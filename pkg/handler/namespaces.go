@@ -16,17 +16,19 @@ package handler
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/reactiveops/dd-manager/pkg/config"
 	"github.com/reactiveops/dd-manager/pkg/datadog"
 	log "github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
-	"strings"
 )
 
 // OnNamespaceChanged is a handler that should be called when a namespace chanages.
 func OnNamespaceChanged(namespace *corev1.Namespace, event config.Event) {
 	cfg := config.GetInstance()
 	dd := datadog.GetInstance()
+	overrides := parseOverrides(namespace)
 
 	switch strings.ToLower(event.EventType) {
 	case "delete":
@@ -35,7 +37,9 @@ func OnNamespaceChanged(namespace *corev1.Namespace, event config.Event) {
 			dd.DeleteMonitors([]string{cfg.OwnerTag, fmt.Sprintf("dd-manager:object_type:%s", event.ResourceType), fmt.Sprintf("dd-manager:resource:%s", event.Key)})
 		}
 	case "create", "update":
-		for _, monitor := range *cfg.GetMatchingMonitors(namespace.Annotations, event.ResourceType) {
+		var record []string
+		for _, monitor := range *cfg.GetMatchingMonitors(namespace.Annotations, event.ResourceType, overrides) {
+			// for _, monitor := range monitors {
 			err := applyTemplate(namespace, &monitor, &event)
 			if err != nil {
 				log.Errorf("Error applying template for monitor %s: %v", *monitor.Name, err)
@@ -44,12 +48,18 @@ func OnNamespaceChanged(namespace *corev1.Namespace, event config.Event) {
 			log.Infof("Reconcile monitor %s", *monitor.Name)
 			if cfg.DryRun == false {
 				_, err := dd.AddOrUpdate(&monitor)
+				record = append(record, *monitor.Name)
 				if err != nil {
 					log.Errorf("Error adding/updating monitor")
 				}
 			} else {
 				log.Info("Running as DryRun, skipping DataDog update")
 			}
+		}
+		if strings.ToLower(event.EventType) == "update" && !cfg.DryRun {
+			// if there are any additional monitors, they should be removed.  This could happen if an object
+			// was previously monitored and now no longer is.
+			datadog.DeleteExtinctMonitors(record, []string{cfg.OwnerTag, fmt.Sprintf("dd-manager:object_type:%s", event.ResourceType), fmt.Sprintf("dd-manager:resource:%s", event.Key)})
 		}
 	default:
 		log.Warnf("Update type %s is not valid, skipping.", event.EventType)

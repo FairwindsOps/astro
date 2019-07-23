@@ -52,7 +52,7 @@ func GetInstance() *DDMonitorManager {
 // AddOrUpdate will create a monitor if it doesn't exist or update one if it does.
 // It returns the Id of the monitor created or updated.
 func (ddman *DDMonitorManager) AddOrUpdate(monitor *datadog.Monitor) (*datadog.Monitor, error) {
-	log.Infof("Update templated monitor:\n\n%+v", monitor)
+	log.Infof("Update templated monitor:%v", *monitor.Name)
 	// check if monitor exists
 	ddMonitor, err := ddman.GetProvisionedMonitor(monitor)
 	if err != nil {

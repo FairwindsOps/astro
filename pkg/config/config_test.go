@@ -8,6 +8,7 @@ import (
 	"github.com/reactiveops/dd-manager/pkg/kube"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	datadog "github.com/zorkian/go-datadog-api"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,9 +27,11 @@ var annotationCases = map[string]map[string]string{
 var typeCases = map[string]map[string]string{
 	"deployment": {
 		"title": "Deployment Replica Alert - {{ .ObjectMeta.Name }}",
+		"name":  "dep-replica-alert",
 	},
 	"namespace": {
 		"title": "Namespaced Deployment Replica Alert - {{ .ObjectMeta.Name }}",
+		"name":  "namespaced-replica-alert",
 	},
 }
 
@@ -77,24 +80,29 @@ func TestGetClusterVariables(t *testing.T) {
 func TestGetRulesetsValid(t *testing.T) {
 	for objectType, items := range typeCases {
 		annotations := annotationCases["pass"]
-		mSets := cfg.getMatchingRulesets(annotations, objectType)
+		overrides := make(map[string][]Override)
+		mSets := cfg.getMatchingRulesets(annotations, objectType, overrides)
 		assert.Equal(t, 1, len(*mSets))
 		mSet := (*mSets)[0]
 		assert.Equal(t, objectType, mSet.ObjectType)
 		assert.Equal(t, 1, len(mSet.Monitors))
-		assert.Equal(t, items["title"], *mSet.Monitors[0].Name)
+		assert.Equal(t, items["title"], *mSet.Monitors[items["name"]].Name)
 
-		monitors := cfg.GetMatchingMonitors(annotations, objectType)
-		assert.Equal(t, mSet.Monitors, *monitors)
+		monitors := cfg.GetMatchingMonitors(annotations, objectType, overrides)
+		expected := []datadog.Monitor{}
+		for _, value := range mSet.Monitors {
+			expected = append(expected, value)
+		}
+		assert.Equal(t, expected, *monitors)
 	}
 }
 
 func TestGetRulesetsInvalid(t *testing.T) {
 	for objectType := range typeCases {
 		annotations := annotationCases["fail"]
-		mSets := cfg.getMatchingRulesets(annotations, objectType)
+		overrides := make(map[string][]Override)
+		mSets := cfg.getMatchingRulesets(annotations, objectType, overrides)
 		assert.Equal(t, 0, len(*mSets))
-
 	}
 }
 
@@ -118,8 +126,8 @@ func TestGetBoundMonitorsValid(t *testing.T) {
 		},
 	}
 	kubeClient.Client.AppsV1().Deployments("foo").Create(dep)
-
-	mSets := cfg.GetBoundMonitors("owned-namespace", "deployment")
+	overrides := make(map[string][]Override)
+	mSets := cfg.GetBoundMonitors("owned-namespace", "deployment", overrides)
 	assert.Equal(t, 1, len(*mSets))
 	assert.Contains(t, (*mSets)[0].Tags, "dd-manager:bound_object")
 }
@@ -135,8 +143,8 @@ func TestGetBoundMonitorsInvalid(t *testing.T) {
 		},
 	}
 	kubeClient.Client.CoreV1().Namespaces().Create(ns)
-
-	mSets := cfg.GetBoundMonitors("owned-namespace", "deployment")
+	overrides := make(map[string][]Override)
+	mSets := cfg.GetBoundMonitors("owned-namespace", "deployment", overrides)
 	assert.Equal(t, 0, len(*mSets))
 
 	deleteOptions := metav1.NewDeleteOptions(10)
@@ -147,7 +155,7 @@ func TestGetBoundMonitorsInvalid(t *testing.T) {
 	defer func() {
 		log.SetOutput(os.Stdout)
 	}()
-	cfg.GetBoundMonitors("owned-namespace", "deployment")
+	cfg.GetBoundMonitors("owned-namespace", "deployment", overrides)
 	assert.Contains(t, buf.String(), "Error getting namespace")
 }
 
