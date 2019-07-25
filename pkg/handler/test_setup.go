@@ -4,9 +4,9 @@ import (
 	"os"
 
 	"github.com/golang/mock/gomock"
-	"github.com/reactiveops/dd-manager/pkg/datadog"
-	"github.com/reactiveops/dd-manager/pkg/kube"
-	mocks "github.com/reactiveops/dd-manager/pkg/mocks"
+	"github.com/fairwindsops/dd-manager/pkg/datadog"
+	"github.com/fairwindsops/dd-manager/pkg/kube"
+	mocks "github.com/fairwindsops/dd-manager/pkg/mocks"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"

@@ -1,4 +1,4 @@
-// Copyright 2019 ReactiveOps
+// Copyright 2019 FairwindsOps Inc
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/reactiveops/dd-manager/pkg/config"
-	"github.com/reactiveops/dd-manager/pkg/datadog"
+	"github.com/fairwindsops/dd-manager/pkg/config"
+	"github.com/fairwindsops/dd-manager/pkg/datadog"
 	log "github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 )

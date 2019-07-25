@@ -1,4 +1,4 @@
-module github.com/reactiveops/dd-manager
+module github.com/fairwindsops/dd-manager
 
 go 1.12
 

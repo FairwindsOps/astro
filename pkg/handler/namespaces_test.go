@@ -2,7 +2,7 @@ package handler
 
 import (
 	"github.com/golang/mock/gomock"
-	"github.com/reactiveops/dd-manager/pkg/config"
+	"github.com/fairwindsops/dd-manager/pkg/config"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"testing"

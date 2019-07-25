@@ -82,7 +82,7 @@ rulesets:
 ```
 
 ## Related Work
-* [Rodd](https://github.com/reactiveops/rodd).  Rodd is our current monitor management solution that takes a config file as input and creates terraform as output.  The main differentiators between rodd and dd-manager are:
+* [Rodd](https://github.com/FairwindsOps/rodd).  Rodd is our current monitor management solution that takes a config file as input and creates terraform as output.  The main differentiators between rodd and dd-manager are:
   * rodd requires manual updates to state, dd-manager does not
   * rodd supports creating monitors for non-kubernetes items
 

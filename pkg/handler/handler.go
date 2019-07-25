@@ -1,4 +1,4 @@
-// Copyright 2019 ReactiveOps
+// Copyright 2019 FairwindsOps Inc
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/reactiveops/dd-manager/pkg/config"
+	"github.com/fairwindsops/dd-manager/pkg/config"
 	log "github.com/sirupsen/logrus"
 	ddapi "github.com/zorkian/go-datadog-api"
 	appsv1 "k8s.io/api/apps/v1"
