@@ -3,10 +3,10 @@ package handler
 import (
 	"os"
 
-	"github.com/golang/mock/gomock"
 	"github.com/fairwindsops/dd-manager/pkg/datadog"
 	"github.com/fairwindsops/dd-manager/pkg/kube"
 	mocks "github.com/fairwindsops/dd-manager/pkg/mocks"
+	"github.com/golang/mock/gomock"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
