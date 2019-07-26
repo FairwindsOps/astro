@@ -29,7 +29,7 @@ references:
 
 jobs:
   test:
-    working_directory: /go/src/github.com/reactiveops/dd-manager
+    working_directory: /go/src/github.com/fairwindsops/dd-manager
     docker:
       - image: circleci/golang:1.12
     steps:

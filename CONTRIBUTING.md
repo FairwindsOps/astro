@@ -12,7 +12,7 @@ Dd-manager is built using the [Kubernetes Go client](https://github.com/kubernet
 
 ## Getting Started
 
-We label issues with the ["good first issue" tag](https://github.com/reactiveops/dd-manager/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) if we believe they'll be a good starting point for new contributors. If you're interested in working on an issue, please start a conversation on that issue, and we can help answer any questions as they come up.
+We label issues with the ["good first issue" tag](https://github.com/FairwindsOps/dd-manager/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) if we believe they'll be a good starting point for new contributors. If you're interested in working on an issue, please start a conversation on that issue, and we can help answer any questions as they come up.
 
 ## Setting Up Your Development Environment
 ### Prerequisites
@@ -20,8 +20,8 @@ We label issues with the ["good first issue" tag](https://github.com/reactiveops
 * Access to a Kubernetes cluster defined in `~/.kube/config` or `$KUBECONFIG`.
 
 ### Installation
-* Install the project with `go get github.com/reactiveops/dd-manager`
-* Change into the dd-manager directory which is installed at `$GOPATH/src/github.com/reactiveops/dd-manager`
+* Install the project with `go get github.com/fairwindsops/dd-manager`
+* Change into the dd-manager directory which is installed at `$GOPATH/src/github.com/fairwindsops/dd-manager`
 * Run the tool with `go run main.go`.
 
 ## Running Tests

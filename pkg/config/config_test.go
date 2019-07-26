@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/reactiveops/dd-manager/pkg/kube"
+	"github.com/fairwindsops/dd-manager/pkg/kube"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	datadog "github.com/zorkian/go-datadog-api"

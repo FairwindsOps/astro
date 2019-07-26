@@ -38,7 +38,7 @@ rulesets:
     - deployment
   match_annotations:
     - name: dd-manager/admin
-      value: reactiveops
+      value: fairwinds
   monitors:
     bound-deploy-replica-alert:
       name: "Deployment Replica Alert - {{ .ObjectMeta.Name }}"
@@ -261,7 +261,7 @@ rulesets:
 - type: namespace
   match_annotations:
     - name: dd-manager/admin
-      value: reactiveops
+      value: fairwinds
   monitors:
     ns-increased-pod-crash:
       name: "Increased Pod Crashes - {{ .ObjectMeta.Name }}"

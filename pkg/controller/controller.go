@@ -1,4 +1,4 @@
-// Copyright 2019 ReactiveOps
+// Copyright 2019 FairwindsOps Inc
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@ package controller
 
 import (
 	"fmt"
-	"github.com/reactiveops/dd-manager/pkg/config"
-	handler "github.com/reactiveops/dd-manager/pkg/handler"
-	"github.com/reactiveops/dd-manager/pkg/kube"
+	"github.com/fairwindsops/dd-manager/pkg/config"
+	handler "github.com/fairwindsops/dd-manager/pkg/handler"
+	"github.com/fairwindsops/dd-manager/pkg/kube"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"

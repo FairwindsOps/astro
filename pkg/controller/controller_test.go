@@ -3,7 +3,7 @@ package controller
 import (
 	"testing"
 
-	"github.com/reactiveops/dd-manager/pkg/kube"
+	"github.com/fairwindsops/dd-manager/pkg/kube"
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"

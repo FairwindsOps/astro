@@ -133,7 +133,7 @@ PRs welcome! Check out the [Contributing Guidelines](CONTRIBUTING.md),
 A history of changes to this project can be viewed in the [Changelog](CHANGELOG.md)
 
 If you'd like to learn more about dd-manager, or if you'd like to speak with
-a Kubernetes expert, you can contact `info@reactiveops.com` or [visit our website](https://reactiveops.com)
+a Kubernetes expert, you can contact `info@fairwinds.com` or [visit our website](https://fairwinds.com)
 
 ## License
 Apache License 2.0

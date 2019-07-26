@@ -3,7 +3,7 @@ package handler
 import (
 	"testing"
 
-	"github.com/reactiveops/dd-manager/pkg/config"
+	"github.com/fairwindsops/dd-manager/pkg/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/zorkian/go-datadog-api"
 	appsv1 "k8s.io/api/apps/v1"

@@ -1,4 +1,4 @@
-// Copyright 2019 ReactiveOps
+// Copyright 2019 FairwindsOps Inc
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package cmd
 import (
 	"os"
 
-	"github.com/reactiveops/dd-manager/pkg/controller"
+	"github.com/fairwindsops/dd-manager/pkg/controller"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
