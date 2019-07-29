@@ -39,7 +39,6 @@ func OnNamespaceChanged(namespace *corev1.Namespace, event config.Event) {
 	case "create", "update":
 		var record []string
 		for _, monitor := range *cfg.GetMatchingMonitors(namespace.Annotations, event.ResourceType, overrides) {
-			// for _, monitor := range monitors {
 			err := applyTemplate(namespace, &monitor, &event)
 			if err != nil {
 				log.Errorf("Error applying template for monitor %s: %v", *monitor.Name, err)
@@ -56,6 +55,8 @@ func OnNamespaceChanged(namespace *corev1.Namespace, event config.Event) {
 				log.Info("Running as DryRun, skipping DataDog update")
 			}
 		}
+		// Update any bound monitors for this namespace
+		updateBoundResources(namespace)
 		if strings.ToLower(event.EventType) == "update" && !cfg.DryRun {
 			// if there are any additional monitors, they should be removed.  This could happen if an object
 			// was previously monitored and now no longer is.
