@@ -20,6 +20,7 @@ import (
 
 	"github.com/fairwindsops/dd-manager/pkg/config"
 	"github.com/fairwindsops/dd-manager/pkg/datadog"
+	"github.com/fairwindsops/dd-manager/pkg/kube"
 	log "github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -56,7 +57,8 @@ func OnNamespaceChanged(namespace *corev1.Namespace, event config.Event) {
 			}
 		}
 		// Update any bound monitors for this namespace
-		updateBoundResources(namespace)
+		kubeClient := kube.GetInstance()
+		updateBoundResources(namespace, kubeClient)
 		if strings.ToLower(event.EventType) == "update" && !cfg.DryRun {
 			// if there are any additional monitors, they should be removed.  This could happen if an object
 			// was previously monitored and now no longer is.
