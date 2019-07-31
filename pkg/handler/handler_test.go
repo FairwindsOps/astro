@@ -57,6 +57,6 @@ func TestParseOverrides(t *testing.T) {
 	assert.IsType(t, map[string][]config.Override{}, overrides)
 	for k := range overrides {
 		assert.Equal(t, "dep-monitor", k)
-		assert.Equal(t, []config.Override{config.Override{Field: "name", Value: "Deployment Monitor Name Override"}}, overrides[k])
+		assert.Equal(t, []config.Override{{Field: "name", Value: "Deployment Monitor Name Override"}}, overrides[k])
 	}
 }
