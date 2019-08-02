@@ -31,6 +31,7 @@ import (
 func OnDeploymentChanged(deployment *appsv1.Deployment, event config.Event) {
 	cfg := config.GetInstance()
 	dd := datadog.GetInstance()
+	kubeClient := kube.GetInstance()
 	overrides := parseOverrides(deployment)
 
 	switch strings.ToLower(event.EventType) {
@@ -43,8 +44,6 @@ func OnDeploymentChanged(deployment *appsv1.Deployment, event config.Event) {
 		var record []string
 		var monitors []ddapi.Monitor
 
-		// get namespace data for GetBoundMonitors call
-		kubeClient := kube.GetInstance()
 		ns, err := kubeClient.Client.CoreV1().Namespaces().Get(event.Namespace, metav1.GetOptions{})
 		if err != nil {
 			log.Errorf("Error getting namespace %s: %+v", event.Namespace, err)

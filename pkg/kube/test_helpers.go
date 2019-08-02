@@ -4,12 +4,13 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 )
 
-// SetMock sets the singleton's interface to use a fake ClientSet
-func SetMock() {
-	kubeClient := ClientInstance{
+// SetAndGetMock sets the singleton's interface to use a fake ClientSet
+func SetAndGetMock() *ClientInstance {
+	kc := ClientInstance{
 		Client: fake.NewSimpleClientset(),
 	}
-	SetInstance(kubeClient)
+	SetInstance(kc)
+	return &kc
 }
 
 // SetInstance allows the user to set the kubeClient singleton

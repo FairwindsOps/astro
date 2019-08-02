@@ -18,8 +18,7 @@ import (
 )
 
 func TestCreateDeploymentController(t *testing.T) {
-	kube.SetMock()
-	kubeClient := kube.GetInstance()
+	kubeClient := kube.SetAndGetMock()
 	DeploymentInformer := cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
@@ -57,7 +56,7 @@ func TestCreateDeploymentController(t *testing.T) {
 }
 
 func TestNewController(t *testing.T) {
-	kube.SetMock()
+	kube.SetAndGetMock()
 
 	go func() {
 		time.Sleep(1 * time.Second)

@@ -15,8 +15,7 @@ import (
 
 func TestUpdateBoundResources(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	kube.SetMock()
-	kubeClient := kube.GetInstance()
+	kubeClient := kube.SetAndGetMock()
 	ddMock := datadog.GetMock(ctrl)
 	defer ctrl.Finish()
 
