@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"github.com/fairwindsops/dd-manager/pkg/config"
+	"github.com/fairwindsops/dd-manager/pkg/datadog"
+	"github.com/fairwindsops/dd-manager/pkg/kube"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
@@ -13,7 +15,9 @@ import (
 
 func TestUpdateBoundResources(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	kubeClient, ddMock := setupTests(ctrl)
+	kube.SetMock()
+	kubeClient := kube.GetInstance()
+	ddMock := datadog.GetMock(ctrl)
 	defer ctrl.Finish()
 
 	nsAnnotations := make(map[string]string, 1)

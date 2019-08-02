@@ -1,7 +1,9 @@
 package controller
 
 import (
+	"syscall"
 	"testing"
+	"time"
 
 	"github.com/fairwindsops/dd-manager/pkg/kube"
 	"github.com/stretchr/testify/assert"
@@ -11,21 +13,13 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
 )
 
-func setupTests() *kube.ClientInstance {
-	kubeClient := kube.ClientInstance{
-		Client: fake.NewSimpleClientset(),
-	}
-	kube.SetInstance(kubeClient)
-	return &kubeClient
-}
-
 func TestCreateDeploymentController(t *testing.T) {
-	kubeClient := setupTests()
+	kube.SetMock()
+	kubeClient := kube.GetInstance()
 	DeploymentInformer := cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
@@ -60,4 +54,14 @@ func TestCreateDeploymentController(t *testing.T) {
 	assert.Implements(t, (*kubernetes.Interface)(nil), DeployWatcher.kubeClient, "")
 	assert.Implements(t, (*cache.SharedIndexInformer)(nil), DeployWatcher.informer, "")
 	assert.Implements(t, (*workqueue.RateLimitingInterface)(nil), DeployWatcher.wq, "")
+}
+
+func TestNewController(t *testing.T) {
+	kube.SetMock()
+
+	go func() {
+		time.Sleep(1 * time.Second)
+		syscall.Kill(syscall.Getpid(), syscall.SIGINT)
+	}()
+	NewController()
 }

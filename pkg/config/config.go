@@ -25,11 +25,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/fairwindsops/dd-manager/pkg/kube"
 	log "github.com/sirupsen/logrus"
 	datadog "github.com/zorkian/go-datadog-api"
 	"gopkg.in/yaml.v2"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type ruleset struct {
@@ -138,25 +136,16 @@ func (config *Config) getMatchingRulesets(annotations map[string]string, objectT
 }
 
 // GetBoundMonitors returns a collection of monitors that are indirectly bound to objectTypes in the namespace specified.
-func (config *Config) GetBoundMonitors(namespace string, objectType string, overrides map[string][]Override) *[]datadog.Monitor {
+func (config *Config) GetBoundMonitors(nsAnnotations map[string]string, objectType string, overrides map[string][]Override) *[]datadog.Monitor {
 	var linkedMonitors []datadog.Monitor
-	kubeClient := kube.GetInstance()
+	mSets := config.getMatchingRulesets(nsAnnotations, "binding", overrides)
 
-	// get info about the namespace the object resides in
-	ns, err := kubeClient.Client.CoreV1().Namespaces().Get(namespace, metav1.GetOptions{})
-
-	if err != nil {
-		log.Errorf("Error getting namespace %s: %+v", namespace, err)
-	} else {
-		mSets := config.getMatchingRulesets(ns.Annotations, "binding", overrides)
-
-		for _, mSet := range *mSets {
-			if contains(mSet.BoundObjects, objectType) {
-				// object is linked to the ruleset
-				mSet.AppendTag("dd-manager:bound_object")
-				for _, v := range mSet.Monitors {
-					linkedMonitors = append(linkedMonitors, v)
-				}
+	for _, mSet := range *mSets {
+		if contains(mSet.BoundObjects, objectType) {
+			// object is linked to the ruleset
+			mSet.AppendTag("dd-manager:bound_object")
+			for _, v := range mSet.Monitors {
+				linkedMonitors = append(linkedMonitors, v)
 			}
 		}
 	}

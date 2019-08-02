@@ -20,9 +20,11 @@ import (
 
 	"github.com/fairwindsops/dd-manager/pkg/config"
 	"github.com/fairwindsops/dd-manager/pkg/datadog"
+	"github.com/fairwindsops/dd-manager/pkg/kube"
 	log "github.com/sirupsen/logrus"
 	ddapi "github.com/zorkian/go-datadog-api"
 	appsv1 "k8s.io/api/apps/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // OnDeploymentChanged is a handler that should be called when a deployment changes.
@@ -40,7 +42,16 @@ func OnDeploymentChanged(deployment *appsv1.Deployment, event config.Event) {
 	case "create", "update":
 		var record []string
 		var monitors []ddapi.Monitor
-		monitors = append(*cfg.GetMatchingMonitors(deployment.Annotations, event.ResourceType, overrides), *cfg.GetBoundMonitors(event.Namespace, event.ResourceType, overrides)...)
+
+		// get namespace data for GetBoundMonitors call
+		kubeClient := kube.GetInstance()
+		ns, err := kubeClient.Client.CoreV1().Namespaces().Get(event.Namespace, metav1.GetOptions{})
+		if err != nil {
+			log.Errorf("Error getting namespace %s: %+v", event.Namespace, err)
+			return
+		}
+
+		monitors = append(*cfg.GetMatchingMonitors(deployment.Annotations, event.ResourceType, overrides), *cfg.GetBoundMonitors(ns.Annotations, event.ResourceType, overrides)...)
 		for _, monitor := range monitors {
 			err := applyTemplate(deployment, &monitor, &event)
 			if err != nil {

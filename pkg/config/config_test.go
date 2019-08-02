@@ -1,18 +1,13 @@
 package config
 
 import (
-	"bytes"
 	"os"
 	"testing"
 
-	"github.com/fairwindsops/dd-manager/pkg/kube"
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	datadog "github.com/zorkian/go-datadog-api"
-	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes/fake"
 )
 
 var annotationCases = map[string]map[string]string{
@@ -33,14 +28,6 @@ var typeCases = map[string]map[string]string{
 		"title": "Namespaced Deployment Replica Alert - {{ .ObjectMeta.Name }}",
 		"name":  "namespaced-replica-alert",
 	},
-}
-
-func mockKube() *kube.ClientInstance {
-	kubeClient := kube.ClientInstance{
-		Client: fake.NewSimpleClientset(),
-	}
-	kube.SetInstance(kubeClient)
-	return &kubeClient
 }
 
 func getConf(confPath []string) *Config {
@@ -107,7 +94,6 @@ func TestGetRulesetsInvalid(t *testing.T) {
 }
 
 func TestGetBoundMonitorsValid(t *testing.T) {
-	kubeClient := mockKube()
 	annotations := make(map[string]string, 1)
 	annotations["test"] = "yup"
 
@@ -117,46 +103,11 @@ func TestGetBoundMonitorsValid(t *testing.T) {
 			Annotations: annotations,
 		},
 	}
-	kubeClient.Client.CoreV1().Namespaces().Create(ns)
 
-	dep := &appsv1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        "foo",
-			Annotations: annotations,
-		},
-	}
-	kubeClient.Client.AppsV1().Deployments("foo").Create(dep)
 	overrides := make(map[string][]Override)
-	mSets := cfg.GetBoundMonitors("owned-namespace", "deployment", overrides)
+	mSets := cfg.GetBoundMonitors(ns.Annotations, "deployment", overrides)
 	assert.Equal(t, 1, len(*mSets))
 	assert.Contains(t, (*mSets)[0].Tags, "dd-manager:bound_object")
-}
-
-func TestGetBoundMonitorsInvalid(t *testing.T) {
-	kubeClient := mockKube()
-	annotations := make(map[string]string, 1)
-	annotations["test"] = "nope"
-	ns := &corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        "owned-namespace",
-			Annotations: annotations,
-		},
-	}
-	kubeClient.Client.CoreV1().Namespaces().Create(ns)
-	overrides := make(map[string][]Override)
-	mSets := cfg.GetBoundMonitors("owned-namespace", "deployment", overrides)
-	assert.Equal(t, 0, len(*mSets))
-
-	deleteOptions := metav1.NewDeleteOptions(10)
-	kubeClient.Client.CoreV1().Namespaces().Delete("owned-namespace", deleteOptions)
-
-	var buf bytes.Buffer
-	log.SetOutput(&buf)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
-	cfg.GetBoundMonitors("owned-namespace", "deployment", overrides)
-	assert.Contains(t, buf.String(), "Error getting namespace")
 }
 
 func TestGenEnvAsInt(t *testing.T) {
