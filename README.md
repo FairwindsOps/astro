@@ -1,6 +1,6 @@
 [![CircleCI](https://circleci.com/gh/FairwindsOps/dd-manager.svg?style=svg&circle-token=77f1eb3b95b59a0372b19fdefbbd28ebfaa9d0c0)](https://circleci.com/gh/FairwindsOps/dd-manager)
 [![codecov](https://codecov.io/gh/fairwindsops/dd-manager/branch/master/graph/badge.svg?token=6zutKJd2Gy)](https://codecov.io/gh/fairwindsops/dd-manager)
-[![Apache 2.0 license](https://img.shields.io/badge/licence-Apache2-brightgreen.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Apache 2.0 license](https://img.shields.io/badge/license-Apache2-brightgreen.svg)](https://opensource.org/licenses/Apache-2.0)
 [![goreportcard](https://goreportcard.com/badge/github.com/FairwindsOps/dd-manager)](https://goreportcard.com/badge/github.com/FairwindsOps/dd-manager)
 
 
