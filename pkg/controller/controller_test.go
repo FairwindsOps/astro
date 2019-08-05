@@ -1,9 +1,7 @@
 package controller
 
 import (
-	"syscall"
 	"testing"
-	"time"
 
 	"github.com/fairwindsops/dd-manager/pkg/kube"
 	"github.com/stretchr/testify/assert"
@@ -53,14 +51,4 @@ func TestCreateDeploymentController(t *testing.T) {
 	assert.Implements(t, (*kubernetes.Interface)(nil), DeployWatcher.kubeClient, "")
 	assert.Implements(t, (*cache.SharedIndexInformer)(nil), DeployWatcher.informer, "")
 	assert.Implements(t, (*workqueue.RateLimitingInterface)(nil), DeployWatcher.wq, "")
-}
-
-func TestNewController(t *testing.T) {
-	kube.SetAndGetMock()
-
-	go func() {
-		time.Sleep(1 * time.Second)
-		syscall.Kill(syscall.Getpid(), syscall.SIGINT)
-	}()
-	NewController()
 }
