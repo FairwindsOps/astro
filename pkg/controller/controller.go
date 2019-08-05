@@ -16,9 +16,6 @@ package controller
 
 import (
 	"fmt"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/fairwindsops/dd-manager/pkg/config"
@@ -116,7 +113,7 @@ func (watcher *KubeResourceWatcher) next() bool {
 }
 
 // NewController starts a controller for watching Kubernetes objects.
-func NewController() {
+func NewController(stop chan bool) {
 	log.Info("Starting controller.")
 	kubeClient := kube.GetInstance()
 	log.Infof("Creating watcher for Deployments.")
@@ -158,12 +155,11 @@ func NewController() {
 	defer close(nsTerm)
 	go NSWatcher.Watch(nsTerm)
 
-	// create a channel to respond to SIGTERMs
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, syscall.SIGTERM)
-	signal.Notify(signals, syscall.SIGINT)
-	s := <-signals
-	log.Info("Exiting, got signal: ", s)
+	select {
+	case <-stop:
+		log.Info("Shutting down controllers")
+		return
+	}
 }
 
 func createController(kubeClient kubernetes.Interface, informer cache.SharedIndexInformer, resource string) *KubeResourceWatcher {
