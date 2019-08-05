@@ -16,11 +16,16 @@ package controller
 
 import (
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
 	"github.com/fairwindsops/dd-manager/pkg/config"
 	handler "github.com/fairwindsops/dd-manager/pkg/handler"
 	"github.com/fairwindsops/dd-manager/pkg/kube"
 	log "github.com/sirupsen/logrus"
-	"k8s.io/api/apps/v1"
+	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -30,10 +35,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 )
 
 // KubeResourceWatcher contains the informer that watches Kubernetes objects and the queue that processes updates.
@@ -132,7 +133,6 @@ func NewController() {
 		0,
 		cache.Indexers{},
 	)
-
 	DeployWatcher := createController(kubeClient.Client, DeploymentInformer, "deployment")
 	dTerm := make(chan struct{})
 	defer close(dTerm)
@@ -162,7 +162,8 @@ func NewController() {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGTERM)
 	signal.Notify(signals, syscall.SIGINT)
-	<-signals
+	s := <-signals
+	log.Info("Exiting, got signal: ", s)
 }
 
 func createController(kubeClient kubernetes.Interface, informer cache.SharedIndexInformer, resource string) *KubeResourceWatcher {
