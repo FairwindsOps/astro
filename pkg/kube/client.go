@@ -42,11 +42,6 @@ func GetInstance() *ClientInstance {
 	return kubeClient
 }
 
-// SetInstance sets the Kubernetes interface to use - this is for testing only
-func SetInstance(kc ClientInstance) {
-	kubeClient = &kc
-}
-
 func getKubeClient() kubernetes.Interface {
 	kubeConf, err := config.GetConfig()
 	if err != nil {

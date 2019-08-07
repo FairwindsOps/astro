@@ -1,9 +1,13 @@
 package controller
 
 import (
+	"os"
 	"testing"
+	"time"
 
 	"github.com/fairwindsops/dd-manager/pkg/kube"
+	"github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus/hooks/test"
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -11,21 +15,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
 )
 
-func setupTests() *kube.ClientInstance {
-	kubeClient := kube.ClientInstance{
-		Client: fake.NewSimpleClientset(),
-	}
-	kube.SetInstance(kubeClient)
-	return &kubeClient
-}
-
 func TestCreateDeploymentController(t *testing.T) {
-	kubeClient := setupTests()
+	kubeClient := kube.SetAndGetMock()
 	DeploymentInformer := cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
@@ -60,4 +55,33 @@ func TestCreateDeploymentController(t *testing.T) {
 	assert.Implements(t, (*kubernetes.Interface)(nil), DeployWatcher.kubeClient, "")
 	assert.Implements(t, (*cache.SharedIndexInformer)(nil), DeployWatcher.informer, "")
 	assert.Implements(t, (*workqueue.RateLimitingInterface)(nil), DeployWatcher.wq, "")
+}
+
+func TestNewController(t *testing.T) {
+	_, hook := test.NewNullLogger()
+	logrus.AddHook(hook)
+	logrus.SetLevel(logrus.InfoLevel)
+	kube.SetAndGetMock()
+	os.Setenv("DEFINITIONS_PATH", "../config/test_conf.yml")
+	stop := make(chan bool, 1)
+	defer close(stop)
+	go NewController(stop)
+
+	time.Sleep(500 * time.Millisecond)
+	var deployPass = false
+	var namespacePass = false
+	for _, log := range hook.AllEntries() {
+		if deployPass && namespacePass {
+			break
+		}
+		if log.Message == "Creating controller for resource type deployment" {
+			deployPass = true
+		}
+		if log.Message == "Creating controller for resource type namespace" {
+			namespacePass = true
+		}
+	}
+
+	assert.Equal(t, true, deployPass, "Logging did not indicate that the deployment controller started.")
+	assert.Equal(t, true, namespacePass, "Logging did not indicate that the namespace controller started.")
 }

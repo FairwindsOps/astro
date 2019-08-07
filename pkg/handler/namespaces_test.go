@@ -1,16 +1,20 @@
 package handler
 
 import (
+	"testing"
+
 	"github.com/fairwindsops/dd-manager/pkg/config"
+	"github.com/fairwindsops/dd-manager/pkg/datadog"
+	"github.com/fairwindsops/dd-manager/pkg/kube"
 	"github.com/golang/mock/gomock"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"testing"
 )
 
 func TestNamespaceChange(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	kubeClient, ddMock := setupTests(ctrl)
+	kubeClient := kube.SetAndGetMock()
+	ddMock := datadog.GetMock(ctrl)
 	defer ctrl.Finish()
 
 	annotations := make(map[string]string, 1)
@@ -42,7 +46,7 @@ func TestNamespaceChange(t *testing.T) {
 
 func TestNamespaceChangeNoMatch(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	kubeClient, _ := setupTests(ctrl)
+	kubeClient := kube.SetAndGetMock()
 	defer ctrl.Finish()
 
 	annotations := make(map[string]string, 1)
