@@ -3,9 +3,9 @@ package handler
 import (
 	"testing"
 
-	"github.com/fairwindsops/dd-manager/pkg/config"
-	"github.com/fairwindsops/dd-manager/pkg/datadog"
-	"github.com/fairwindsops/dd-manager/pkg/kube"
+	"github.com/fairwindsops/astro/pkg/config"
+	"github.com/fairwindsops/astro/pkg/datadog"
+	"github.com/fairwindsops/astro/pkg/kube"
 	"github.com/golang/mock/gomock"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -18,7 +18,7 @@ func TestNamespaceChange(t *testing.T) {
 	defer ctrl.Finish()
 
 	annotations := make(map[string]string, 1)
-	annotations["dd-manager/owner"] = "dd-manager"
+	annotations["astro/owner"] = "astro"
 	ns := &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        "owned-namespace",
@@ -32,7 +32,7 @@ func TestNamespaceChange(t *testing.T) {
 		ResourceType: "namespace",
 	}
 
-	tags := []string{"dd-manager"}
+	tags := []string{"astro"}
 	getTagsCall := ddMock.
 		EXPECT().
 		GetMonitorsByTags(tags)
@@ -50,7 +50,7 @@ func TestNamespaceChangeNoMatch(t *testing.T) {
 	defer ctrl.Finish()
 
 	annotations := make(map[string]string, 1)
-	annotations["dd-manager/owner"] = "not-dd-manager"
+	annotations["astro/owner"] = "not-astro"
 	ns := &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        "unowned-namespace",

@@ -3,7 +3,7 @@ package datadog
 import (
 	"os"
 
-	mocks "github.com/fairwindsops/dd-manager/pkg/mocks"
+	mocks "github.com/fairwindsops/astro/pkg/mocks"
 	"github.com/golang/mock/gomock"
 )
 

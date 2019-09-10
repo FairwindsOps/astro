@@ -1,7 +1,8 @@
-# dd-manager
+# astro
 
 ## People
 * Micah huber
+* Luke Reed
 
 ## Intent
 The goal of this project is to automate the management of Datadog monitors for Kubernetes clusters.  Given the dynamic nature of distributed Kubernetes systems, monitoring must frequently adapt to match the state of clusters.  Currently, no solution exists to address this need automatically.  Existing tools rely on manually configuring monitoring state which introduces toil to SRE teams.  Additionally, monitoring is often an after-thought and seldom gets adjusted promptly to serve new or changing workloads.  This introduces risk to availability and performance assurance because monitors may not be present or accurate to trigger changes in KPIs (Key Performance Indicators).  The result can be breaches in SLAs because they weren't detected and noisy pagers contributing to pager fatigue.
@@ -52,8 +53,8 @@ Example Configuration File:
 rulesets:
 - type: deployment
   match_annotations:
-    - name: dd-manager/owner
-      value: dd-manager
+    - name: astro/owner
+      value: astro
   monitors:
     - name: "Deployment Replica Alert - {{ .ObjectMeta.Name }}"
       type: metric alert
@@ -66,7 +67,7 @@ rulesets:
         Available replicas is no longer 0 for {{ .ObjectMeta.Name }}
         {{ "{{/is_alert}}" }}
       tags:
-        - dd-manager
+        - astro
       no_data_timeframe: 60
       notify_audit: false
       notify_no_data: false
@@ -82,11 +83,11 @@ rulesets:
 ```
 
 ## Related Work
-* [Rodd](https://github.com/FairwindsOps/rodd).  Rodd is our current monitor management solution that takes a config file as input and creates terraform as output.  The main differentiators between rodd and dd-manager are:
-  * rodd requires manual updates to state, dd-manager does not
+* [Rodd](https://github.com/FairwindsOps/rodd).  Rodd is our current monitor management solution that takes a config file as input and creates terraform as output.  The main differentiators between rodd and astro are:
+  * rodd requires manual updates to state, astro does not
   * rodd supports creating monitors for non-kubernetes items
 
-  Rodd's features complement dd-manager because it supports edge cases that dd-manager does not (for example, creating monitors for things that aren't defined in a Kubernetes cluster).
+  Rodd's features complement astro because it supports edge cases that astro does not (for example, creating monitors for things that aren't defined in a Kubernetes cluster).
 
 * [Datadog Terraform Provider](https://www.terraform.io/docs/providers/datadog/index.html).  The terraform provider can provision downtime, monitors, synthetics, and dashboards.  Using the provider is effective but it all must be managed manually.
 
@@ -96,4 +97,4 @@ rulesets:
 Use of a CRD to store configuration could be attractive because it would easily enable automatic updates to configuration.  However, one of the potential benefits of this project would be having a global configuration broad enough to apply to multiple clusters.  In this case, it is not desirable to have it live in the cluster and should be stored somewhere easily accessible for all clusters using it to access it.
 
 ### Using the Terraform Datadog provider
-Datadog providers a terraform provider that can be used to manage monitors.  This is especially beneficial when you already use terraform to manage existing infrastructure.  The disadvantage to this method is that all changes in state must be applied manually.  Using dd-manager, manual intervention can be significantly reduced.
+Datadog providers a terraform provider that can be used to manage monitors.  This is especially beneficial when you already use terraform to manage existing infrastructure.  The disadvantage to this method is that all changes in state must be applied manually.  Using astro, manual intervention can be significantly reduced.

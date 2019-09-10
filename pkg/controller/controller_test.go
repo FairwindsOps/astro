@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/fairwindsops/dd-manager/pkg/kube"
+	"github.com/fairwindsops/astro/pkg/kube"
 	"github.com/sirupsen/logrus"
 	"github.com/sirupsen/logrus/hooks/test"
 	"github.com/stretchr/testify/assert"

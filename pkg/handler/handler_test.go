@@ -3,7 +3,7 @@ package handler
 import (
 	"testing"
 
-	"github.com/fairwindsops/dd-manager/pkg/config"
+	"github.com/fairwindsops/astro/pkg/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/zorkian/go-datadog-api"
 	appsv1 "k8s.io/api/apps/v1"
@@ -44,7 +44,7 @@ func TestApplyTemplate(t *testing.T) {
 
 func TestParseOverrides(t *testing.T) {
 	annotations := map[string]string{
-		"dd-manager.fairwinds.com/override.dep-monitor.name": "Deployment Monitor Name Override",
+		"astro.fairwinds.com/override.dep-monitor.name": "Deployment Monitor Name Override",
 	}
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{

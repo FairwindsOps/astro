@@ -5,8 +5,8 @@ notification_profiles:
 rulesets:
 - type: deployment
   match_annotations:
-    - name: dd-manager/owner
-      value: dd-manager
+    - name: astro/owner
+      value: astro
   monitors:
     dep-replica-alert:
       name: "Deployment Replica Alert - {{ .ObjectMeta.Name }}"
@@ -20,7 +20,7 @@ rulesets:
         Available replicas is no longer 0 for {{ .ObjectMeta.Name }}
         {{ "{{/is_alert}}" }}
       tags:
-        - dd-manager
+        - astro
       options:
         no_data_timeframe: 60
         notify_audit: false
@@ -36,8 +36,8 @@ rulesets:
         locked: false
 - type: namespace
   match_annotations:
-    - name: dd-manager/owner
-      value: dd-manager
+    - name: astro/owner
+      value: astro
   monitors:
     namespaced-replica-alert:
       name: "Namespaced Deployment Replica Alert - {{ .ObjectMeta.Name }}"
@@ -51,7 +51,7 @@ rulesets:
         Available replicas is no longer 0 for {{ .ObjectMeta.Name }}
         {{ "{{/is_alert}}" }}
       tags:
-        - dd-manager
+        - astro
       options:
         no_data_timeframe: 60
         notify_audit: false
@@ -84,7 +84,7 @@ rulesets:
         Available replicas is no longer 0 for {{ .ObjectMeta.Name }}
         {{ "{{/is_alert}}" }}
       tags:
-        - dd-manager
+        - astro
       options:
         no_data_timeframe: 60
         notify_audit: false

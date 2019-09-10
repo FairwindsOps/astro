@@ -3,9 +3,9 @@ package handler
 import (
 	"testing"
 
-	"github.com/fairwindsops/dd-manager/pkg/config"
-	"github.com/fairwindsops/dd-manager/pkg/datadog"
-	"github.com/fairwindsops/dd-manager/pkg/kube"
+	"github.com/fairwindsops/astro/pkg/config"
+	"github.com/fairwindsops/astro/pkg/datadog"
+	"github.com/fairwindsops/astro/pkg/kube"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
@@ -37,8 +37,8 @@ func TestUpdateBoundResources(t *testing.T) {
 	}
 	kubeClient.Client.AppsV1().Deployments(ns.Name).Create(dep)
 
-	tags := []string{"dd-manager"}
-	depTags := []string{"dd-manager", "dd-manager:object_type:deployment", "dd-manager:resource:bound/foo"}
+	tags := []string{"astro"}
+	depTags := []string{"astro", "astro:object_type:deployment", "astro:resource:bound/foo"}
 	getTagsCall := ddMock.
 		EXPECT().
 		GetMonitorsByTags(tags)
