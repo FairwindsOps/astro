@@ -1,4 +1,4 @@
-module github.com/fairwindsops/dd-manager
+module github.com/fairwindsops/astro
 
 go 1.12
 

@@ -24,7 +24,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// RootCmd is the base dd-manager command
+// RootCmd is the base astro command
 func RootCmd() *cobra.Command {
 	root := &cobra.Command{
 		Use:   "astro",
