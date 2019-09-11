@@ -12,7 +12,7 @@ import (
 
 var annotationCases = map[string]map[string]string{
 	"pass": {
-		"dd-manager/owner": "dd-manager",
+		"astro/owner": "astro",
 	},
 	"fail": {
 		"test": "fail",
@@ -107,7 +107,7 @@ func TestGetBoundMonitorsValid(t *testing.T) {
 	overrides := make(map[string][]Override)
 	mSets := cfg.GetBoundMonitors(ns.Annotations, "deployment", overrides)
 	assert.Equal(t, 1, len(*mSets))
-	assert.Contains(t, (*mSets)[0].Tags, "dd-manager:bound_object")
+	assert.Contains(t, (*mSets)[0].Tags, "astro:bound_object")
 }
 
 func TestGenEnvAsInt(t *testing.T) {

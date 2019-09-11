@@ -1,6 +1,6 @@
 # Contributing
 
-Issues, whether bugs, tasks, or feature requests are essential for keeping dd-manager great. We believe it should be as easy as possible to contribute changes that get things working in your environment. There are a few guidelines that we need contributors to follow so that we can keep on top of things.
+Issues, whether bugs, tasks, or feature requests are essential for keeping astro great. We believe it should be as easy as possible to contribute changes that get things working in your environment. There are a few guidelines that we need contributors to follow so that we can keep on top of things.
 
 ## Code of Conduct
 
@@ -8,11 +8,11 @@ This project adheres to a [code of conduct](CODE_OF_CONDUCT.md). Please review t
 
 ## Project Structure
 
-Dd-manager is built using the [Kubernetes Go client](https://github.com/kubernetes/client-go) that makes use of the [Kubernetes Api](https://kubernetes.io/docs/reference/using-api/api-concepts/).  The project consists of a collection of controllers that watch for Kubernetes object updates, and sends these updates as events to handlers, which interact with the [Datadog Api](https://docs.datadoghq.com/api/) to manage the lifecycle of monitors.
+Astro is built using the [Kubernetes Go client](https://github.com/kubernetes/client-go) that makes use of the [Kubernetes Api](https://kubernetes.io/docs/reference/using-api/api-concepts/).  The project consists of a collection of controllers that watch for Kubernetes object updates, and sends these updates as events to handlers, which interact with the [Datadog Api](https://docs.datadoghq.com/api/) to manage the lifecycle of monitors.
 
 ## Getting Started
 
-We label issues with the ["good first issue" tag](https://github.com/FairwindsOps/dd-manager/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) if we believe they'll be a good starting point for new contributors. If you're interested in working on an issue, please start a conversation on that issue, and we can help answer any questions as they come up.
+We label issues with the ["good first issue" tag](https://github.com/FairwindsOps/astro/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) if we believe they'll be a good starting point for new contributors. If you're interested in working on an issue, please start a conversation on that issue, and we can help answer any questions as they come up.
 
 ## Setting Up Your Development Environment
 ### Prerequisites
@@ -20,13 +20,13 @@ We label issues with the ["good first issue" tag](https://github.com/FairwindsOp
 * Access to a Kubernetes cluster defined in `~/.kube/config` or `$KUBECONFIG`.
 
 ### Installation
-* Install the project with `go get github.com/fairwindsops/dd-manager`
-* Change into the dd-manager directory which is installed at `$GOPATH/src/github.com/fairwindsops/dd-manager`
+* Install the project with `go get github.com/fairwindsops/astro`
+* Change into the astro directory which is installed at `$GOPATH/src/github.com/fairwindsops/astro`
 * Run the tool with `go run main.go`.
 
 ## Running Tests
 
-The following commands are all required to pass as part of dd-manager testing:
+The following commands are all required to pass as part of astro testing:
 
 ```
 golint ./...

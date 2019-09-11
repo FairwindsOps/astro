@@ -18,9 +18,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/fairwindsops/dd-manager/pkg/config"
-	"github.com/fairwindsops/dd-manager/pkg/datadog"
-	"github.com/fairwindsops/dd-manager/pkg/kube"
+	"github.com/fairwindsops/astro/pkg/config"
+	"github.com/fairwindsops/astro/pkg/datadog"
+	"github.com/fairwindsops/astro/pkg/kube"
 	log "github.com/sirupsen/logrus"
 	ddapi "github.com/zorkian/go-datadog-api"
 	appsv1 "k8s.io/api/apps/v1"
@@ -38,7 +38,7 @@ func OnDeploymentChanged(deployment *appsv1.Deployment, event config.Event) {
 	case "delete":
 		if cfg.DryRun == false {
 			log.Info("Deleting resource monitors.")
-			dd.DeleteMonitors([]string{cfg.OwnerTag, fmt.Sprintf("dd-manager:object_type:%s", event.ResourceType), fmt.Sprintf("dd-manager:resource:%s", event.Key)})
+			dd.DeleteMonitors([]string{cfg.OwnerTag, fmt.Sprintf("astro:object_type:%s", event.ResourceType), fmt.Sprintf("astro:resource:%s", event.Key)})
 		}
 	case "create", "update":
 		var record []string
@@ -72,7 +72,7 @@ func OnDeploymentChanged(deployment *appsv1.Deployment, event config.Event) {
 		if strings.ToLower(event.EventType) == "update" && !cfg.DryRun {
 			// if there are any additional monitors, they should be removed.  This could happen if an object
 			// was previously monitored and now no longer is.
-			datadog.DeleteExtinctMonitors(record, []string{cfg.OwnerTag, fmt.Sprintf("dd-manager:object_type:%s", event.ResourceType), fmt.Sprintf("dd-manager:resource:%s", event.Key)})
+			datadog.DeleteExtinctMonitors(record, []string{cfg.OwnerTag, fmt.Sprintf("astro:object_type:%s", event.ResourceType), fmt.Sprintf("astro:resource:%s", event.Key)})
 		}
 	default:
 		log.Warnf("Update type %s is not valid, skipping.", event.EventType)

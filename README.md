@@ -1,12 +1,12 @@
-[![CircleCI](https://circleci.com/gh/FairwindsOps/dd-manager.svg?style=svg&circle-token=77f1eb3b95b59a0372b19fdefbbd28ebfaa9d0c0)](https://circleci.com/gh/FairwindsOps/dd-manager)
-[![codecov](https://codecov.io/gh/fairwindsops/dd-manager/branch/master/graph/badge.svg?token=6zutKJd2Gy)](https://codecov.io/gh/fairwindsops/dd-manager)
+[![CircleCI](https://circleci.com/gh/FairwindsOps/astro.svg?style=svg&circle-token=77f1eb3b95b59a0372b19fdefbbd28ebfaa9d0c0)](https://circleci.com/gh/FairwindsOps/astro)
+[![codecov](https://codecov.io/gh/fairwindsops/astro/branch/master/graph/badge.svg?token=6zutKJd2Gy)](https://codecov.io/gh/fairwindsops/astro)
 [![Apache 2.0 license](https://img.shields.io/badge/license-Apache2-brightgreen.svg)](https://opensource.org/licenses/Apache-2.0)
-[![goreportcard](https://goreportcard.com/badge/github.com/FairwindsOps/dd-manager)](https://goreportcard.com/badge/github.com/FairwindsOps/dd-manager)
+[![goreportcard](https://goreportcard.com/badge/github.com/FairwindsOps/astro)](https://goreportcard.com/badge/github.com/FairwindsOps/astro)
 
 
 
-# dd-manager
-DD-Manager was designed to simplify datadog monitor administration.  This is an operator that emits datadog monitors based on kubernetes state.  The operator responds to changes of resources in your kubernetes cluster and will manage datadog monitors based on the configured state.
+# Astro
+Astro was designed to simplify datadog monitor administration.  This is an operator that emits datadog monitors based on kubernetes state.  The operator responds to changes of resources in your kubernetes cluster and will manage datadog monitors based on the configured state.
 
 ## Configuration
 A combination of environment variables and a yaml file is used to configure the application.  An example configuration file is available at [here](conf.yml).
@@ -16,7 +16,7 @@ A combination of environment variables and a yaml file is used to configure the 
 |:------------|:----------------------------------:|:----------|:------------|
 | `DD_API_KEY` | The datadog api key for your datadog account. | `Y` ||
 | `DD_APP_KEY` | The datadog app key for your datadog account. | `Y` ||
-| `OWNER`      | A unique name to designate as the owner.  This will be applied as a tag to identified managed monitors. | `N`| `dd-manager` |
+| `OWNER`      | A unique name to designate as the owner.  This will be applied as a tag to identified managed monitors. | `N`| `astro` |
 | `DEFINITIONS_PATH` | The path to monitor definition configurations.  This can be a local path or a URL.  Multiple paths should be separated by a `;` | `N` | `conf.yml` |
 | `DRY_RUN` | when set to true monitors will not be managed in datadog. | `N` | `false` |
 
@@ -31,8 +31,8 @@ cluster_variables:
 rulesets:
 - type: deployment
   match_annotations:
-  - name: dd-manager/owner
-    value: dd-manager
+  - name: astro/owner
+    value: astro
   monitors:
     dep-replica-alert:
       name: "Deployment Replica Alert - {{ .ObjectMeta.Name }}"
@@ -117,7 +117,7 @@ It is possible to override monitor elements using kubernetes resource annotation
 You can annotate an object like so to override the name of the monitor:
 ```yaml
 annotations:
-  dd-manager.fairwinds.com/override.dep-replica-alert.name: "Deployment Replicas Alert"
+  astro.fairwinds.com/override.dep-replica-alert.name: "Deployment Replicas Alert"
 ```
 
 In the example above we will be modifying the `dep-replica-alert` monitor (which is the Monitor Identifier from the config) to have a new `name`
@@ -134,7 +134,7 @@ PRs welcome! Check out the [Contributing Guidelines](CONTRIBUTING.md),
 ## Further Information
 A history of changes to this project can be viewed in the [Changelog](CHANGELOG.md)
 
-If you'd like to learn more about dd-manager, or if you'd like to speak with
+If you'd like to learn more about astro, or if you'd like to speak with
 a Kubernetes expert, you can contact `info@fairwinds.com` or [visit our website](https://fairwinds.com)
 
 ## License

@@ -3,9 +3,9 @@ package handler
 import (
 	"testing"
 
-	"github.com/fairwindsops/dd-manager/pkg/config"
-	"github.com/fairwindsops/dd-manager/pkg/datadog"
-	"github.com/fairwindsops/dd-manager/pkg/kube"
+	"github.com/fairwindsops/astro/pkg/config"
+	"github.com/fairwindsops/astro/pkg/datadog"
+	"github.com/fairwindsops/astro/pkg/kube"
 	"github.com/golang/mock/gomock"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -26,7 +26,7 @@ func TestDeploymentChange(t *testing.T) {
 	kubeClient.Client.CoreV1().Namespaces().Create(ns)
 
 	annotations := make(map[string]string, 1)
-	annotations["dd-manager/owner"] = "dd-manager"
+	annotations["astro/owner"] = "astro"
 	dep := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        "foo",
@@ -40,7 +40,7 @@ func TestDeploymentChange(t *testing.T) {
 		ResourceType: "deployment",
 	}
 
-	tags := []string{"dd-manager"}
+	tags := []string{"astro"}
 	getTagsCall := ddMock.
 		EXPECT().
 		GetMonitorsByTags(tags)
@@ -65,7 +65,7 @@ func TestDeploymentChangeNoMatch(t *testing.T) {
 	kubeClient.Client.CoreV1().Namespaces().Create(ns)
 
 	annotations := make(map[string]string, 1)
-	annotations["dd-manager/owner"] = "not-dd-manager"
+	annotations["astro/owner"] = "not-astro"
 	dep := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        "foo",

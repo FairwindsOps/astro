@@ -21,7 +21,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/fairwindsops/dd-manager/pkg/config"
+	"github.com/fairwindsops/astro/pkg/config"
 	log "github.com/sirupsen/logrus"
 	ddapi "github.com/zorkian/go-datadog-api"
 	appsv1 "k8s.io/api/apps/v1"
@@ -111,8 +111,8 @@ func applyTemplate(obj interface{}, monitor *ddapi.Monitor, event *config.Event)
 	cfg := config.GetInstance()
 	monitor.Tags = append(monitor.Tags,
 		cfg.OwnerTag,
-		fmt.Sprintf("dd-manager:object_type:%s", event.ResourceType),
-		fmt.Sprintf("dd-manager:resource:%s", event.Key))
+		fmt.Sprintf("astro:object_type:%s", event.ResourceType),
+		fmt.Sprintf("astro:resource:%s", event.Key))
 	return nil
 }
 
@@ -160,7 +160,7 @@ func parseOverrideKey(key string) (string, string) {
 }
 
 func isOverride(annotationKey string) bool {
-	matched, err := regexp.Match(`^dd-manager\.fairwinds\.com/override\..*`, []byte(annotationKey))
+	matched, err := regexp.Match(`^astro\.fairwinds\.com/override\..*`, []byte(annotationKey))
 	if err != nil {
 		log.Errorf("Error parsing regexp of annotation key: %v", annotationKey)
 	}

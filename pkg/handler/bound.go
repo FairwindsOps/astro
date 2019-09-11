@@ -17,8 +17,8 @@ package handler
 import (
 	"fmt"
 
-	"github.com/fairwindsops/dd-manager/pkg/config"
-	"github.com/fairwindsops/dd-manager/pkg/kube"
+	"github.com/fairwindsops/astro/pkg/config"
+	"github.com/fairwindsops/astro/pkg/kube"
 	log "github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"

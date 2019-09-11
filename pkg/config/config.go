@@ -143,7 +143,7 @@ func (config *Config) GetBoundMonitors(nsAnnotations map[string]string, objectTy
 	for _, mSet := range *mSets {
 		if contains(mSet.BoundObjects, objectType) {
 			// object is linked to the ruleset
-			mSet.AppendTag("dd-manager:bound_object")
+			mSet.AppendTag("astro:bound_object")
 			for _, v := range mSet.Monitors {
 				linkedMonitors = append(linkedMonitors, v)
 			}
@@ -171,7 +171,7 @@ func GetInstance() *Config {
 			DatadogAPIKey:          getEnv("DD_API_KEY", ""),
 			DatadogAppKey:          getEnv("DD_APP_KEY", ""),
 			ClusterName:            getEnv("CLUSTER_NAME", ""),
-			OwnerTag:               getEnv("OWNER", "dd-manager"),
+			OwnerTag:               getEnv("OWNER", "astro"),
 			MonitorDefinitionsPath: envAsMap("DEFINITIONS_PATH", []string{"conf.yml"}, ";"),
 			DryRun:                 envAsBool("DRY_RUN", false),
 		}

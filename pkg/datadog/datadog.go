@@ -18,7 +18,7 @@ import (
 	"errors"
 	"reflect"
 
-	"github.com/fairwindsops/dd-manager/pkg/config"
+	"github.com/fairwindsops/astro/pkg/config"
 	log "github.com/sirupsen/logrus"
 	"github.com/zorkian/go-datadog-api"
 )
@@ -101,7 +101,7 @@ func (ddman *DDMonitorManager) GetProvisionedMonitor(monitor *datadog.Monitor) (
 	return nil, errors.New("monitor does not exist")
 }
 
-// GetProvisionedMonitors returns a collection of monitors managed by dd-manager.
+// GetProvisionedMonitors returns a collection of monitors managed by astro.
 func (ddman *DDMonitorManager) GetProvisionedMonitors() ([]datadog.Monitor, error) {
 	return ddman.Datadog.GetMonitorsByTags([]string{config.GetInstance().OwnerTag})
 }
