@@ -15,8 +15,10 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/fairwindsops/astro/pkg/controller"
@@ -24,20 +26,33 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// RootCmd is the base astro command
-func RootCmd() *cobra.Command {
-	root := &cobra.Command{
-		Use:   "astro",
-		Short: "Kubernetes datadog monitor manager",
-		Long:  "A kubernetes agent that manages datadog monitors.",
-		Run:   run,
-	}
-	return root
+var logLevels = map[string]log.Level{
+	"panic": log.PanicLevel,
+	"fatal": log.FatalLevel,
+	"error": log.ErrorLevel,
+	"warn":  log.WarnLevel,
+	"info":  log.InfoLevel,
+	"debug": log.DebugLevel,
+	"trace": log.TraceLevel,
+}
+
+var rootCmd = &cobra.Command{
+	Use:   "astro",
+	Short: "Kubernetes datadog monitor manager",
+	Long:  "A kubernetes agent that manages datadog monitors.",
+	Run:   run,
+}
+
+var logLevel string
+
+func init() {
+	rootCmd.PersistentFlags().StringVarP(&logLevel, "level", "l", "info", "Log level setting. Default is INFO. Should be one of PANIC, FATAL, ERROR, WARN, INFO, DEBUG, or TRACE")
 }
 
 func run(cmd *cobra.Command, args []string) {
 	log.SetReportCaller(true)
 	log.SetOutput(os.Stdout)
+	log.SetLevel(logLevels[strings.ToLower(logLevel)])
 
 	// create a channel for sending a stop to kube watcher threads
 	stop := make(chan bool, 1)
@@ -53,4 +68,12 @@ func run(cmd *cobra.Command, args []string) {
 	s := <-signals
 	stop <- true
 	log.Info("Exiting, got signal: ", s)
+}
+
+// Execute is the main entry point into the command
+func Execute() {
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
