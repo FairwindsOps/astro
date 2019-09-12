@@ -5,7 +5,7 @@ references:
     run:
       name: Set Environment Variables
       command: |
-        echo 'export REPO=quay.io/reactiveops/astro' >> ${BASH_ENV}
+        echo 'export REPO=quay.io/fairwinds/astro' >> ${BASH_ENV}
         echo 'export GO111MODULE=on' >> ${BASH_ENV}
         echo 'export CI_SHA1=$CIRCLE_SHA1' >> ${BASH_ENV}
         echo 'export CI_BRANCH=$CIRCLE_BRANCH' >> ${BASH_ENV}
@@ -17,7 +17,7 @@ references:
     run:
       name: build and push
       command: |
-        docker login quay.io -u="reactiveops+circleci" -p="${quay_token}"
+        docker login quay.io -u="${fairwinds_quay_user}" -p="${fairwinds_quay_token}"
         docker-pull -f .circleci/build.config
         docker-build -f .circleci/build.config
 
