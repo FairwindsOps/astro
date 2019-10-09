@@ -65,6 +65,7 @@ jobs:
           GO111MODULE: "on"
     steps:
       - checkout
+      - setup_remote_docker
       - run: curl -sL http://git.io/goreleaser | bash
 
 
@@ -88,6 +89,6 @@ workflows:
           context: org-global
           filters:
             branches:
-              only: mh/goreleaser
+              ignore: /.*/
             tags:
-              ignore: /v.*/
+              only: /v.*/
