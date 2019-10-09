@@ -1,12 +1,15 @@
-[![CircleCI](https://circleci.com/gh/FairwindsOps/astro.svg?style=svg&circle-token=77f1eb3b95b59a0372b19fdefbbd28ebfaa9d0c0)](https://circleci.com/gh/FairwindsOps/astro)
-[![codecov](https://codecov.io/gh/fairwindsops/astro/branch/master/graph/badge.svg?token=6zutKJd2Gy)](https://codecov.io/gh/fairwindsops/astro)
-[![Apache 2.0 license](https://img.shields.io/badge/license-Apache2-brightgreen.svg)](https://opensource.org/licenses/Apache-2.0)
-[![goreportcard](https://goreportcard.com/badge/github.com/FairwindsOps/astro)](https://goreportcard.com/badge/github.com/FairwindsOps/astro)
+<div align="center">
+  <img src="/img/logo.svg" height="120" alt="Astro" />
+  <br><br>
+
+  [![CircleCI](https://circleci.com/gh/FairwindsOps/astro.svg?style=svg&circle-token=77f1eb3b95b59a0372b19fdefbbd28ebfaa9d0c0)](https://circleci.com/gh/FairwindsOps/astro)
+  [![codecov](https://codecov.io/gh/fairwindsops/astro/branch/master/graph/badge.svg?token=6zutKJd2Gy)](https://codecov.io/gh/fairwindsops/astro)
+  [![Apache 2.0 license](https://img.shields.io/badge/license-Apache2-brightgreen.svg)](https://opensource.org/licenses/Apache-2.0)
+  [![goreportcard](https://goreportcard.com/badge/github.com/FairwindsOps/astro)](https://goreportcard.com/badge/github.com/FairwindsOps/astro)
+</div>
 
 
-
-# Astro
-Astro was designed to simplify datadog monitor administration.  This is an operator that emits datadog monitors based on kubernetes state.  The operator responds to changes of resources in your kubernetes cluster and will manage datadog monitors based on the configured state.
+Astro is designed to simplify Datadog monitor administration.  This is an operator that emits Datadog monitors based on Kubernetes state.  The operator responds to changes of resources in your kubernetes cluster and will manage Datadog monitors based on the configured state.
 
 ## Configuration
 A combination of environment variables and a yaml file is used to configure the application.  An example configuration file is available at [here](conf.yml).
@@ -14,14 +17,14 @@ A combination of environment variables and a yaml file is used to configure the 
 ### Environment Variables
 | Variable    | Descritpion                        | Required  | Default     |
 |:------------|:----------------------------------:|:----------|:------------|
-| `DD_API_KEY` | The datadog api key for your datadog account. | `Y` ||
-| `DD_APP_KEY` | The datadog app key for your datadog account. | `Y` ||
+| `DD_API_KEY` | The api key for your Datadog account. | `Y` ||
+| `DD_APP_KEY` | The app key for your Datadog account. | `Y` ||
 | `OWNER`      | A unique name to designate as the owner.  This will be applied as a tag to identified managed monitors. | `N`| `astro` |
 | `DEFINITIONS_PATH` | The path to monitor definition configurations.  This can be a local path or a URL.  Multiple paths should be separated by a `;` | `N` | `conf.yml` |
-| `DRY_RUN` | when set to true monitors will not be managed in datadog. | `N` | `false` |
+| `DRY_RUN` | when set to true monitors will not be managed in Datadog. | `N` | `false` |
 
 ### Configuration File
-A configuration file is used to define your monitors.  These are organized as rulesets, which consist of the type of resource the ruleset applies to, annotations that must be present on the resource to be considered valid objects, and a set of monitors to manage for that resource.  Go templating syntax may be used in your monitors and values will be inserted from each kubernetes object that matches the ruleset.  There is also a section called `cluster_variables` that you can use to define your own variables.  These variables can be inserted into the monitor templates.
+A configuration file is used to define your monitors.  These are organized as rulesets, which consist of the type of resource the ruleset applies to, annotations that must be present on the resource to be considered valid objects, and a set of monitors to manage for that resource.  Go templating syntax may be used in your monitors and values will be inserted from each Kubernetes object that matches the ruleset.  There is also a section called `cluster_variables` that you can use to define your own variables.  These variables can be inserted into the monitor templates.
 
 ```yaml
 ---
@@ -68,12 +71,12 @@ rulesets:
 ```
 
 * `cluster_variables`: (dict).  A collection of variables that can be used in monitors.  They can be used in monitors by prepending with `ClusterVariables`, eg `{{ ClusterVariables.var1 }}`.
-* `rulesets`: (List).  A collection of rulesets.  A ruleset consists of a kubernetes resource type, annotations the resource must have to be considered valid, and a collection of monitors to manage for the resource.
+* `rulesets`: (List).  A collection of rulesets.  A ruleset consists of a Kubernetes resource type, annotations the resource must have to be considered valid, and a collection of monitors to manage for the resource.
   * `match_annotations`: (List).  A collection of name/value pairs pairs of annotations that must be present on the resource to manage it.
   * `bound_objects`: (List).  A collection of object types that are bound to this object.  For instance, if you have a ruleset for a namespace, you can bind other objects like deployments, services, etc. Then, when the bound objects in the namespace get updated, those rulesets apply to it.
   * `monitors`: (Map).  A collection of monitors to manage for any resource that matches the rules defined.
     * Monitor Identifier (map key: unique and arbitrary, it should only include alpha characters and -)
-      * `name`: Name of the datadog monitor.
+      * `name`: Name of the Datadog monitor.
       * `type`: The type of the monitor, chosen from:
         - `metric alert`
         - `service check`
@@ -105,14 +108,14 @@ rulesets:
         * `locked`: boolean indicating if changes are only allowed from the creator or admins.
 
 #### A Note on Templating
-Since datadog uses a very similar templating language to go templating, to pass a template variable to datadog it must be "escaped" by inserting it as a template literal:
+Since Datadog uses a very similar templating language to go templating, to pass a template variable to Datadog it must be "escaped" by inserting it as a template literal:
 
 ```
 {{ "{{/is_alert}}" }}
 ```
 ## Overriding Configuration
 
-It is possible to override monitor elements using kubernetes resource annotations.
+It is possible to override monitor elements using Kubernetes resource annotations.
 
 You can annotate an object like so to override the name of the monitor:
 ```yaml
@@ -134,7 +137,7 @@ PRs welcome! Check out the [Contributing Guidelines](CONTRIBUTING.md),
 ## Further Information
 A history of changes to this project can be viewed in the [Changelog](CHANGELOG.md)
 
-If you'd like to learn more about astro, or if you'd like to speak with
+If you'd like to learn more about Astro, or if you'd like to speak with
 a Kubernetes expert, you can contact `info@fairwinds.com` or [visit our website](https://fairwinds.com)
 
 ## License
