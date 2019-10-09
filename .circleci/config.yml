@@ -49,9 +49,23 @@ jobs:
             go tool cover -html=coverage.txt -o cover-report.html
       - run: bash <(curl -s https://codecov.io/bash) -t $CODECOV_TOKEN
 
+  kubernetes_e2e_tests:
+    docker:
+      - image: quay.io/reactiveops/ci-images:v9.4-alpine
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Install kind
+          command: |
+            curl -LO https://github.com/kubernetes-sigs/kind/releases/download/0.2.1/kind-linux-amd64
+            chmod +x kind-linux-amd64
+            mv kind-linux-amd64 /usr/local/bin/kind
+      - run: cd ./hack/kind && ./setup.sh
+
   build:
     docker:
-      - image: quay.io/reactiveops/ci-images:v8.0-alpine
+      - image: quay.io/reactiveops/ci-images:v9.4-alpine
     steps:
       - checkout
       - setup_remote_docker
@@ -73,3 +87,11 @@ workflows:
               only: /.*/
             tags:
               only: /.*/
+      - kubernetes_e2e_tests:
+          requires:
+            - test
+          filters:
+            branches:
+              only: mh/kind
+            tags:
+              ignore: /.*/

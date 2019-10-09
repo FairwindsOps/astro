@@ -4,6 +4,7 @@ set -e
 
 kind_required_version=0.5.0
 kind_node_image="node:v1.13.10@sha256:2f5f882a6d0527a2284d29042f3a6a07402e1699d792d0d5a9b9a48ef155fa2a"
+run_tests=${1:-true}
 
 ## Test Infra Setup
 ## This will use Kind, Reckoner, and Helm to setup a test infrastructure locally for astro
@@ -55,3 +56,8 @@ fi
 
 echo "Use 'kind get kubeconfig-path --name=test-infra' to get your kubeconfig"
 echo "When done, use 'kind delete cluster --name test-infra to remove the cluster"
+
+if [ $run_tests ]
+then
+  ./test.sh
+fi
