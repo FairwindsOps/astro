@@ -62,6 +62,7 @@ jobs:
             chmod +x kind-linux-amd64
             mv kind-linux-amd64 /usr/local/bin/kind
       - run: pip install reckoner
+      - run: echo 'export KUBECONFIG="$(kind get kubeconfig-path --name=test-infra)"' >> ${BASH_ENV}
       - run: cd ./hack/kind && ./setup.sh
 
   build:
