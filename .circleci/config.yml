@@ -65,7 +65,6 @@ jobs:
           GO111MODULE: "on"
     steps:
       - checkout
-      - run: go mod download && go mod verify
       - run: curl -sL http://git.io/goreleaser | bash
 
 
