@@ -1,7 +1,14 @@
-[![CircleCI](https://circleci.com/gh/FairwindsOps/astro.svg?style=svg&circle-token=77f1eb3b95b59a0372b19fdefbbd28ebfaa9d0c0)](https://circleci.com/gh/FairwindsOps/astro)
-[![codecov](https://codecov.io/gh/fairwindsops/astro/branch/master/graph/badge.svg?token=6zutKJd2Gy)](https://codecov.io/gh/fairwindsops/astro)
-[![Apache 2.0 license](https://img.shields.io/badge/license-Apache2-brightgreen.svg)](https://opensource.org/licenses/Apache-2.0)
-[![goreportcard](https://goreportcard.com/badge/github.com/FairwindsOps/astro)](https://goreportcard.com/badge/github.com/FairwindsOps/astro)
+<div align="center">
+  <img src="/img/logo.svg" height="120" alt="Astro" />
+  <br>
+
+  [![CircleCI](https://circleci.com/gh/FairwindsOps/astro.svg?style=svg&circle-token=77f1eb3b95b59a0372b19fdefbbd28ebfaa9d0c0)](https://circleci.com/gh/FairwindsOps/astro)
+  [![codecov](https://codecov.io/gh/fairwindsops/astro/branch/master/graph/badge.svg?token=6zutKJd2Gy)](https://codecov.io/gh/fairwindsops/astro)
+  [![Apache 2.0 license](https://img.shields.io/badge/license-Apache2-brightgreen.svg)](https://opensource.org/licenses/Apache-2.0)
+  [![goreportcard](https://goreportcard.com/badge/github.com/FairwindsOps/astro)](https://goreportcard.com/badge/github.com/FairwindsOps/astro)
+</div>
+
+
 
 
 
