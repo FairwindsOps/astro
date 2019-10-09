@@ -1,0 +1,22 @@
+repository: stable
+minimum_versions:
+  helm: 2.13.1
+  reckoner: 1.4.0
+repositories:
+  incubator:
+    url: https://kubernetes-charts-incubator.storage.googleapis.com
+  stable:
+    url: https://kubernetes-charts.storage.googleapis.com
+  fairwinds-stable:
+    url: https://charts.fairwinds.com/stable
+  fairwinds-incubator:
+    url: https://charts.fairwinds.com/incubator
+charts:
+  astro:
+    namespace: astro
+    repository: fairwinds-incubator
+    version: 0.0.1
+    set-values:
+      dryRun: true
+      image:
+        tag: ${CIRCLE_SHA1}
