@@ -40,7 +40,7 @@ rulesets:
     dep-replica-alert:
       name: "Deployment Replica Alert - {{ .ObjectMeta.Name }}"
       type: metric alert
-      query: "max(last_10m):max:kubernetes_state.deployment.replicas_available{kubernetescluster:foobar,namespace:{{ .ObjectMeta.Namespace }}} by {deployment} <= 0"
+      query: "max(last_10m):max:kubernetes_state.deployment.replicas_available{kubernetescluster:foobar,deployment:{{ .ObjectMeta.Name }}} <= 0"
       message: |
         {{ "{{#is_alert}}" }}
         Available replicas is currently 0 for {{ .ObjectMeta.Name }}
@@ -129,6 +129,8 @@ As of now, the only fields that can be overridden are:
 * message
 * query
 * type
+
+Additionally, templating in the override is currently not available.
 
 ## Contributing
 PRs welcome! Check out the [Contributing Guidelines](CONTRIBUTING.md),
