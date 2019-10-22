@@ -74,6 +74,16 @@ jobs:
       - *set_environment_variables
       - *docker_build_and_push
 
+  release:
+    docker:
+      - image: circleci/golang:1.12
+        environment:
+          GO111MODULE: "on"
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: curl -sL http://git.io/goreleaser | bash
+
 
 workflows:
   version: 2
@@ -97,3 +107,13 @@ workflows:
               only: mh/kind
             tags:
               ignore: /.*/
+
+  release:
+    jobs:
+      - release:
+          context: org-global
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v.*/
