@@ -1,7 +1,5 @@
 #!/bin/bash
 
-vertical_pod_autoscaler_tag=vertical-pod-autoscaler-0.5.1
-
 printf "\n\n"
 echo "**************************"
 echo "** Begin E2E Test Setup **"
