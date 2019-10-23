@@ -3,10 +3,6 @@ minimum_versions:
   helm: 2.13.1
   reckoner: 1.4.0
 repositories:
-  incubator:
-    url: https://kubernetes-charts-incubator.storage.googleapis.com
-  stable:
-    url: https://kubernetes-charts.storage.googleapis.com
   fairwinds-stable:
     url: https://charts.fairwinds.com/stable
   fairwinds-incubator:
