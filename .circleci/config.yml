@@ -97,9 +97,6 @@ workflows:
               only: /.*/
             tags:
               only: /.*/
-
-  release:
-    jobs:
       - release:
           context: org-global
           requires:
