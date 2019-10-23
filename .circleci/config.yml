@@ -1,4 +1,7 @@
-version: 2
+version: 2.1
+
+orbs:
+  rok8s-scripts: fairwinds/rok8s-scripts@9.2.0
 
 references:
   set_environment_variables: &set_environment_variables
@@ -51,7 +54,7 @@ jobs:
 
   build:
     docker:
-      - image: quay.io/reactiveops/ci-images:v8.0-alpine
+      - image: quay.io/reactiveops/ci-images:v9.4-alpine
     steps:
       - checkout
       - setup_remote_docker
@@ -74,6 +77,17 @@ workflows:
   build:
     jobs:
       - test
+      - rok8s-scripts/kubernetes_e2e_tests:
+          pre_script: e2e/pre.sh
+          script: e2e/test.sh
+          requires:
+            - test
+            - build
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              ignore: /v.*/
       - build:
           context: org-global
           requires:
@@ -83,10 +97,11 @@ workflows:
               only: /.*/
             tags:
               only: /.*/
-  release:
-    jobs:
       - release:
           context: org-global
+          requires:
+            - test
+            - build
           filters:
             branches:
               ignore: /.*/
