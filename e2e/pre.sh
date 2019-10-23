@@ -12,7 +12,7 @@ else
     echo "CI_SHA1: $CI_SHA1"
 fi
 
-yq w -i hack/manifests/dashboard/deployment.yaml spec.template.spec.containers[0].image "quay.io/fairwinds/astro:$CI_SHA1"
+yq w -i hack/manifests/deployment.yaml spec.template.spec.containers[0].image "quay.io/fairwinds/astro:$CI_SHA1"
 
 cat hack/manifests/deployment.yaml
 
