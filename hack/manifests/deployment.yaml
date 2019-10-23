@@ -1,0 +1,35 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: astro
+  namespace: astro
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: astro
+      app.kubernetes.io/name: astro
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: astro
+        app.kubernetes.io/name: astro
+    spec:
+      containers:
+      - envFrom:
+        - configMapRef:
+            name: astro
+        - secretRef:
+            name: astro
+        image: quay.io/fairwinds/astro:v1.2.0
+        imagePullPolicy: IfNotPresent
+        name: astro
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+      serviceAccount: astro
+      serviceAccountName: astro

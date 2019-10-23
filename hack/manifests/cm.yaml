@@ -1,0 +1,9 @@
+apiVersion: v1
+data:
+  DEFINITIONS_PATH: conf.yml
+  DRY_RUN: "true"
+  OWNER: astro
+kind: ConfigMap
+metadata:
+  name: astro
+  namespace: astro

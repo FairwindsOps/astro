@@ -1,4 +1,7 @@
-version: 2
+version: 2.1
+
+orbs:
+  rok8s-scripts: fairwinds/rok8s-scripts@9.2.0
 
 references:
   set_environment_variables: &set_environment_variables
@@ -49,22 +52,6 @@ jobs:
             go tool cover -html=coverage.txt -o cover-report.html
       - run: bash <(curl -s https://codecov.io/bash) -t $CODECOV_TOKEN
 
-  kubernetes_e2e_tests:
-    docker:
-      - image: quay.io/reactiveops/ci-images:v9.4-alpine
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Install kind
-          command: |
-            curl -LO https://github.com/kubernetes-sigs/kind/releases/download/v0.5.1/kind-linux-amd64
-            chmod +x kind-linux-amd64
-            mv kind-linux-amd64 /usr/local/bin/kind
-      - run: pip install reckoner
-      - run: echo 'export KUBECONFIG="$(kind get kubeconfig-path --name=test-infra)"' >> ${BASH_ENV}
-      - run: cd ./hack/kind && ./setup.sh
-
   build:
     docker:
       - image: quay.io/reactiveops/ci-images:v9.4-alpine
@@ -90,6 +77,17 @@ workflows:
   build:
     jobs:
       - test
+      - rok8s-scripts/kubernetes_e2e_tests:
+          pre_script: e2e/pre.sh
+          script: e2e/test.sh
+          requires:
+            - test
+            - build
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              ignore: /v.*/
       - build:
           context: org-global
           requires:
@@ -99,19 +97,14 @@ workflows:
               only: /.*/
             tags:
               only: /.*/
-      - kubernetes_e2e_tests:
-          requires:
-            - build
-          filters:
-            branches:
-              only: mh/kind
-            tags:
-              ignore: /.*/
 
   release:
     jobs:
       - release:
           context: org-global
+          requires:
+            - test
+            - build
           filters:
             branches:
               ignore: /.*/
