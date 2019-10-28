@@ -113,7 +113,7 @@ func (watcher *KubeResourceWatcher) next() bool {
 }
 
 // NewController starts a controller for watching Kubernetes objects.
-func NewController(stop chan bool) {
+func New(stop chan bool) {
 	log.Info("Starting controller.")
 	kubeClient := kube.GetInstance()
 	log.Infof("Creating watcher for Deployments.")
