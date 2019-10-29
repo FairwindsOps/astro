@@ -16,6 +16,7 @@ package handler
 
 import (
 	"fmt"
+	"github.com/fairwindsops/astro/pkg/metrics"
 	"strings"
 
 	"github.com/fairwindsops/astro/pkg/config"
@@ -38,6 +39,7 @@ func OnDeploymentChanged(deployment *appsv1.Deployment, event config.Event) {
 	case "delete":
 		if cfg.DryRun == false {
 			log.Info("Deleting resource monitors.")
+			metrics.ChangeCounter.WithLabelValues("deployments", "delete").Inc()
 			dd.DeleteMonitors([]string{cfg.OwnerTag, fmt.Sprintf("astro:object_type:%s", event.ResourceType), fmt.Sprintf("astro:resource:%s", event.Key)})
 		}
 	case "create", "update":
@@ -54,14 +56,17 @@ func OnDeploymentChanged(deployment *appsv1.Deployment, event config.Event) {
 		for _, monitor := range monitors {
 			err := applyTemplate(deployment, &monitor, &event)
 			if err != nil {
+				metrics.TemplateErrorCounter.Inc()
 				log.Errorf("Error applying template for monitor %s: %v", *monitor.Name, err)
 				return
 			}
 			log.Infof("Reconcile monitor %s", *monitor.Name)
 			if cfg.DryRun == false {
 				_, err := dd.AddOrUpdate(&monitor)
+				metrics.ChangeCounter.WithLabelValues("deployments", "create_update").Inc()
 				record = append(record, *monitor.Name)
 				if err != nil {
+					metrics.ErrorCounter.Inc()
 					log.Errorf("Error adding/updating monitor")
 				}
 			} else {

@@ -16,6 +16,9 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/fairwindsops/astro/pkg/metrics"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"net/http"
 	"os"
 	"os/signal"
 	"strings"
@@ -44,9 +47,11 @@ var rootCmd = &cobra.Command{
 }
 
 var logLevel string
+var metricsPort string
 
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&logLevel, "level", "l", "info", "Log level setting. Default is INFO. Should be one of PANIC, FATAL, ERROR, WARN, INFO, DEBUG, or TRACE")
+	rootCmd.PersistentFlags().StringVarP(&metricsPort, "metrics-port", "p", ":8080", "The address to serve prometheus metrics.")
 }
 
 func run(cmd *cobra.Command, args []string) {
@@ -58,6 +63,16 @@ func run(cmd *cobra.Command, args []string) {
 	stop := make(chan bool, 1)
 	defer close(stop)
 	go controller.NewController(stop)
+
+	// Start metrics endpoint
+	go func() {
+		metrics.RegisterMetrics()
+		http.Handle("/metrics", promhttp.Handler())
+		if err := http.ListenAndServe(metricsPort, nil); err != nil {
+			log.Error(err, "unable to serve the metrics endpoint")
+			os.Exit(1)
+		}
+	}()
 
 	// create a channel to respond to SIGTERMs
 	signals := make(chan os.Signal, 1)
