@@ -12,7 +12,7 @@
 Astro is designed to simplify Datadog monitor administration.  This is an operator that emits Datadog monitors based on Kubernetes state.  The operator responds to changes of resources in your kubernetes cluster and will manage Datadog monitors based on the configured state.
 
 ## Configuration
-A combination of environment variables and a yaml file is used to configure the application.  An example configuration file is available at [here](conf.yml).
+A combination of environment variables and a yaml file is used to configure the application.  An example configuration file is available [here](conf.yml).
 
 ### Environment Variables
 | Variable    | Descritpion                        | Required  | Default     |

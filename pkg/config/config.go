@@ -120,7 +120,7 @@ func (config *Config) getMatchingRulesets(annotations map[string]string, objectT
 							case "message":
 								tmpMonitor.Message = &tmpOverrides[i].Value
 							default:
-								log.Warnf("override provided does mot match and monitor fields. provided field: %s", o.Field)
+								log.Warnf("override provided does mot match any monitor fields. provided field: %s", o.Field)
 							}
 						}
 						monitorSet.Monitors[name] = tmpMonitor
