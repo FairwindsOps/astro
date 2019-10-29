@@ -65,7 +65,7 @@ func TestNewController(t *testing.T) {
 	os.Setenv("DEFINITIONS_PATH", "../config/test_conf.yml")
 	stop := make(chan bool, 1)
 	defer close(stop)
-	go NewController(stop)
+	go New(stop)
 
 	time.Sleep(500 * time.Millisecond)
 	var deployPass = false
