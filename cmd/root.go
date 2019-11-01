@@ -62,7 +62,7 @@ func run(cmd *cobra.Command, args []string) {
 	// create a channel for sending a stop to kube watcher threads
 	stop := make(chan bool, 1)
 	defer close(stop)
-	go controller.NewController(stop)
+	go controller.New(stop)
 
 	// Start metrics endpoint
 	go func() {
