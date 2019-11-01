@@ -19,7 +19,7 @@ spec:
       - envFrom:
         - configMapRef:
             name: astro
-        image: quay.io/fairwinds/astro:v1.2.0
+        image: quay.io/fairwinds/astro:v1.3.0
         imagePullPolicy: IfNotPresent
         name: astro
         resources:
