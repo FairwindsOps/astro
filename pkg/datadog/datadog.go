@@ -16,11 +16,11 @@ package datadog
 
 import (
 	"errors"
-	"reflect"
-
 	"github.com/fairwindsops/astro/pkg/config"
+	"github.com/fairwindsops/astro/pkg/metrics"
 	log "github.com/sirupsen/logrus"
 	"github.com/zorkian/go-datadog-api"
+	"reflect"
 )
 
 // ClientAPI defines the interface for the Datadog client, for testing purposes
@@ -59,6 +59,7 @@ func (ddman *DDMonitorManager) AddOrUpdate(monitor *datadog.Monitor) (*datadog.M
 		//monitor doesn't exist
 		provisioned, err := ddman.Datadog.CreateMonitor(monitor)
 		if err != nil {
+			metrics.DatadogErrCounter.Inc()
 			log.Errorf("Error creating monitor %s: %s", *monitor.Name, err)
 			return nil, err
 		}
@@ -78,6 +79,7 @@ func (ddman *DDMonitorManager) AddOrUpdate(monitor *datadog.Monitor) (*datadog.M
 
 		err := ddman.Datadog.UpdateMonitor(&updated)
 		if err != nil {
+			metrics.DatadogErrCounter.Inc()
 			log.Errorf("Could not update monitor %d: %s", ddMonitor.Id, err)
 			return ddMonitor, err
 		}
@@ -89,6 +91,7 @@ func (ddman *DDMonitorManager) AddOrUpdate(monitor *datadog.Monitor) (*datadog.M
 func (ddman *DDMonitorManager) GetProvisionedMonitor(monitor *datadog.Monitor) (*datadog.Monitor, error) {
 	monitors, err := ddman.GetProvisionedMonitors()
 	if err != nil {
+		metrics.DatadogErrCounter.Inc()
 		log.Errorf("Error getting monitors: %v", err)
 		return nil, err
 	}
@@ -121,6 +124,7 @@ func (ddman *DDMonitorManager) DeleteMonitors(tags []string) error {
 
 	log.Infof("Deleting %d monitors.", len(monitors))
 	if err != nil {
+		metrics.DatadogErrCounter.Inc()
 		log.Errorf("Error getting monitors: %v", err)
 		return err
 	}
@@ -137,6 +141,7 @@ func DeleteExtinctMonitors(monitors []string, tags []string) error {
 	ddMan := GetInstance()
 	existing, err := ddMan.Datadog.GetMonitorsByTags(tags)
 	if err != nil {
+		metrics.DatadogErrCounter.Inc()
 		log.Infof("Error getting monitors: %v", err)
 		return err
 	}
@@ -147,6 +152,7 @@ func DeleteExtinctMonitors(monitors []string, tags []string) error {
 			log.Infof("Found monitor %s that shouldn't exist.", *monitor.Name)
 			err = ddMan.Datadog.DeleteMonitor(*monitor.Id)
 			if err != nil {
+				metrics.DatadogErrCounter.Inc()
 				log.Warnf("Error deleting extinct monitor %d: %v", *monitor.Id, err)
 				return err
 			}

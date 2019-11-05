@@ -16,13 +16,13 @@ package handler
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/fairwindsops/astro/pkg/config"
 	"github.com/fairwindsops/astro/pkg/datadog"
 	"github.com/fairwindsops/astro/pkg/kube"
+	"github.com/fairwindsops/astro/pkg/metrics"
 	log "github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
+	"strings"
 )
 
 // OnNamespaceChanged is a handler that should be called when a namespace chanages.
@@ -35,6 +35,7 @@ func OnNamespaceChanged(namespace *corev1.Namespace, event config.Event) {
 	case "delete":
 		if cfg.DryRun == false {
 			log.Info("Deleting resource monitors.")
+			metrics.ChangeCounter.WithLabelValues("namespaces", "delete").Inc()
 			dd.DeleteMonitors([]string{cfg.OwnerTag, fmt.Sprintf("astro:object_type:%s", event.ResourceType), fmt.Sprintf("astro:resource:%s", event.Key)})
 		}
 	case "create", "update":
@@ -42,14 +43,17 @@ func OnNamespaceChanged(namespace *corev1.Namespace, event config.Event) {
 		for _, monitor := range *cfg.GetMatchingMonitors(namespace.Annotations, event.ResourceType, overrides) {
 			err := applyTemplate(namespace, &monitor, &event)
 			if err != nil {
+				metrics.TemplateErrorCounter.Inc()
 				log.Errorf("Error applying template for monitor %s: %v", *monitor.Name, err)
 				return
 			}
 			log.Infof("Reconcile monitor %s", *monitor.Name)
 			if cfg.DryRun == false {
+				metrics.ChangeCounter.WithLabelValues("namespaces", "create_update").Inc()
 				_, err := dd.AddOrUpdate(&monitor)
 				record = append(record, *monitor.Name)
 				if err != nil {
+					metrics.ErrorCounter.Inc()
 					log.Errorf("Error adding/updating monitor")
 				}
 			} else {
