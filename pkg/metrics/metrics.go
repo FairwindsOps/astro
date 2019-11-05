@@ -18,8 +18,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-const namespace = "rbacmanager"
-
 var (
 	// ErrorCounter is a global counter for errors
 	ErrorCounter = prometheus.NewCounter(
