@@ -11,6 +11,8 @@
 
 Astro is designed to simplify Datadog monitor administration.  This is an operator that emits Datadog monitors based on Kubernetes state.  The operator responds to changes of resources in your kubernetes cluster and will manage Datadog monitors based on the configured state.
 
+**Want to learn more?** Fairwinds holds [office hours on Zoom](https://zoom.us/j/242508205) the first Friday of every month, at 12pm Eastern. You can also reach out via email at `opensource@fairwinds.com`
+
 ## Configuration
 A combination of environment variables and a yaml file is used to configure the application.  An example configuration file is available [here](conf.yml).
 
