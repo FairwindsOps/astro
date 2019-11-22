@@ -5,11 +5,13 @@
   [![CircleCI](https://circleci.com/gh/FairwindsOps/astro.svg?style=svg&circle-token=77f1eb3b95b59a0372b19fdefbbd28ebfaa9d0c0)](https://circleci.com/gh/FairwindsOps/astro)
   [![codecov](https://codecov.io/gh/fairwindsops/astro/branch/master/graph/badge.svg?token=6zutKJd2Gy)](https://codecov.io/gh/fairwindsops/astro)
   [![Apache 2.0 license](https://img.shields.io/badge/license-Apache2-brightgreen.svg)](https://opensource.org/licenses/Apache-2.0)
-  [![goreportcard](https://goreportcard.com/badge/github.com/FairwindsOps/astro)](https://goreportcard.com/badge/github.com/FairwindsOps/astro)
+  [![Go Report Card](https://goreportcard.com/badge/github.com/FairwindsOps/astro)](https://goreportcard.com/report/github.com/FairwindsOps/astro)
 </div>
 
 
 Astro is designed to simplify Datadog monitor administration.  This is an operator that emits Datadog monitors based on Kubernetes state.  The operator responds to changes of resources in your kubernetes cluster and will manage Datadog monitors based on the configured state.
+
+**Want to learn more?** Fairwinds holds [office hours on Zoom](https://zoom.us/j/242508205) the first Friday of every month, at 12pm Eastern. You can also reach out via email at `opensource@fairwinds.com`
 
 ## Configuration
 A combination of environment variables and a yaml file is used to configure the application.  An example configuration file is available [here](conf.yml).
