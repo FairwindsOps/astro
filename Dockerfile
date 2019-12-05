@@ -1,6 +1,6 @@
 FROM golang:1.12 AS build
-MAINTAINER Micah Huber <micah@fairwinds.com>
-MAINTAINER Luke Reed <luke@fairwinds.com>
+LABEL maintainer="Micah Huber <micah@fairwinds.com>"
+LABEL maintainer="Luke Reed <luke@fairwinds.com>"
 WORKDIR /go/src/github.com/fairwindsops/astro
 ADD . /go/src/github.com/fairwindsops/astro
 

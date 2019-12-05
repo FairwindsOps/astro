@@ -16,11 +16,12 @@ package datadog
 
 import (
 	"errors"
+	"reflect"
+
 	"github.com/fairwindsops/astro/pkg/config"
 	"github.com/fairwindsops/astro/pkg/metrics"
 	log "github.com/sirupsen/logrus"
 	"github.com/zorkian/go-datadog-api"
-	"reflect"
 )
 
 // ClientAPI defines the interface for the Datadog client, for testing purposes

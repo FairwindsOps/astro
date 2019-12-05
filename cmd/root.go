@@ -15,54 +15,60 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
-	"github.com/fairwindsops/astro/pkg/metrics"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"net/http"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/fairwindsops/astro/pkg/controller"
+	"github.com/fairwindsops/astro/pkg/kube"
+	"github.com/fairwindsops/astro/pkg/metrics"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"k8s.io/client-go/tools/leaderelection"
+	"k8s.io/client-go/tools/leaderelection/resourcelock"
 )
 
-var logLevels = map[string]log.Level{
-	"panic": log.PanicLevel,
-	"fatal": log.FatalLevel,
-	"error": log.ErrorLevel,
-	"warn":  log.WarnLevel,
-	"info":  log.InfoLevel,
-	"debug": log.DebugLevel,
-	"trace": log.TraceLevel,
-}
+var (
+	logLevels = map[string]log.Level{
+		"panic": log.PanicLevel,
+		"fatal": log.FatalLevel,
+		"error": log.ErrorLevel,
+		"warn":  log.WarnLevel,
+		"info":  log.InfoLevel,
+		"debug": log.DebugLevel,
+		"trace": log.TraceLevel,
+	}
+	rootCmd = &cobra.Command{
+		Use:   "astro",
+		Short: "Kubernetes datadog monitor manager",
+		Long:  "A kubernetes agent that manages datadog monitors.",
+		Run:   leaderElection,
+	}
+	logLevel    string
+	metricsPort string
+	namespace   string
+)
 
-var rootCmd = &cobra.Command{
-	Use:   "astro",
-	Short: "Kubernetes datadog monitor manager",
-	Long:  "A kubernetes agent that manages datadog monitors.",
-	Run:   run,
-}
-
-var logLevel string
-var metricsPort string
+const (
+	defaultLeaseDuration = 15 * time.Second
+	defaultRenewDeadline = 10 * time.Second
+	defaultRetryPeriod   = 2 * time.Second
+)
 
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&logLevel, "level", "l", "info", "Log level setting. Default is INFO. Should be one of PANIC, FATAL, ERROR, WARN, INFO, DEBUG, or TRACE")
 	rootCmd.PersistentFlags().StringVarP(&metricsPort, "metrics-port", "p", ":8080", "The address to serve prometheus metrics.")
+	rootCmd.PersistentFlags().StringVar(&namespace, "namespace", "kube-system", "The namespace where astro is running")
 }
-
-func run(cmd *cobra.Command, args []string) {
-	log.SetReportCaller(true)
+func leaderElection(cmd *cobra.Command, args []string) {
 	log.SetOutput(os.Stdout)
 	log.SetLevel(logLevels[strings.ToLower(logLevel)])
-
-	// create a channel for sending a stop to kube watcher threads
-	stop := make(chan bool, 1)
-	defer close(stop)
-	go controller.New(stop)
 
 	// Start metrics endpoint
 	go func() {
@@ -74,15 +80,64 @@ func run(cmd *cobra.Command, args []string) {
 		}
 	}()
 
+	id, err := os.Hostname()
+	if err != nil {
+		log.Fatalf("Unable to get hostname: %v", err)
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	kubeClient := kube.GetInstance()
+	lock, err := resourcelock.New(
+		resourcelock.LeasesResourceLock,
+		namespace,
+		"astro",
+		kubeClient.Client.CoreV1(),
+		kubeClient.Client.CoordinationV1(),
+		resourcelock.ResourceLockConfig{
+			Identity: id,
+		},
+	)
+	if err != nil {
+		log.Fatalf("Unable to create leader election lock: %v", err)
+	}
+
+	leaderelection.RunOrDie(ctx, leaderelection.LeaderElectionConfig{
+		Lock:          lock,
+		LeaseDuration: defaultLeaseDuration,
+		RenewDeadline: defaultRenewDeadline,
+		RetryPeriod:   defaultRetryPeriod,
+		Callbacks: leaderelection.LeaderCallbacks{
+			OnStartedLeading: func(ctx context.Context) {
+				run(ctx, cancel)
+			},
+			OnStoppedLeading: func() {
+				log.Infof("%s leaving", id)
+			},
+			OnNewLeader: func(identity string) {
+				if id == identity {
+					log.Info("I'm now the leader")
+					return
+				}
+				log.Infof("%s is now the leader", identity)
+			},
+		},
+	})
+}
+
+func run(ctx context.Context, cancel context.CancelFunc) {
 	// create a channel to respond to SIGTERMs
 	signals := make(chan os.Signal, 1)
 	defer close(signals)
 
-	signal.Notify(signals, syscall.SIGTERM)
-	signal.Notify(signals, syscall.SIGINT)
-	s := <-signals
-	stop <- true
-	log.Info("Exiting, got signal: ", s)
+	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-signals
+		log.Info("Exiting, received termination signal")
+		cancel()
+	}()
+
+	controller.New(ctx)
 }
 
 // Execute is the main entry point into the command

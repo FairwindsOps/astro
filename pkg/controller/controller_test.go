@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"os"
 	"testing"
 	"time"
@@ -63,9 +64,9 @@ func TestNewController(t *testing.T) {
 	logrus.SetLevel(logrus.InfoLevel)
 	kube.SetAndGetMock()
 	os.Setenv("DEFINITIONS_PATH", "../config/test_conf.yml")
-	stop := make(chan bool, 1)
-	defer close(stop)
-	go New(stop)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go New(ctx)
 
 	time.Sleep(500 * time.Millisecond)
 	var deployPass = false
