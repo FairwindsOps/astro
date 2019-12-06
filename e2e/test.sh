@@ -17,6 +17,6 @@ printf "\n\n"
 kubectl create ns astro
 kubectl -n astro apply -f /hack/manifests/
 
-kubectl -n astro wait deployment --timeout=60s --for condition=available -l app.kubernetes.io/name=astro,app.kubernetes.io/instance=astro
+kubectl -n astro wait deployment --timeout=60s --for condition=available -l app.kubernetes.io/name=astro
 
-kubectl get po --all-namespaces
+kubectl get pods --all-namespaces
