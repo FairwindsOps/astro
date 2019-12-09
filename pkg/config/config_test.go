@@ -127,7 +127,7 @@ func TestGetEnvAsBool(t *testing.T) {
 }
 
 func TestLoadFromPathInvalid(t *testing.T) {
-	var invalidHTTP = "http://fake.fake/config.yml"
+	var invalidHTTP = "https://fake.fake/config.yml"
 	var invalidLocal = "./fake.yml"
 
 	data, err := loadFromPath(invalidHTTP)

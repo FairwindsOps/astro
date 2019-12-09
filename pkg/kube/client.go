@@ -20,6 +20,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
+	// Necessary blank import to allow auth for GKE, Azure, etc
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
 )
 
 // ClientInstance is a wrapper around the kubernetes interface for testing purposes

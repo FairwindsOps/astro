@@ -16,12 +16,12 @@ package handler
 
 import (
 	"fmt"
-	"github.com/fairwindsops/astro/pkg/metrics"
 	"strings"
 
 	"github.com/fairwindsops/astro/pkg/config"
 	"github.com/fairwindsops/astro/pkg/datadog"
 	"github.com/fairwindsops/astro/pkg/kube"
+	"github.com/fairwindsops/astro/pkg/metrics"
 	log "github.com/sirupsen/logrus"
 	ddapi "github.com/zorkian/go-datadog-api"
 	appsv1 "k8s.io/api/apps/v1"

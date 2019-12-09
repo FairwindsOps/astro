@@ -15,6 +15,7 @@
 package controller
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -113,7 +114,7 @@ func (watcher *KubeResourceWatcher) next() bool {
 }
 
 // New starts a controller for watching Kubernetes objects.
-func New(stop chan bool) {
+func New(ctx context.Context) {
 	log.Info("Starting controller.")
 	kubeClient := kube.GetInstance()
 	log.Infof("Creating watcher for Deployments.")
@@ -156,7 +157,7 @@ func New(stop chan bool) {
 	go NSWatcher.Watch(nsTerm)
 
 	select {
-	case <-stop:
+	case <-ctx.Done():
 		log.Info("Shutting down controllers")
 		return
 	}
