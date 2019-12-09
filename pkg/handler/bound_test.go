@@ -41,10 +41,10 @@ func TestUpdateBoundResources(t *testing.T) {
 	depTags := []string{"astro", "astro:object_type:deployment", "astro:resource:bound/foo"}
 	getTagsCall := ddMock.
 		EXPECT().
-		GetMonitorsByTags(tags)
+		GetMonitorsByMonitorTags(tags)
 	ddMock.
 		EXPECT().
-		GetMonitorsByTags(depTags)
+		GetMonitorsByMonitorTags(depTags)
 	ddMock.
 		EXPECT().
 		CreateMonitor(gomock.Any()).

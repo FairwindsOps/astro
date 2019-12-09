@@ -35,7 +35,7 @@ func TestNamespaceChange(t *testing.T) {
 	tags := []string{"astro"}
 	getTagsCall := ddMock.
 		EXPECT().
-		GetMonitorsByTags(tags)
+		GetMonitorsByMonitorTags(tags)
 	ddMock.
 		EXPECT().
 		CreateMonitor(gomock.Any()).

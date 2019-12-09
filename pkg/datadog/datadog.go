@@ -26,7 +26,7 @@ import (
 
 // ClientAPI defines the interface for the Datadog client, for testing purposes
 type ClientAPI interface {
-	GetMonitorsByTags(tags []string) ([]datadog.Monitor, error)
+	GetMonitorsByMonitorTags(tags []string) ([]datadog.Monitor, error)
 	CreateMonitor(*datadog.Monitor) (*datadog.Monitor, error)
 	UpdateMonitor(*datadog.Monitor) error
 	DeleteMonitor(id int) error
@@ -107,7 +107,7 @@ func (ddman *DDMonitorManager) GetProvisionedMonitor(monitor *datadog.Monitor) (
 
 // GetProvisionedMonitors returns a collection of monitors managed by astro.
 func (ddman *DDMonitorManager) GetProvisionedMonitors() ([]datadog.Monitor, error) {
-	return ddman.Datadog.GetMonitorsByTags([]string{config.GetInstance().OwnerTag})
+	return ddman.Datadog.GetMonitorsByMonitorTags([]string{config.GetInstance().OwnerTag})
 }
 
 // DeleteMonitor deletes a monitor
@@ -121,7 +121,7 @@ func (ddman *DDMonitorManager) DeleteMonitor(monitor *datadog.Monitor) error {
 
 // DeleteMonitors deletes monitors containing the specified tags.
 func (ddman *DDMonitorManager) DeleteMonitors(tags []string) error {
-	monitors, err := ddman.Datadog.GetMonitorsByTags(tags)
+	monitors, err := ddman.Datadog.GetMonitorsByMonitorTags(tags)
 
 	log.Infof("Deleting %d monitors.", len(monitors))
 	if err != nil {
@@ -140,7 +140,7 @@ func (ddman *DDMonitorManager) DeleteMonitors(tags []string) error {
 // DeleteExtinctMonitors gathers monitors configured with all tags in variable tags;  If any are not present in variable monitors they get deleted.
 func DeleteExtinctMonitors(monitors []string, tags []string) error {
 	ddMan := GetInstance()
-	existing, err := ddMan.Datadog.GetMonitorsByTags(tags)
+	existing, err := ddMan.Datadog.GetMonitorsByMonitorTags(tags)
 	if err != nil {
 		metrics.DatadogErrCounter.Inc()
 		log.Infof("Error getting monitors: %v", err)
