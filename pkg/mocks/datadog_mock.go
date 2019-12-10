@@ -33,19 +33,19 @@ func (m *MockClientAPI) EXPECT() *MockClientAPIMockRecorder {
 	return m.recorder
 }
 
-// GetMonitorsByTags mocks base method
-func (m *MockClientAPI) GetMonitorsByTags(tags []string) ([]go_datadog_api.Monitor, error) {
+// GetMonitorsByMonitorTags mocks base method
+func (m *MockClientAPI) GetMonitorsByMonitorTags(tags []string) ([]go_datadog_api.Monitor, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMonitorsByTags", tags)
+	ret := m.ctrl.Call(m, "GetMonitorsByMonitorTags", tags)
 	ret0, _ := ret[0].([]go_datadog_api.Monitor)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetMonitorsByTags indicates an expected call of GetMonitorsByTags
-func (mr *MockClientAPIMockRecorder) GetMonitorsByTags(tags interface{}) *gomock.Call {
+// GetMonitorsByMonitorTags indicates an expected call of GetMonitorsByMonitorTags
+func (mr *MockClientAPIMockRecorder) GetMonitorsByMonitorTags(tags interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMonitorsByTags", reflect.TypeOf((*MockClientAPI)(nil).GetMonitorsByTags), tags)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMonitorsByMonitorTags", reflect.TypeOf((*MockClientAPI)(nil).GetMonitorsByMonitorTags), tags)
 }
 
 // CreateMonitor mocks base method
