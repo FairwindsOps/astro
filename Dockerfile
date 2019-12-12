@@ -10,4 +10,4 @@ RUN GO111MODULE=on GOOS=linux GOARCH=amd64 go build
 FROM gcr.io/distroless/base
 COPY --from=build /go/src/github.com/fairwindsops/astro/astro /astro
 COPY --from=build /go/src/github.com/fairwindsops/astro/conf.yml /conf.yml
-ENTRYPOINT ["/astro"]
+CMD ["./astro"]
