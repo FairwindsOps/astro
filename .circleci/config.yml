@@ -99,7 +99,12 @@ workflows:
               ignore: /v.*/
   release:
     jobs:
-      - test
+      - test:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v.*/
       - build:
           context: org-global
           filters:
