@@ -74,7 +74,7 @@ jobs:
 
 workflows:
   version: 2
-  build:
+  test_and_build:
     jobs:
       - test
       - rok8s-scripts/kubernetes_e2e_tests:
@@ -96,7 +96,22 @@ workflows:
             branches:
               only: /.*/
             tags:
-              only: /.*/
+              ignore: /v.*/
+  release:
+    jobs:
+      - test:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v.*/
+      - build:
+          context: org-global
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v.*/
       - release:
           context: org-global
           requires:
