@@ -16,3 +16,6 @@ local.sh
 
 .vscode
 .vscode/*
+
+.envrc
+astro
