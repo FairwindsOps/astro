@@ -22,6 +22,7 @@ import (
 	"github.com/fairwindsops/astro/pkg/metrics"
 	log "github.com/sirupsen/logrus"
 	"github.com/zorkian/go-datadog-api"
+	"sync"
 )
 
 // ClientAPI defines the interface for the Datadog client, for testing purposes
@@ -35,6 +36,7 @@ type ClientAPI interface {
 // DDMonitorManager is a higher-level wrapper around the Datadog API
 type DDMonitorManager struct {
 	Datadog ClientAPI
+	mux     sync.Mutex
 }
 
 var ddMonitorManagerInstance *DDMonitorManager
@@ -54,11 +56,15 @@ func GetInstance() *DDMonitorManager {
 // It returns the Id of the monitor created or updated.
 func (ddman *DDMonitorManager) AddOrUpdate(monitor *datadog.Monitor) (*datadog.Monitor, error) {
 	log.Infof("Update templated monitor:%v", *monitor.Name)
+	ddman.mux.Lock()
+	defer ddman.mux.Unlock()
+
 	// check if monitor exists
 	ddMonitor, err := ddman.GetProvisionedMonitor(monitor)
 	if err != nil {
 		//monitor doesn't exist
 		provisioned, err := ddman.Datadog.CreateMonitor(monitor)
+
 		if err != nil {
 			metrics.DatadogErrCounter.Inc()
 			log.Errorf("Error creating monitor %s: %s", *monitor.Name, err)
