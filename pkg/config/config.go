@@ -212,7 +212,7 @@ func (config *Config) reloadRulesets() {
 
 		yml, err := loadFromPath(cfg)
 		if err != nil {
-			log.Errorf("Could not load config file %s: %v", cfg, err)
+			log.Fatalf("Could not load config file %s: %v", cfg, err)
 			return
 		}
 

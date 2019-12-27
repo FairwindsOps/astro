@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -21,6 +22,7 @@ import (
 )
 
 func TestCreateDeploymentController(t *testing.T) {
+	os.Setenv("DEFINITIONS_PATH", "../config/test_conf.yml")
 	kubeClient := kube.SetAndGetMock()
 	DeploymentInformer := cache.NewSharedIndexInformer(
 		&cache.ListWatch{
@@ -36,6 +38,9 @@ func TestCreateDeploymentController(t *testing.T) {
 		cache.Indexers{},
 	)
 	DeployWatcher := createController(kubeClient.Client, DeploymentInformer, "deployment")
+	dTerm := make(chan struct{})
+	defer close(dTerm)
+	go DeployWatcher.Watch(dTerm)
 
 	annotations := make(map[string]string, 1)
 	annotations["test"] = "yup"
@@ -52,6 +57,60 @@ func TestCreateDeploymentController(t *testing.T) {
 		},
 	}
 	kubeClient.Client.AppsV1().Deployments("owned-namespace").Create(deploy)
+
+	assert.Implements(t, (*kubernetes.Interface)(nil), DeployWatcher.kubeClient, "")
+	assert.Implements(t, (*cache.SharedIndexInformer)(nil), DeployWatcher.informer, "")
+	assert.Implements(t, (*workqueue.RateLimitingInterface)(nil), DeployWatcher.wq, "")
+}
+
+func TestUpdateDeploymentController(t *testing.T) {
+	os.Setenv("DEFINITIONS_PATH", "../config/test_conf.yml")
+	kubeClient := kube.SetAndGetMock()
+	DeploymentInformer := cache.NewSharedIndexInformer(
+		&cache.ListWatch{
+			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+				return kubeClient.Client.AppsV1().Deployments("").List(metav1.ListOptions{})
+			},
+			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+				return kubeClient.Client.AppsV1().Deployments("").Watch(metav1.ListOptions{})
+			},
+		},
+		&appsv1.Deployment{},
+		0,
+		cache.Indexers{},
+	)
+	DeployWatcher := createController(kubeClient.Client, DeploymentInformer, "deployment")
+	dTerm := make(chan struct{})
+	defer close(dTerm)
+	go DeployWatcher.Watch(dTerm)
+
+	annotations := make(map[string]string, 1)
+	annotations["test"] = "yup"
+	ns := &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        "owned-namespace",
+			Annotations: annotations,
+		},
+	}
+	kubeClient.Client.CoreV1().Namespaces().Create(ns)
+	deploy := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        "foo",
+			Annotations: make(map[string]string),
+		},
+	}
+	var err error
+	deploy, err = kubeClient.Client.AppsV1().Deployments("owned-namespace").Create(deploy)
+	assert.NoError(t, err)
+	time.Sleep(2 * time.Second)
+	deploy.ObjectMeta.Annotations["foo"] = "bar"
+	deploy, err = kubeClient.Client.AppsV1().Deployments("owned-namespace").Update(deploy)
+	fmt.Println("updated deploy")
+	assert.NoError(t, err)
+	time.Sleep(2 * time.Second)
+	err = kubeClient.Client.AppsV1().Deployments("owned-namespace").Delete("foo", &metav1.DeleteOptions{})
+	assert.NoError(t, err)
+	time.Sleep(2 * time.Second)
 
 	assert.Implements(t, (*kubernetes.Interface)(nil), DeployWatcher.kubeClient, "")
 	assert.Implements(t, (*cache.SharedIndexInformer)(nil), DeployWatcher.informer, "")
