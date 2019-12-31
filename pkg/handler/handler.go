@@ -32,7 +32,7 @@ import (
 // obj is the Kubernetes object that was updated.
 // event is the Event metadata representing the update.
 func OnUpdate(obj interface{}, event config.Event) {
-	log.Infof("Handler got an OnUpdate event of type %s", event.EventType)
+	log.Infof("Handler got an OnUpdate event of type %s", event.ResourceType)
 
 	if event.EventType == "delete" {
 		onDelete(event)
