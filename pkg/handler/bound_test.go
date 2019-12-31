@@ -3,14 +3,15 @@ package handler
 import (
 	"testing"
 
-	"github.com/fairwindsops/astro/pkg/config"
-	"github.com/fairwindsops/astro/pkg/datadog"
-	"github.com/fairwindsops/astro/pkg/kube"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/fairwindsops/astro/pkg/config"
+	"github.com/fairwindsops/astro/pkg/datadog"
+	"github.com/fairwindsops/astro/pkg/kube"
 )
 
 func TestUpdateBoundResources(t *testing.T) {

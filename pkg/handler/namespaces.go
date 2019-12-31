@@ -16,13 +16,15 @@ package handler
 
 import (
 	"fmt"
+	"strings"
+
+	log "github.com/sirupsen/logrus"
+	corev1 "k8s.io/api/core/v1"
+
 	"github.com/fairwindsops/astro/pkg/config"
 	"github.com/fairwindsops/astro/pkg/datadog"
 	"github.com/fairwindsops/astro/pkg/kube"
 	"github.com/fairwindsops/astro/pkg/metrics"
-	log "github.com/sirupsen/logrus"
-	corev1 "k8s.io/api/core/v1"
-	"strings"
 )
 
 // OnNamespaceChanged is a handler that should be called when a namespace chanages.

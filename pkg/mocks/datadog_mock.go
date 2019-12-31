@@ -33,21 +33,6 @@ func (m *MockClientAPI) EXPECT() *MockClientAPIMockRecorder {
 	return m.recorder
 }
 
-// GetMonitorsByMonitorTags mocks base method
-func (m *MockClientAPI) GetMonitorsByMonitorTags(tags []string) ([]go_datadog_api.Monitor, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMonitorsByMonitorTags", tags)
-	ret0, _ := ret[0].([]go_datadog_api.Monitor)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetMonitorsByMonitorTags indicates an expected call of GetMonitorsByMonitorTags
-func (mr *MockClientAPIMockRecorder) GetMonitorsByMonitorTags(tags interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMonitorsByMonitorTags", reflect.TypeOf((*MockClientAPI)(nil).GetMonitorsByMonitorTags), tags)
-}
-
 // CreateMonitor mocks base method
 func (m *MockClientAPI) CreateMonitor(arg0 *go_datadog_api.Monitor) (*go_datadog_api.Monitor, error) {
 	m.ctrl.T.Helper()
@@ -63,20 +48,6 @@ func (mr *MockClientAPIMockRecorder) CreateMonitor(arg0 interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMonitor", reflect.TypeOf((*MockClientAPI)(nil).CreateMonitor), arg0)
 }
 
-// UpdateMonitor mocks base method
-func (m *MockClientAPI) UpdateMonitor(arg0 *go_datadog_api.Monitor) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateMonitor", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateMonitor indicates an expected call of UpdateMonitor
-func (mr *MockClientAPIMockRecorder) UpdateMonitor(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMonitor", reflect.TypeOf((*MockClientAPI)(nil).UpdateMonitor), arg0)
-}
-
 // DeleteMonitor mocks base method
 func (m *MockClientAPI) DeleteMonitor(id int) error {
 	m.ctrl.T.Helper()
@@ -89,4 +60,61 @@ func (m *MockClientAPI) DeleteMonitor(id int) error {
 func (mr *MockClientAPIMockRecorder) DeleteMonitor(id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMonitor", reflect.TypeOf((*MockClientAPI)(nil).DeleteMonitor), id)
+}
+
+// GetMonitorsByMonitorTags mocks base method
+func (m *MockClientAPI) GetMonitorsByMonitorTags(tags []string) ([]go_datadog_api.Monitor, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMonitorsByMonitorTags", tags)
+	ret0, _ := ret[0].([]go_datadog_api.Monitor)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMonitorsByMonitorTags indicates an expected call of GetMonitorsByMonitorTags
+func (mr *MockClientAPIMockRecorder) GetMonitorsByMonitorTags(tags interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMonitorsByMonitorTags", reflect.TypeOf((*MockClientAPI)(nil).GetMonitorsByMonitorTags), tags)
+}
+
+// MuteMonitorScope mocks base method
+func (m *MockClientAPI) MuteMonitorScope(id int, muteMonitorScope *go_datadog_api.MuteMonitorScope) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MuteMonitorScope", id, muteMonitorScope)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MuteMonitorScope indicates an expected call of MuteMonitorScope
+func (mr *MockClientAPIMockRecorder) MuteMonitorScope(id, muteMonitorScope interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MuteMonitorScope", reflect.TypeOf((*MockClientAPI)(nil).MuteMonitorScope), id, muteMonitorScope)
+}
+
+// UnmuteMonitor mocks base method
+func (m *MockClientAPI) UnmuteMonitor(id int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UnmuteMonitor", id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UnmuteMonitor indicates an expected call of UnmuteMonitor
+func (mr *MockClientAPIMockRecorder) UnmuteMonitor(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnmuteMonitor", reflect.TypeOf((*MockClientAPI)(nil).UnmuteMonitor), id)
+}
+
+// UpdateMonitor mocks base method
+func (m *MockClientAPI) UpdateMonitor(arg0 *go_datadog_api.Monitor) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateMonitor", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateMonitor indicates an expected call of UpdateMonitor
+func (mr *MockClientAPIMockRecorder) UpdateMonitor(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMonitor", reflect.TypeOf((*MockClientAPI)(nil).UpdateMonitor), arg0)
 }

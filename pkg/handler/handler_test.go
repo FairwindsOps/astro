@@ -3,11 +3,12 @@ package handler
 import (
 	"testing"
 
-	"github.com/fairwindsops/astro/pkg/config"
 	"github.com/stretchr/testify/assert"
-	"github.com/zorkian/go-datadog-api"
+	ddapi "github.com/zorkian/go-datadog-api"
 	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/fairwindsops/astro/pkg/config"
 )
 
 func TestApplyTemplate(t *testing.T) {
@@ -20,11 +21,11 @@ func TestApplyTemplate(t *testing.T) {
 	queryTemplate := "Query {{ .ObjectMeta.Name }}"
 	messageTemplate := "Message {{ .ObjectMeta.Name }}"
 	emTemplate := "EM {{ .ObjectMeta.Name }}"
-	monitor := datadog.Monitor{
+	monitor := ddapi.Monitor{
 		Name:    &nameTemplate,
 		Query:   &queryTemplate,
 		Message: &messageTemplate,
-		Options: &datadog.Options{
+		Options: &ddapi.Options{
 			EscalationMessage: &emTemplate,
 		},
 	}

@@ -11,7 +11,7 @@ require (
 	github.com/golang/mock v1.3.1
 	github.com/gophercloud/gophercloud v0.7.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.1 // indirect
-	github.com/imdario/mergo v0.3.7 // indirect
+	github.com/imdario/mergo v0.3.8
 	github.com/onsi/gomega v1.5.0 // indirect
 	github.com/prometheus/client_golang v0.9.4
 	github.com/sirupsen/logrus v1.4.2

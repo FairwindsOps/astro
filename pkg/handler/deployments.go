@@ -18,14 +18,15 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/fairwindsops/astro/pkg/config"
-	"github.com/fairwindsops/astro/pkg/datadog"
-	"github.com/fairwindsops/astro/pkg/kube"
-	"github.com/fairwindsops/astro/pkg/metrics"
 	log "github.com/sirupsen/logrus"
 	ddapi "github.com/zorkian/go-datadog-api"
 	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/fairwindsops/astro/pkg/config"
+	"github.com/fairwindsops/astro/pkg/datadog"
+	"github.com/fairwindsops/astro/pkg/kube"
+	"github.com/fairwindsops/astro/pkg/metrics"
 )
 
 // OnDeploymentChanged is a handler that should be called when a deployment changes.
