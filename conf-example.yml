@@ -11,15 +11,14 @@ rulesets:
       name: "Deployment Replica Alert - {{ .ObjectMeta.Name }}"
       type: metric alert
       query: "max(last_10m):max:kubernetes_state.deployment.replicas_available{namespace:{{ .ObjectMeta.Namespace }}} by {deployment} <= 0"
-      message: |
+      message: |-
         {{ "{{#is_alert}}" }}
         Available replicas is currently 0 for {{ .ObjectMeta.Name }}
         {{ "{{/is_alert}}" }}
         {{ "{{^is_alert}}" }}
         Available replicas is no longer 0 for {{ .ObjectMeta.Name }}
         {{ "{{/is_alert}}" }}
-      tags:
-        - astro
+      tags: []
       options:
         no_data_timeframe: 60
         notify_audit: false
@@ -44,7 +43,7 @@ rulesets:
       name: "Deployment Replica Alert - {{ .ObjectMeta.Name }}"
       type: metric alert
       query: "max(last_10m):max:kubernetes_state.deployment.replicas_available{deployment:{{ .ObjectMeta.Name }}} <= 0"
-      message: |
+      message: |-
         {{ "{{#is_alert}}" }}
         Available replicas is currently 0 for {{ "{{deployment.name}}" }}
         {{ "{{/is_alert}}" }}
@@ -52,8 +51,7 @@ rulesets:
         Available replicas is no longer 0 for {{ "{{deployment.name}}" }}
         {{ "{{/is_alert}}" }}
         {{ ClusterVariables.warning_notifications }}
-      tags:
-        - astro
+      tags: []
       options:
         notify_audit: false
         notify_no_data: false
@@ -70,13 +68,12 @@ rulesets:
       name: "High System Load Average"
       type: metric alert
       query: "avg(last_30m):avg:system.load.norm.5{k8s.io/role/master:1} by {host} > 2"
-      message: |
+      message: |-
         Load average is high on {{ "{{host.name}} {{host.ip}}" }}.
         This is a normalized load based on the number of CPUs (i.e. ActualLoadAverage / NumberOfCPUs)
         Is this node over-provisioned? Pods may need to have a CPU limits closer to their requests
         Is this node doing a lot of I/O? Load average could be high based on high disk or networking I/O. This may be acceptable if application performance is still ok. To reduce I/O-based system load, you may need to artificially limit the number of high-I/O pods running on a single node.
-      tags:
-        - astro
+      tags: []
       options:
         notify_audit: false
         notify_no_data: false
@@ -88,7 +85,7 @@ rulesets:
       name: "Memory Utilization"
       type: query alert
       query: "avg(last_15m):avg:system.mem.pct_usable{k8s.io/role/master:1} by {host} < 0.1"
-      message: |
+      message: |-
         {{ "{{#is_alert}}" }}
         Running out of free memory on {{ "{{host.name}}" }}
         {{ "{{/is_alert}}" }}
@@ -98,8 +95,7 @@ rulesets:
         {{ "{{#is_alert_recovery}}" }}
         Memory is below treshold again
         {{ "{{/is_alert_recovery}}" }}
-      tags:
-        - astro
+      tags: []
       options:
         notify_audit: false
         notify_no_data: false
@@ -113,7 +109,7 @@ rulesets:
       name: "Pending Pods"
       type: metric alert
       query: "min(last_30m):sum:kubernetes_state.pod.status_phase{phase:running} - sum:kubernetes_state.pod.status_phase{phase:running} + sum:kubernetes_state.pod.status_phase{phase:pending}.fill(zero) >= 1"
-      message: |
+      message: |-
         {{ "{{#is_alert}}" }}
         There has been at least 1 pod Pending for 30 minutes.
         There are currently {{ "{{value}}" }} pods Pending.
@@ -124,8 +120,7 @@ rulesets:
         {{ "{{^is_alert}}" }}
         Pods are no longer pending.
         {{ "{{/is_alert}}" }}
-      tags:
-        - astro
+      tags: []
       options:
         notify_audit: false
         notify_no_data: false
@@ -137,7 +132,7 @@ rulesets:
       name: "Host Disk Usage"
       type: metric alert
       query: "avg(last_30m):(avg:system.disk.total{*} by {host} - avg:system.disk.free{*} by {host}) / avg:system.disk.total{*} by {host} * 100 > 90"
-      message: |
+      message: |-
         {{ "{{#is_alert}}" }}
         Disk Usage has been above threshold over 30 minutes on {{ "{{host.name}}" }}
         {{ "{{/is_alert}}" }}
@@ -150,8 +145,7 @@ rulesets:
         {{ "{{^is_warning}}" }}
         Disk Usage has recovered on {{ "{{host.name}}" }}
         {{ "{{/is_warning}}" }}
-      tags:
-        - astro
+      tags: []
       options:
         notify_audit: false
         notify_no_data: false
@@ -167,15 +161,14 @@ rulesets:
       name: "HPA Errors"
       type: event alert
       query: "events('sources:kubernetes priority:all \"unable to fetch metrics from resource metrics API:\"').by('hpa').rollup('count').last('1h') > 200"
-      message: |
+      message: |-
         {{ "{{#is_alert}}" }}
         A high number of hpa failures (> {{ "{{threshold}}" }} ) are occurring.  Can HPAs get metrics?
         {{ "{{/is_alert}}" }}
         {{ "{{#is_alert_recovery}}" }}
         HPA Metric Retrieval Failure has recovered.
         {{ "{{/is_alert_recovery}}" }}
-      tags:
-        - astro
+      tags: []
       options:
         notify_audit: false
         notify_no_data: false
@@ -185,7 +178,7 @@ rulesets:
       name: "I/O Wait Times"
       type: metric alert
       query: "avg(last_10m):avg:system.cpu.iowait{*} by {host} > 50"
-      message: |
+      message: |-
         {{ "{{#is_alert}}" }}
         The I/O wait time for {host.ip} is very high
         - Is the EBS volume out of burst capacity for iops?
@@ -195,8 +188,7 @@ rulesets:
         {{ "{{^is_alert}}" }}
         The EBS volume burst capacity is returning to normal.
         {{ "{{/is_alert}}" }}
-      tags:
-        - astro
+      tags: []
       options:
         notify_audit: false
         new_host_delay: 300
@@ -210,15 +202,14 @@ rulesets:
       name: "Nginx Config Reload Failure"
       type: metric alert
       query: "max(last_5m):max:ingress.nginx_ingress_controller_config_last_reload_successful{*} by {kube_deployment} <= 0"
-      message: |
+      message: |-
         {{ "{{#is_alert}}" }}
         The last nginx config reload for {{ "{{kube_deployment.name}}" }} failed!  Are there any bad ingress configs?  Does the nginx config have a syntax error?
         {{ "{{/is_alert}}" }}
         {{ "{{#is_recovery}}" }}
         Nginx config reloaded successfully!
         {{ "{{/is_recovery}}" }}
-      tags:
-        - astro
+      tags: []
       options:
         notify_audit: false
         new_host_delay: 300
@@ -233,7 +224,7 @@ rulesets:
       type: service check
       query: |
         "kubernetes_state.node.ready".by("host").last(20).count_by_status()
-      message: |
+      message: |-
         {{ "{{#is_alert}}" }}
         A Node is not ready!
         Cluster: {{ "{{kubernetescluster.name}}" }}
@@ -247,8 +238,7 @@ rulesets:
         Host: {{ "{{host.name}}" }}
         IP: {{ "{{host.ip}}" }}
         {{ "{{/is_recovery}}" }}
-      tags:
-        - astro
+      tags: []
       options:
         notify_audit: false
         no_data_timeframe: 2
@@ -267,15 +257,14 @@ rulesets:
       name: "Increased Pod Crashes - {{ .ObjectMeta.Name }}"
       type: query alert
       query: "avg(last_5m):avg:kubernetes_state.container.restarts{namespace:{{ .ObjectMeta.Name }}} by {pod} - hour_before(avg:kubernetes_state.container.restarts{namespace:{{ .ObjectMeta.Name }}} by {pod}) > 3"
-      message: |
+      message: |-
         {{ "{{#is_alert}}" }}
         {{ "{{pod.name}}" }} has crashed repeatedly over the last hour
         {{ "{{/is_alert}}" }}
         {{ "{{^is_alert}}" }}
         {{ "{{pod.name}}" }} appears to have stopped crashing
         {{ "{{/is_alert}}" }}
-      tags:
-        - astro
+      tags: []
       options:
         notify_audit: false
         notify_no_data: false

@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	datadog "github.com/zorkian/go-datadog-api"
+	ddapi "github.com/zorkian/go-datadog-api"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -76,7 +76,7 @@ func TestGetRulesetsValid(t *testing.T) {
 		assert.Equal(t, items["title"], *mSet.Monitors[items["name"]].Name)
 
 		monitors := cfg.GetMatchingMonitors(annotations, objectType, overrides)
-		expected := []datadog.Monitor{}
+		var expected []ddapi.Monitor
 		for _, value := range mSet.Monitors {
 			expected = append(expected, value)
 		}

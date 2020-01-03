@@ -17,24 +17,30 @@ package datadog
 import (
 	"errors"
 	"reflect"
+	"sync"
+
+	"github.com/imdario/mergo"
+	log "github.com/sirupsen/logrus"
+	ddapi "github.com/zorkian/go-datadog-api"
 
 	"github.com/fairwindsops/astro/pkg/config"
 	"github.com/fairwindsops/astro/pkg/metrics"
-	log "github.com/sirupsen/logrus"
-	"github.com/zorkian/go-datadog-api"
 )
 
 // ClientAPI defines the interface for the Datadog client, for testing purposes
 type ClientAPI interface {
-	GetMonitorsByMonitorTags(tags []string) ([]datadog.Monitor, error)
-	CreateMonitor(*datadog.Monitor) (*datadog.Monitor, error)
-	UpdateMonitor(*datadog.Monitor) error
+	CreateMonitor(*ddapi.Monitor) (*ddapi.Monitor, error)
 	DeleteMonitor(id int) error
+	GetMonitorsByMonitorTags(tags []string) ([]ddapi.Monitor, error)
+	MuteMonitorScope(id int, muteMonitorScope *ddapi.MuteMonitorScope) error
+	UnmuteMonitor(id int) error
+	UpdateMonitor(*ddapi.Monitor) error
 }
 
 // DDMonitorManager is a higher-level wrapper around the Datadog API
 type DDMonitorManager struct {
 	Datadog ClientAPI
+	mux     sync.Mutex
 }
 
 var ddMonitorManagerInstance *DDMonitorManager
@@ -42,9 +48,9 @@ var ddMonitorManagerInstance *DDMonitorManager
 // GetInstance returns a singleton DDMonitorManager, creating it if necessary
 func GetInstance() *DDMonitorManager {
 	if ddMonitorManagerInstance == nil {
-		config := config.GetInstance()
+		conf := config.GetInstance()
 		ddMonitorManagerInstance = &DDMonitorManager{
-			Datadog: datadog.NewClient(config.DatadogAPIKey, config.DatadogAppKey),
+			Datadog: ddapi.NewClient(conf.DatadogAPIKey, conf.DatadogAppKey),
 		}
 	}
 	return ddMonitorManagerInstance
@@ -52,13 +58,17 @@ func GetInstance() *DDMonitorManager {
 
 // AddOrUpdate will create a monitor if it doesn't exist or update one if it does.
 // It returns the Id of the monitor created or updated.
-func (ddman *DDMonitorManager) AddOrUpdate(monitor *datadog.Monitor) (*datadog.Monitor, error) {
-	log.Infof("Update templated monitor:%v", *monitor.Name)
+func (ddman *DDMonitorManager) AddOrUpdate(monitor *ddapi.Monitor) (*ddapi.Monitor, error) {
+	log.Infof("Update templated monitor: %v", *monitor.Name)
+	ddman.mux.Lock()
+	defer ddman.mux.Unlock()
+
 	// check if monitor exists
 	ddMonitor, err := ddman.GetProvisionedMonitor(monitor)
 	if err != nil {
 		//monitor doesn't exist
 		provisioned, err := ddman.Datadog.CreateMonitor(monitor)
+
 		if err != nil {
 			metrics.DatadogErrCounter.Inc()
 			log.Errorf("Error creating monitor %s: %s", *monitor.Name, err)
@@ -67,21 +77,20 @@ func (ddman *DDMonitorManager) AddOrUpdate(monitor *datadog.Monitor) (*datadog.M
 		return provisioned, nil
 	}
 
+	merged, err := mergeMonitors(*monitor, *ddMonitor)
+	if err != nil {
+		return nil, err
+	}
 	//monitor exists
-	if reflect.DeepEqual(monitor, ddMonitor) {
-		log.Infof("Monitor %d exists and is up to date.", ddMonitor.Id)
+	if reflect.DeepEqual(*merged, *ddMonitor) {
+		log.Infof("Monitor %d exists and is up to date.", *ddMonitor.Id)
 	} else {
 		// monitor exists and needs updating.
-		log.Infof("Monitor %d needs updating.", ddMonitor.Id)
-
-		//TODO - do a deep merge of monitors
-		updated := datadog.Monitor(*monitor)
-		updated.Id = ddMonitor.Id
-
-		err := ddman.Datadog.UpdateMonitor(&updated)
+		log.Infof("Monitor %d needs updating.", *ddMonitor.Id)
+		err := ddman.Datadog.UpdateMonitor(merged)
 		if err != nil {
 			metrics.DatadogErrCounter.Inc()
-			log.Errorf("Could not update monitor %d: %s", ddMonitor.Id, err)
+			log.Errorf("Could not update monitor %d: %s", *ddMonitor.Id, err)
 			return ddMonitor, err
 		}
 	}
@@ -89,7 +98,7 @@ func (ddman *DDMonitorManager) AddOrUpdate(monitor *datadog.Monitor) (*datadog.M
 }
 
 // GetProvisionedMonitor returns a monitor with the same name from Datadog.
-func (ddman *DDMonitorManager) GetProvisionedMonitor(monitor *datadog.Monitor) (*datadog.Monitor, error) {
+func (ddman *DDMonitorManager) GetProvisionedMonitor(monitor *ddapi.Monitor) (*ddapi.Monitor, error) {
 	monitors, err := ddman.GetProvisionedMonitors()
 	if err != nil {
 		metrics.DatadogErrCounter.Inc()
@@ -106,12 +115,12 @@ func (ddman *DDMonitorManager) GetProvisionedMonitor(monitor *datadog.Monitor) (
 }
 
 // GetProvisionedMonitors returns a collection of monitors managed by astro.
-func (ddman *DDMonitorManager) GetProvisionedMonitors() ([]datadog.Monitor, error) {
+func (ddman *DDMonitorManager) GetProvisionedMonitors() ([]ddapi.Monitor, error) {
 	return ddman.Datadog.GetMonitorsByMonitorTags([]string{config.GetInstance().OwnerTag})
 }
 
 // DeleteMonitor deletes a monitor
-func (ddman *DDMonitorManager) DeleteMonitor(monitor *datadog.Monitor) error {
+func (ddman *DDMonitorManager) DeleteMonitor(monitor *ddapi.Monitor) error {
 	ddMonitor, err := ddman.GetProvisionedMonitor(monitor)
 	if err != nil {
 		return ddman.Datadog.DeleteMonitor(*ddMonitor.Id)
@@ -126,13 +135,15 @@ func (ddman *DDMonitorManager) DeleteMonitors(tags []string) error {
 	log.Infof("Deleting %d monitors.", len(monitors))
 	if err != nil {
 		metrics.DatadogErrCounter.Inc()
-		log.Errorf("Error getting monitors: %v", err)
 		return err
 	}
 
 	for _, ddMonitor := range monitors {
 		log.Infof("Deleting monitor with id %d", *ddMonitor.Id)
-		ddman.Datadog.DeleteMonitor(*ddMonitor.Id)
+		err := ddman.Datadog.DeleteMonitor(*ddMonitor.Id)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -162,8 +173,25 @@ func DeleteExtinctMonitors(monitors []string, tags []string) error {
 	return nil
 }
 
+// mergeMonitors fills in zero/nil values in our proposed monitor with values that already exist from the DD API
+func mergeMonitors(newMon, baseMon ddapi.Monitor) (*ddapi.Monitor, error) {
+	err := mergo.Merge(newMon.Options, baseMon.Options)
+	if err != nil {
+		return &ddapi.Monitor{}, err
+	}
+	creator := ddapi.Creator{}
+	newMon.Creator = &creator
+	err = mergo.Merge(newMon.Creator, baseMon.Creator)
+	if err != nil {
+		return &ddapi.Monitor{}, err
+	}
+	newMon.OverallState = baseMon.OverallState
+	newMon.Id = baseMon.Id
+	return &newMon, nil
+}
+
 // contains returns a boolean indicating whether a collection of strings contains a monitor with the name of monitor item.
-func contains(collection []string, item datadog.Monitor) bool {
+func contains(collection []string, item ddapi.Monitor) bool {
 	for _, name := range collection {
 		if name == *item.Name {
 			return true

@@ -21,18 +21,19 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/fairwindsops/astro/pkg/config"
 	log "github.com/sirupsen/logrus"
 	ddapi "github.com/zorkian/go-datadog-api"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+
+	"github.com/fairwindsops/astro/pkg/config"
 )
 
 // OnUpdate is a handler that should be called when an object is updated.
 // obj is the Kubernetes object that was updated.
 // event is the Event metadata representing the update.
 func OnUpdate(obj interface{}, event config.Event) {
-	log.Infof("Handler got an OnUpdate event of type %s", event.EventType)
+	log.Infof("Handler got an OnUpdate event of type %s", event.ResourceType)
 
 	if event.EventType == "delete" {
 		onDelete(event)

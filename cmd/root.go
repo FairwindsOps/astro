@@ -24,14 +24,15 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/fairwindsops/astro/pkg/controller"
-	"github.com/fairwindsops/astro/pkg/kube"
-	"github.com/fairwindsops/astro/pkg/metrics"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/leaderelection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
+
+	"github.com/fairwindsops/astro/pkg/controller"
+	"github.com/fairwindsops/astro/pkg/kube"
+	"github.com/fairwindsops/astro/pkg/metrics"
 )
 
 var (

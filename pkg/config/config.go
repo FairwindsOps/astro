@@ -26,7 +26,7 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	datadog "github.com/zorkian/go-datadog-api"
+	ddapi "github.com/zorkian/go-datadog-api"
 	"gopkg.in/yaml.v2"
 )
 
@@ -37,10 +37,10 @@ type ruleset struct {
 
 // A MonitorSet represents a collection of Monitors that applies to an object.
 type MonitorSet struct {
-	ObjectType   string                     `yaml:"type"`                    // The type of object.  Example: deployment
-	Annotations  []Annotation               `yaml:"match_annotations"`       // Annotations an object must possess to be considered applicable for the monitors.
-	BoundObjects []string                   `yaml:"bound_objects,omitempty"` // A collection of ObjectTypes that are bound to the MonitorSet.
-	Monitors     map[string]datadog.Monitor `yaml:"monitors"`                // A collection of Monitors.
+	ObjectType   string                   `yaml:"type"`                    // The type of object.  Example: deployment
+	Annotations  []Annotation             `yaml:"match_annotations"`       // Annotations an object must possess to be considered applicable for the monitors.
+	BoundObjects []string                 `yaml:"bound_objects,omitempty"` // A collection of ObjectTypes that are bound to the MonitorSet.
+	Monitors     map[string]ddapi.Monitor `yaml:"monitors"`                // A collection of Monitors.
 }
 
 // An Annotation represent a kubernetes annotation.
@@ -59,13 +59,13 @@ type Event struct {
 
 // Config represents the application configuration.
 type Config struct {
-	DatadogAPIKey          string   // datadog api key for the datadog account.
-	DatadogAppKey          string   // datadog app key for the datadog account.
-	ClusterName            string   // A unique name for the cluster.
-	OwnerTag               string   // A unique tag to identify the owner of monitors.
-	MonitorDefinitionsPath []string // A url or local path for the configuration file.
-	Rulesets               *ruleset // The collection of rulesets to manage.
-	DryRun                 bool     // when set to true monitors will not be managed in datadog.
+	DatadogAPIKey          string   // datadog api key for the datadog account
+	DatadogAppKey          string   // datadog app key for the datadog account
+	ClusterName            string   // A unique name for the cluster
+	OwnerTag               string   // A unique tag to identify the owner of monitors
+	MonitorDefinitionsPath []string // A url or local path for the configuration file
+	Rulesets               *ruleset // The collection of rulesets to manage
+	DryRun                 bool     // when set to true monitors will not be managed in datadog
 }
 
 // Override represents any datadog monitor fields annotations can be overridden
@@ -75,8 +75,8 @@ type Override struct {
 }
 
 // GetMatchingMonitors returns a collection of monitors that apply to the specified objectType and annotations.
-func (config *Config) GetMatchingMonitors(annotations map[string]string, objectType string, overrides map[string][]Override) *[]datadog.Monitor {
-	var validMonitors []datadog.Monitor
+func (config *Config) GetMatchingMonitors(annotations map[string]string, objectType string, overrides map[string][]Override) *[]ddapi.Monitor {
+	var validMonitors []ddapi.Monitor
 
 	for _, mSet := range *config.getMatchingRulesets(annotations, objectType, overrides) {
 		for _, v := range mSet.Monitors {
@@ -136,8 +136,8 @@ func (config *Config) getMatchingRulesets(annotations map[string]string, objectT
 }
 
 // GetBoundMonitors returns a collection of monitors that are indirectly bound to objectTypes in the namespace specified.
-func (config *Config) GetBoundMonitors(nsAnnotations map[string]string, objectType string, overrides map[string][]Override) *[]datadog.Monitor {
-	var linkedMonitors []datadog.Monitor
+func (config *Config) GetBoundMonitors(nsAnnotations map[string]string, objectType string, overrides map[string][]Override) *[]ddapi.Monitor {
+	var linkedMonitors []ddapi.Monitor
 	mSets := config.getMatchingRulesets(nsAnnotations, "binding", overrides)
 
 	for _, mSet := range *mSets {

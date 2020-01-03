@@ -4,7 +4,7 @@ LABEL maintainer="Luke Reed <luke@fairwinds.com>"
 WORKDIR /go/src/github.com/fairwindsops/astro
 ADD . /go/src/github.com/fairwindsops/astro
 
-RUN GO111MODULE=on GOOS=linux GOARCH=amd64 go build
+RUN GO111MODULE=on GOOS=linux GOARCH=amd64 go build -ldflags "-s -w"
 
 
 FROM gcr.io/distroless/base
