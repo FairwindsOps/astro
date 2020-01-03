@@ -42,6 +42,7 @@ func OnNamespaceChanged(namespace *corev1.Namespace, event config.Event) {
 		}
 	case "create", "update":
 		var record []string
+		modify := NewModifiers()
 		for _, monitor := range *cfg.GetMatchingMonitors(namespace.Annotations, event.ResourceType, overrides) {
 			err := applyTemplate(namespace, &monitor, &event)
 			if err != nil {
@@ -49,17 +50,21 @@ func OnNamespaceChanged(namespace *corev1.Namespace, event config.Event) {
 				log.Errorf("Error applying template for monitor %s: %v", *monitor.Name, err)
 				return
 			}
-			log.Infof("Reconcile monitor %s", *monitor.Name)
-			if cfg.DryRun == false {
-				metrics.ChangeCounter.WithLabelValues("namespaces", "create_update").Inc()
-				_, err := dd.AddOrUpdate(&monitor)
-				record = append(record, *monitor.Name)
-				if err != nil {
-					metrics.ErrorCounter.Inc()
-					log.Errorf("Error adding/updating monitor")
+
+			modify.Run(&monitor, namespace.Annotations)
+			if &monitor != nil {
+				log.Infof("Reconcile monitor %s", *monitor.Name)
+				if cfg.DryRun == false {
+					metrics.ChangeCounter.WithLabelValues("namespaces", "create_update").Inc()
+					_, err := dd.AddOrUpdate(&monitor)
+					record = append(record, *monitor.Name)
+					if err != nil {
+						metrics.ErrorCounter.Inc()
+						log.Errorf("Error adding/updating monitor")
+					}
+				} else {
+					log.Info("Running as DryRun, skipping DataDog update")
 				}
-			} else {
-				log.Info("Running as DryRun, skipping DataDog update")
 			}
 		}
 		// Update any bound monitors for this namespace

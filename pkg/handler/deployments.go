@@ -54,6 +54,7 @@ func OnDeploymentChanged(deployment *appsv1.Deployment, event config.Event) {
 		}
 
 		monitors = append(*cfg.GetMatchingMonitors(deployment.Annotations, event.ResourceType, overrides), *cfg.GetBoundMonitors(ns.Annotations, event.ResourceType, overrides)...)
+		modify := NewModifiers()
 		for _, monitor := range monitors {
 			err := applyTemplate(deployment, &monitor, &event)
 			if err != nil {
@@ -61,18 +62,23 @@ func OnDeploymentChanged(deployment *appsv1.Deployment, event config.Event) {
 				log.Errorf("Error applying template for monitor %s: %v", *monitor.Name, err)
 				return
 			}
-			log.Infof("Reconcile monitor %s", *monitor.Name)
-			if cfg.DryRun == false {
-				_, err := dd.AddOrUpdate(&monitor)
-				metrics.ChangeCounter.WithLabelValues("deployments", "create_update").Inc()
-				record = append(record, *monitor.Name)
-				if err != nil {
-					metrics.ErrorCounter.Inc()
-					log.Errorf("Error adding/updating monitor")
+
+			modify.Run(&monitor, deployment.Annotations)
+			if &monitor != nil {
+				log.Infof("Reconcile monitor %s", *monitor.Name)
+				if cfg.DryRun == false {
+					_, err := dd.AddOrUpdate(&monitor)
+					metrics.ChangeCounter.WithLabelValues("deployments", "create_update").Inc()
+					record = append(record, *monitor.Name)
+					if err != nil {
+						metrics.ErrorCounter.Inc()
+						log.Errorf("Error adding/updating monitor")
+					}
+				} else {
+					log.Info("Running as DryRun, skipping DataDog update")
 				}
-			} else {
-				log.Info("Running as DryRun, skipping DataDog update")
 			}
+
 		}
 
 		if strings.ToLower(event.EventType) == "update" && !cfg.DryRun {

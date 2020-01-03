@@ -7,9 +7,11 @@ import (
 	"strings"
 
 	ddapi "github.com/zorkian/go-datadog-api"
+	"k8s.io/klog"
 )
 
-type modifiers struct {
+// Modifiers is a collection of Modifier objects
+type Modifiers struct {
 	Items []Modifier
 }
 
@@ -19,28 +21,30 @@ type Modifier struct {
 	ModifyFunc func(*ddapi.Monitor, string, interface{})
 }
 
+type modifierMatch struct {
+	AnnotationKey   string
+	AnnotationValue string
+}
+
 var (
 	regStr string = `^%s.astro.fairwinds.com\/(global|%s)\.(?P<params>.+)$`
 )
 
-// astro.fairwinds.com/<monitor-name>/<modifier>/<param>/<param>: value
-// astro.fairwinds.com/global/<modifier>/<param>/<param>: value
-// standard: astro.fairwinds.com/override.dep-replica-alert.name
-
-func newModifiers() *modifiers {
-	return &modifiers{
+// NewModifiers returns a collection of available modifiers
+func NewModifiers() *Modifiers {
+	return &Modifiers{
 		Items: []Modifier{
 			Modifier{
 				Name: "override",
 				ModifyFunc: func(monitor *ddapi.Monitor, params string, val interface{}) {
-					if len(params) > 0 {
-						setProperty(params, monitor, val)
-					}
+					klog.Infof("Overriding monitor %s field %s", *monitor.Name, params)
+					setProperty(params, monitor, val)
 				},
 			},
 			Modifier{
 				Name: "ignore",
 				ModifyFunc: func(monitor *ddapi.Monitor, params string, val interface{}) {
+					klog.Infof("Ignoring monitor %s", *monitor.Name)
 					monitor = nil
 				},
 			},
@@ -48,24 +52,37 @@ func newModifiers() *modifiers {
 	}
 }
 
-// IsMatch returns true if a modifier matches the provided annotations and monitorName
-func (m *Modifier) IsMatch(monitorName string, annotations map[string]string) bool {
-	re := regexp.MustCompile(fmt.Sprintf(regStr, m.Name, monitorName))
-
-	for k := range annotations {
-		if re.MatchString(k) {
-			return true
+// Run will run all Modifiers that match the monitor
+func (m *Modifiers) Run(monitor *ddapi.Monitor, annotations map[string]string) {
+	for _, modifier := range m.Items {
+		if ok, match := modifier.isMatch(*monitor.Name, annotations); ok {
+			params := modifier.GetParams(*monitor.Name, match)
+			modifier.ModifyFunc(monitor, *params, match.AnnotationValue)
 		}
 	}
-	return false
+}
+
+// IsMatch returns true if a modifier matches the provided annotations and monitorName
+func (m *Modifier) isMatch(monitorName string, annotations map[string]string) (bool, *modifierMatch) {
+	re := regexp.MustCompile(fmt.Sprintf(regStr, m.Name, monitorName))
+
+	for k, v := range annotations {
+		if re.MatchString(k) {
+			return true, &modifierMatch{
+				AnnotationKey:   k,
+				AnnotationValue: v,
+			}
+		}
+	}
+	return false, nil
 }
 
 // GetParams returns the param field of a regex string
-func (m *Modifier) GetParams(monitorName string, annotationKey string) *string {
+func (m *Modifier) GetParams(monitorName string, matchDetails *modifierMatch) *string {
 	re := regexp.MustCompile(fmt.Sprintf(regStr, m.Name, monitorName))
-	if re.MatchString(annotationKey) {
+	if re.MatchString(matchDetails.AnnotationKey) {
 		fields := re.SubexpNames()
-		vals := re.FindStringSubmatch(annotationKey)
+		vals := re.FindStringSubmatch(matchDetails.AnnotationKey)
 		for i := 0; i < len(fields); i++ {
 			if fields[i] == "params" {
 				return &vals[i]
