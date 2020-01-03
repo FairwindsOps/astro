@@ -19,9 +19,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/fairwindsops/astro/pkg/config"
-	handler "github.com/fairwindsops/astro/pkg/handler"
-	"github.com/fairwindsops/astro/pkg/kube"
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -33,6 +30,10 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
+
+	"github.com/fairwindsops/astro/pkg/config"
+	"github.com/fairwindsops/astro/pkg/handler"
+	"github.com/fairwindsops/astro/pkg/kube"
 )
 
 // KubeResourceWatcher contains the informer that watches Kubernetes objects and the queue that processes updates.

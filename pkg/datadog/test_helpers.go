@@ -1,10 +1,14 @@
 package datadog
 
+// If running mockgen on this package, you will unfortunately need to comment everything out below beforehand
+// and then uncomment again afterwards
+
 import (
 	"os"
 
-	mocks "github.com/fairwindsops/astro/pkg/mocks"
 	"github.com/golang/mock/gomock"
+
+	mocks "github.com/fairwindsops/astro/pkg/mocks"
 )
 
 // GetMock will return a mock datadog client API

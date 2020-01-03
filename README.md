@@ -43,7 +43,7 @@ rulesets:
       name: "Deployment Replica Alert - {{ .ObjectMeta.Name }}"
       type: metric alert
       query: "max(last_10m):max:kubernetes_state.deployment.replicas_available{kubernetescluster:foobar,deployment:{{ .ObjectMeta.Name }}} <= 0"
-      message: |
+      message: |-
         {{ "{{#is_alert}}" }}
         Available replicas is currently 0 for {{ .ObjectMeta.Name }}
         {{ "{{/is_alert}}" }}
