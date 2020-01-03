@@ -10,7 +10,7 @@ import (
 )
 
 type modifiers struct {
-	Items []modifier
+	Items []Modifier
 }
 
 // Modifier is an object that transforms fields of a monitor
@@ -19,16 +19,29 @@ type Modifier struct {
 	ModifyFunc func(*ddapi.Monitor, string, interface{})
 }
 
+var (
+	regStr string = `^%s.astro.fairwinds.com\/(global|%s)\.(?P<params>.+)$`
+)
+
 // astro.fairwinds.com/<monitor-name>/<modifier>/<param>/<param>: value
 // astro.fairwinds.com/global/<modifier>/<param>/<param>: value
+// standard: astro.fairwinds.com/override.dep-replica-alert.name
 
 func newModifiers() *modifiers {
 	return &modifiers{
-		Items: []modifier{
+		Items: []Modifier{
 			Modifier{
 				Name: "override",
-				ModifyFunc: func(monitor *ddapi.Monitor, param string, val interface{}) {
-					setProperty(param, monitor, val)
+				ModifyFunc: func(monitor *ddapi.Monitor, params string, val interface{}) {
+					if len(params) > 0 {
+						setProperty(params, monitor, val)
+					}
+				},
+			},
+			Modifier{
+				Name: "ignore",
+				ModifyFunc: func(monitor *ddapi.Monitor, params string, val interface{}) {
+					monitor = nil
 				},
 			},
 		},
@@ -37,13 +50,29 @@ func newModifiers() *modifiers {
 
 // IsMatch returns true if a modifier matches the provided annotations and monitorName
 func (m *Modifier) IsMatch(monitorName string, annotations map[string]string) bool {
-	var re = regexp.MustCompile(fmt.Sprintf(`(?m)^astro.fairwinds.com\/(?:global|%s)\/(?P<modifier>[a-zA-Z]+)(?P<opts>\/.+)*$`, monitorName))
+	re := regexp.MustCompile(fmt.Sprintf(regStr, m.Name, monitorName))
+
 	for k := range annotations {
 		if re.MatchString(k) {
 			return true
 		}
 	}
 	return false
+}
+
+// GetParams returns the param field of a regex string
+func (m *Modifier) GetParams(monitorName string, annotationKey string) *string {
+	re := regexp.MustCompile(fmt.Sprintf(regStr, m.Name, monitorName))
+	if re.MatchString(annotationKey) {
+		fields := re.SubexpNames()
+		vals := re.FindStringSubmatch(annotationKey)
+		for i := 0; i < len(fields); i++ {
+			if fields[i] == "params" {
+				return &vals[i]
+			}
+		}
+	}
+	return nil
 }
 
 // setProperty sets the value field obj to value val
