@@ -54,8 +54,11 @@ func NewModifiers() *Modifiers {
 
 // Run will run all Modifiers that match the monitor
 func (m *Modifiers) Run(monitor *ddapi.Monitor, annotations map[string]string) {
+	klog.Errorf("There are %d modifiers available", len(m.Items))
 	for _, modifier := range m.Items {
+		klog.Info("Check Modifier %s for monitor %s", modifier.Name, monitor.Name)
 		if ok, match := modifier.isMatch(*monitor.Name, annotations); ok {
+			klog.Errorf("Running modifier %s on monitor %s", modifier.Name, *monitor.Name)
 			params := modifier.GetParams(*monitor.Name, match)
 			modifier.ModifyFunc(monitor, *params, match.AnnotationValue)
 		}
@@ -95,13 +98,16 @@ func (m *Modifier) GetParams(monitorName string, matchDetails *modifierMatch) *s
 // setProperty sets the value field obj to value val
 func setProperty(name string, obj interface{}, val interface{}) {
 	parts := strings.Split(name, ".")
-
 	parent := reflect.ValueOf(obj)
 	for i, field := range parts {
 		current := getReflectedField(field, parent)
 		if i == len(parts)-1 {
 			// reached the final object - set the value
+			klog.Error("Found our field")
+			klog.Errorf("Setting value to %v", val)
+
 			v := reflect.Indirect(current)
+			fmt.Printf("Kind is: %s\n", v.Kind())
 			switch v.Kind() {
 			case reflect.Int:
 				num, ok := val.(int)
@@ -109,6 +115,7 @@ func setProperty(name string, obj interface{}, val interface{}) {
 					v.SetInt(int64(num))
 				}
 			case reflect.String:
+				fmt.Println("Its a String")
 				str, ok := val.(string)
 				if ok {
 					v.SetString(str)
@@ -118,11 +125,23 @@ func setProperty(name string, obj interface{}, val interface{}) {
 				if ok {
 					v.SetBool(b)
 				}
+			case reflect.Ptr:
+				fieldType := v.Type()
+				newVal := ptr(reflect.ValueOf(val))
+				s := newVal.Convert(fieldType)
+				v.Set(s)
 			}
 		} else {
 			parent = current
 		}
 	}
+}
+
+func ptr(v reflect.Value) reflect.Value {
+	pt := reflect.PtrTo(v.Type()) // create a *T type.
+	pv := reflect.New(pt.Elem())  // create a reflect.Value of type *T.
+	pv.Elem().Set(v)              // sets pv to point to underlying value of v.
+	return pv
 }
 
 func getReflectedField(name string, v reflect.Value) reflect.Value {
