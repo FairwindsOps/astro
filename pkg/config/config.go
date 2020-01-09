@@ -28,6 +28,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	ddapi "github.com/zorkian/go-datadog-api"
 	"gopkg.in/yaml.v2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type ruleset struct {
@@ -51,10 +52,12 @@ type Annotation struct {
 
 // An Event represents an update of a Kubernetes object and contains metadata about the update.
 type Event struct {
-	Key          string // A key identifying the object.  This is in the format <object-type>/<object-name>
-	EventType    string // The type of event - update, delete, or create
-	Namespace    string // The namespace of the event's object
-	ResourceType string // The type of resource that was updated.
+	EventType    string             // The type of event - update, delete, or create
+	Key          string             // A key identifying the object.  This is in the format <object-type>/<object-name>
+	Namespace    string             // The namespace of the event's object
+	OldMeta      *metav1.ObjectMeta // Metadata from old kubernetes object in update or delete events
+	NewMeta      *metav1.ObjectMeta // Metadata from new kubernetes object in update or add events
+	ResourceType string             // The type of resource that was updated.
 }
 
 // Config represents the application configuration.

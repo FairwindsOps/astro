@@ -17,6 +17,7 @@ package handler
 import (
 	"bytes"
 	"fmt"
+	"reflect"
 	"regexp"
 	"strings"
 	"text/template"
@@ -37,6 +38,14 @@ func OnUpdate(obj interface{}, event config.Event) {
 
 	if event.EventType == "delete" {
 		onDelete(event)
+		return
+	}
+
+	oldMeta := *event.OldMeta
+	newMeta := *event.NewMeta
+
+	if reflect.DeepEqual(oldMeta.Annotations, newMeta.Annotations) {
+		log.Infof("Old annotations match new, not updating: %s", event.Key)
 		return
 	}
 
