@@ -177,9 +177,12 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
 				log.Errorf("Error handling add event")
 				return
 			}
+			objMeta := objectMeta(obj)
 			evt.EventType = "create"
 			evt.ResourceType = resource
 			evt.Namespace = objectMeta(obj).Namespace
+			evt.NewMeta = &objMeta
+			evt.OldMeta = new(metav1.ObjectMeta)
 			log.Infof("%s/%s has been added.", resource, evt.Key)
 			wq.Add(evt)
 		},
@@ -191,9 +194,12 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
 				log.Errorf("Error handling delete event")
 				return
 			}
+			objMeta := objectMeta(obj)
 			evt.EventType = "delete"
 			evt.ResourceType = resource
 			evt.Namespace = objectMeta(obj).Namespace
+			evt.NewMeta = new(metav1.ObjectMeta)
+			evt.OldMeta = &objMeta
 			log.Infof("%s/%s has been deleted.", resource, evt.Key)
 			wq.Add(evt)
 		},
@@ -205,9 +211,13 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
 				log.Errorf("Error handling update event")
 				return
 			}
+			oldMeta := objectMeta(old)
+			newMeta := objectMeta(new)
 			evt.EventType = "update"
 			evt.ResourceType = resource
 			evt.Namespace = objectMeta(new).Namespace
+			evt.OldMeta = &oldMeta
+			evt.NewMeta = &newMeta
 			log.Infof("%s/%s has been updated.", resource, evt.Key)
 			wq.Add(evt)
 		},
