@@ -1,15 +1,10 @@
 builds:
-  - id: asatro
+  - id: astro
     env:
       - CGO_ENABLED=0
       - GO111MODULE=on
     goarch:
       - amd64
-      - arm
-      - arm64
-    goarm:
-      - 6
-      - 7
 checksum:
   name_template: 'checksums.txt'
 changelog:
