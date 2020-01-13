@@ -13,6 +13,9 @@ Astro is designed to simplify Datadog monitor administration.  This is an operat
 
 **Want to learn more?** Fairwinds holds [office hours on Zoom](https://zoom.us/j/242508205) the first Friday of every month, at 12pm Eastern. You can also reach out via email at `opensource@fairwinds.com`
 
+## Installing
+The [Astro helm chart](https://github.com/FairwindsOps/charts/tree/master/stable/astro) is the preferred way to install Astro into your cluster.
+
 ## Configuration
 A combination of environment variables and a yaml file is used to configure the application.  An example configuration file is available [here](conf.yml).
 
