@@ -15,7 +15,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
 
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/sirupsen/logrus/hooks/test"
 	"github.com/stretchr/testify/assert"
 
@@ -61,9 +61,9 @@ func TestCreateDeploymentController(t *testing.T) {
 }
 
 func TestNewController(t *testing.T) {
+	log.SetLevel(log.DebugLevel)
 	_, hook := test.NewNullLogger()
-	logrus.AddHook(hook)
-	logrus.SetLevel(logrus.InfoLevel)
+	log.AddHook(hook)
 	kube.SetAndGetMock()
 	os.Setenv("DEFINITIONS_PATH", "../config/test_conf.yml")
 	ctx, cancel := context.WithCancel(context.Background())

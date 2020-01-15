@@ -34,7 +34,7 @@ import (
 // obj is the Kubernetes object that was updated.
 // event is the Event metadata representing the update.
 func OnUpdate(obj interface{}, event config.Event) {
-	log.Infof("Handler got an OnUpdate event of type %s", event.ResourceType)
+	log.Debugf("Handler got an OnUpdate event of type %s", event.ResourceType)
 
 	if event.EventType == "delete" {
 		onDelete(event)
@@ -45,7 +45,7 @@ func OnUpdate(obj interface{}, event config.Event) {
 	newMeta := *event.NewMeta
 
 	if reflect.DeepEqual(oldMeta.Annotations, newMeta.Annotations) {
-		log.Infof("Old annotations match new, not updating: %s", event.Key)
+		log.Debugf("Old annotations match new, not updating: %s", event.Key)
 		return
 	}
 
@@ -60,7 +60,6 @@ func OnUpdate(obj interface{}, event config.Event) {
 }
 
 func onDelete(event config.Event) {
-	log.Info("OnDelete()")
 	switch strings.ToLower(event.ResourceType) {
 	case "namespace":
 		OnNamespaceChanged(&corev1.Namespace{}, event)
@@ -175,7 +174,7 @@ func isOverride(annotationKey string) bool {
 		log.Errorf("Error parsing regexp of annotation key: %v", annotationKey)
 	}
 	if matched {
-		log.Infof("Override found with annotation '%s'", annotationKey)
+		log.Debugf("Override found with annotation '%s'", annotationKey)
 	}
 	return matched
 }
