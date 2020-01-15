@@ -31,7 +31,6 @@ import (
 func OnNamespaceChanged(namespace *corev1.Namespace, event config.Event) {
 	cfg := config.GetInstance()
 	dd := datadog.GetInstance()
-	overrides := parseOverrides(namespace)
 
 	switch strings.ToLower(event.EventType) {
 	case "delete":
@@ -42,8 +41,7 @@ func OnNamespaceChanged(namespace *corev1.Namespace, event config.Event) {
 		}
 	case "create", "update":
 		var record []string
-		modify := NewModifiers()
-		for _, monitor := range *cfg.GetMatchingMonitors(namespace.Annotations, event.ResourceType, overrides) {
+		for _, monitor := range *cfg.GetMatchingMonitors(namespace.Annotations, event.ResourceType) {
 			err := applyTemplate(namespace, &monitor, &event)
 			if err != nil {
 				metrics.TemplateErrorCounter.Inc()
@@ -51,7 +49,6 @@ func OnNamespaceChanged(namespace *corev1.Namespace, event config.Event) {
 				return
 			}
 
-			modify.Run(&monitor, namespace.Annotations)
 			if &monitor != nil {
 				log.Infof("Reconcile monitor %s", *monitor.Name)
 				if cfg.DryRun == false {

@@ -1,4 +1,4 @@
-package handler
+package config
 
 import (
 	"fmt"
@@ -6,8 +6,8 @@ import (
 	"regexp"
 	"strings"
 
+	log "github.com/sirupsen/logrus"
 	ddapi "github.com/zorkian/go-datadog-api"
-	"k8s.io/klog"
 )
 
 // Modifiers is a collection of Modifier objects
@@ -31,20 +31,20 @@ var (
 )
 
 // NewModifiers returns a collection of available modifiers
-func NewModifiers() *Modifiers {
+func newModifiers() *Modifiers {
 	return &Modifiers{
 		Items: []Modifier{
 			Modifier{
 				Name: "override",
 				ModifyFunc: func(monitor *ddapi.Monitor, params string, val interface{}) {
-					klog.Infof("Overriding monitor %s field %s", *monitor.Name, params)
+					log.Infof("Overriding monitor %s field %s", *monitor.Name, params)
 					setProperty(params, monitor, val)
 				},
 			},
 			Modifier{
 				Name: "ignore",
 				ModifyFunc: func(monitor *ddapi.Monitor, params string, val interface{}) {
-					klog.Infof("Ignoring monitor %s", *monitor.Name)
+					log.Infof("Ignoring monitor %s", *monitor.Name)
 					monitor = nil
 				},
 			},
@@ -53,13 +53,12 @@ func NewModifiers() *Modifiers {
 }
 
 // Run will run all Modifiers that match the monitor
-func (m *Modifiers) Run(monitor *ddapi.Monitor, annotations map[string]string) {
-	klog.Errorf("There are %d modifiers available", len(m.Items))
+func (m *Modifiers) Run(monitor *ddapi.Monitor, name string, annotations map[string]string) {
 	for _, modifier := range m.Items {
-		klog.Info("Check Modifier %s for monitor %s", modifier.Name, monitor.Name)
-		if ok, match := modifier.isMatch(*monitor.Name, annotations); ok {
-			klog.Errorf("Running modifier %s on monitor %s", modifier.Name, *monitor.Name)
-			params := modifier.GetParams(*monitor.Name, match)
+		log.Infof("Check Modifier %s for monitor %s", modifier.Name, *monitor.Name)
+		if ok, match := modifier.isMatch(name, annotations); ok {
+			log.Infof("Running modifier %s on monitor %s", modifier.Name, *monitor.Name)
+			params := modifier.GetParams(name, match)
 			modifier.ModifyFunc(monitor, *params, match.AnnotationValue)
 		}
 	}
@@ -67,6 +66,8 @@ func (m *Modifiers) Run(monitor *ddapi.Monitor, annotations map[string]string) {
 
 // IsMatch returns true if a modifier matches the provided annotations and monitorName
 func (m *Modifier) isMatch(monitorName string, annotations map[string]string) (bool, *modifierMatch) {
+	rStr := fmt.Sprintf(regStr, m.Name, monitorName)
+	log.Infof("Monitor regex str is: %s", rStr)
 	re := regexp.MustCompile(fmt.Sprintf(regStr, m.Name, monitorName))
 
 	for k, v := range annotations {
@@ -103,11 +104,8 @@ func setProperty(name string, obj interface{}, val interface{}) {
 		current := getReflectedField(field, parent)
 		if i == len(parts)-1 {
 			// reached the final object - set the value
-			klog.Error("Found our field")
-			klog.Errorf("Setting value to %v", val)
-
 			v := reflect.Indirect(current)
-			fmt.Printf("Kind is: %s\n", v.Kind())
+			log.Infof("Setting value to %v, kind is %s", val, v.Kind())
 			switch v.Kind() {
 			case reflect.Int:
 				num, ok := val.(int)

@@ -67,15 +67,14 @@ func TestGetClusterVariables(t *testing.T) {
 func TestGetRulesetsValid(t *testing.T) {
 	for objectType, items := range typeCases {
 		annotations := annotationCases["pass"]
-		overrides := make(map[string][]Override)
-		mSets := cfg.getMatchingRulesets(annotations, objectType, overrides)
+		mSets := cfg.getMatchingRulesets(annotations, objectType)
 		assert.Equal(t, 1, len(*mSets))
 		mSet := (*mSets)[0]
 		assert.Equal(t, objectType, mSet.ObjectType)
 		assert.Equal(t, 1, len(mSet.Monitors))
 		assert.Equal(t, items["title"], *mSet.Monitors[items["name"]].Name)
 
-		monitors := cfg.GetMatchingMonitors(annotations, objectType, overrides)
+		monitors := cfg.GetMatchingMonitors(annotations, objectType)
 		var expected []ddapi.Monitor
 		for _, value := range mSet.Monitors {
 			expected = append(expected, value)
@@ -87,8 +86,7 @@ func TestGetRulesetsValid(t *testing.T) {
 func TestGetRulesetsInvalid(t *testing.T) {
 	for objectType := range typeCases {
 		annotations := annotationCases["fail"]
-		overrides := make(map[string][]Override)
-		mSets := cfg.getMatchingRulesets(annotations, objectType, overrides)
+		mSets := cfg.getMatchingRulesets(annotations, objectType)
 		assert.Equal(t, 0, len(*mSets))
 	}
 }
@@ -104,8 +102,7 @@ func TestGetBoundMonitorsValid(t *testing.T) {
 		},
 	}
 
-	overrides := make(map[string][]Override)
-	mSets := cfg.GetBoundMonitors(ns.Annotations, "deployment", overrides)
+	mSets := cfg.GetBoundMonitors(ns.Annotations, "deployment")
 	assert.Equal(t, 1, len(*mSets))
 	assert.Contains(t, (*mSets)[0].Tags, "astro:bound_object")
 }

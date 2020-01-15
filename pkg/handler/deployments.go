@@ -34,7 +34,6 @@ func OnDeploymentChanged(deployment *appsv1.Deployment, event config.Event) {
 	cfg := config.GetInstance()
 	dd := datadog.GetInstance()
 	kubeClient := kube.GetInstance()
-	overrides := parseOverrides(deployment)
 
 	switch strings.ToLower(event.EventType) {
 	case "delete":
@@ -53,8 +52,7 @@ func OnDeploymentChanged(deployment *appsv1.Deployment, event config.Event) {
 			return
 		}
 
-		monitors = append(*cfg.GetMatchingMonitors(deployment.Annotations, event.ResourceType, overrides), *cfg.GetBoundMonitors(ns.Annotations, event.ResourceType, overrides)...)
-		modify := NewModifiers()
+		monitors = append(*cfg.GetMatchingMonitors(deployment.Annotations, event.ResourceType), *cfg.GetBoundMonitors(ns.Annotations, event.ResourceType)...)
 		for _, monitor := range monitors {
 			err := applyTemplate(deployment, &monitor, &event)
 			if err != nil {
@@ -63,7 +61,6 @@ func OnDeploymentChanged(deployment *appsv1.Deployment, event config.Event) {
 				return
 			}
 
-			modify.Run(&monitor, deployment.Annotations)
 			if &monitor != nil {
 				log.Infof("Reconcile monitor %s", *monitor.Name)
 				if cfg.DryRun == false {

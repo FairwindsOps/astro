@@ -32,6 +32,7 @@ func updateBoundResources(namespace *corev1.Namespace, kc *kube.ClientInstance) 
 		log.Errorf("Error getting bound deployments for namespace %q.", namespace.Name)
 		return
 	}
+
 	for _, dep := range deploys.Items {
 		evt := setupBoundEvent(&dep)
 		OnDeploymentChanged(&dep, evt)

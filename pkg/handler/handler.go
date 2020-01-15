@@ -17,7 +17,6 @@ package handler
 import (
 	"bytes"
 	"fmt"
-	"regexp"
 	"strings"
 	"text/template"
 
@@ -121,52 +120,4 @@ func ancillaryVariables() map[string]interface{} {
 	return map[string]interface{}{
 		"ClusterVariables": func() map[string]string { return config.GetInstance().Rulesets.ClusterVariables },
 	}
-}
-
-func parseOverrides(obj interface{}) map[string][]config.Override {
-	overrides := make(map[string][]config.Override)
-	switch obj.(type) {
-	case *appsv1.Deployment:
-		obj = obj.(*appsv1.Deployment)
-		for key, value := range obj.(*appsv1.Deployment).Annotations {
-			if isOverride(key) {
-				overrideName, overrideKind := parseOverrideKey(key)
-				thisOverride := config.Override{
-					Field: overrideKind,
-					Value: value,
-				}
-				overrides[overrideName] = append(overrides[overrideName], thisOverride)
-			}
-		}
-	case *corev1.Namespace:
-		for key, value := range obj.(*corev1.Namespace).Annotations {
-			if isOverride(key) {
-				overrideName, overrideKind := parseOverrideKey(key)
-				thisOverride := config.Override{
-					Field: overrideKind,
-					Value: value,
-				}
-				overrides[overrideName] = append(overrides[overrideName], thisOverride)
-			}
-		}
-	}
-	return overrides
-}
-
-func parseOverrideKey(key string) (string, string) {
-	split := strings.Split(key, "/")
-	override := split[len(split)-1]
-	splitOverride := strings.Split(override, ".")
-	return splitOverride[len(splitOverride)-2], splitOverride[len(splitOverride)-1]
-}
-
-func isOverride(annotationKey string) bool {
-	matched, err := regexp.Match(`^astro\.fairwinds\.com/override\..*`, []byte(annotationKey))
-	if err != nil {
-		log.Errorf("Error parsing regexp of annotation key: %v", annotationKey)
-	}
-	if matched {
-		log.Infof("Override found with annotation '%s'", annotationKey)
-	}
-	return matched
 }

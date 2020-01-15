@@ -1,6 +1,8 @@
 package main
 
-import "github.com/fairwindsops/astro/cmd"
+import (
+	"github.com/fairwindsops/astro/cmd"
+)
 
 func main() {
 	cmd.Execute()
