@@ -59,7 +59,7 @@ func GetInstance() *DDMonitorManager {
 // AddOrUpdate will create a monitor if it doesn't exist or update one if it does.
 // It returns the Id of the monitor created or updated.
 func (ddman *DDMonitorManager) AddOrUpdate(monitor *ddapi.Monitor) (*ddapi.Monitor, error) {
-	log.Infof("Update templated monitor: %v", *monitor.Name)
+	log.Debugf("Update templated monitor: %v", *monitor.Name)
 	ddman.mux.Lock()
 	defer ddman.mux.Unlock()
 
@@ -67,6 +67,7 @@ func (ddman *DDMonitorManager) AddOrUpdate(monitor *ddapi.Monitor) (*ddapi.Monit
 	ddMonitor, err := ddman.GetProvisionedMonitor(monitor)
 	if err != nil {
 		//monitor doesn't exist
+		log.Infof("Creating new monitor: %v", *monitor.Name)
 		provisioned, err := ddman.Datadog.CreateMonitor(monitor)
 
 		if err != nil {
@@ -83,14 +84,14 @@ func (ddman *DDMonitorManager) AddOrUpdate(monitor *ddapi.Monitor) (*ddapi.Monit
 	}
 	//monitor exists
 	if reflect.DeepEqual(*merged, *ddMonitor) {
-		log.Infof("Monitor %d exists and is up to date.", *ddMonitor.Id)
+		log.Infof("Monitor exists and is up to date: %v", *ddMonitor.Name)
 	} else {
 		// monitor exists and needs updating.
-		log.Infof("Monitor %d needs updating.", *ddMonitor.Id)
+		log.Infof("Monitor needs updating: %v", *ddMonitor.Name)
 		err := ddman.Datadog.UpdateMonitor(merged)
 		if err != nil {
 			metrics.DatadogErrCounter.Inc()
-			log.Errorf("Could not update monitor %d: %s", *ddMonitor.Id, err)
+			log.Errorf("Could not update monitor: %v, error: %s", *ddMonitor.Name, err)
 			return ddMonitor, err
 		}
 	}
@@ -131,12 +132,12 @@ func (ddman *DDMonitorManager) DeleteMonitor(monitor *ddapi.Monitor) error {
 // DeleteMonitors deletes monitors containing the specified tags.
 func (ddman *DDMonitorManager) DeleteMonitors(tags []string) error {
 	monitors, err := ddman.Datadog.GetMonitorsByMonitorTags(tags)
-
-	log.Infof("Deleting %d monitors.", len(monitors))
 	if err != nil {
 		metrics.DatadogErrCounter.Inc()
 		return err
 	}
+
+	log.Infof("Deleting %d monitors.", len(monitors))
 
 	for _, ddMonitor := range monitors {
 		log.Infof("Deleting monitor with id %d", *ddMonitor.Id)
@@ -161,7 +162,7 @@ func DeleteExtinctMonitors(monitors []string, tags []string) error {
 	for _, monitor := range existing {
 		if !contains(monitors, monitor) {
 			// monitor should no longer exist
-			log.Infof("Found monitor %s that shouldn't exist.", *monitor.Name)
+			log.Infof("Removing monitor: %v", *monitor.Name)
 			err = ddMan.Datadog.DeleteMonitor(*monitor.Id)
 			if err != nil {
 				metrics.DatadogErrCounter.Inc()

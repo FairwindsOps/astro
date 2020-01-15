@@ -113,11 +113,11 @@ func leaderElection(cmd *cobra.Command, args []string) {
 				run(ctx, cancel)
 			},
 			OnStoppedLeading: func() {
-				log.Infof("%s leaving", id)
+				log.Infof("%s is no longer the leader", id)
 			},
 			OnNewLeader: func(identity string) {
 				if id == identity {
-					log.Info("I'm now the leader")
+					log.Debug("I'm now the leader")
 					return
 				}
 				log.Infof("%s is now the leader", identity)
@@ -137,7 +137,7 @@ func run(ctx context.Context, cancel context.CancelFunc) {
 		log.Info("Exiting, received termination signal")
 		cancel()
 	}()
-
+	log.Info("Entering main run loop and starting watchers.")
 	controller.New(ctx)
 }
 

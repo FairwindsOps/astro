@@ -102,7 +102,7 @@ func (config *Config) getMatchingRulesets(annotations map[string]string, objectT
 					hasAllAnnotations = true
 				} else {
 					hasAllAnnotations = false
-					log.Infof("Annotation %s with value %s does not exist, so monitor %d does not match", annotation.Name, annotation.Value, monitorSetIdx)
+					log.Debugf("Annotation %s with value %s does not exist, so monitor %d does not match", annotation.Name, annotation.Value, monitorSetIdx)
 					break
 				}
 			}
@@ -210,7 +210,7 @@ func (config *Config) reloadRulesets() {
 	}
 
 	for _, cfg := range config.MonitorDefinitionsPath {
-		log.Infof("Loading rulesets from %s", cfg)
+		log.Debugf("Loading rulesets from %s", cfg)
 		rSet := &ruleset{}
 
 		yml, err := loadFromPath(cfg)
@@ -257,11 +257,11 @@ func loadFromPath(path string) ([]byte, error) {
 }
 
 func getEnv(key string, defaultVal string) string {
-	log.Infof("Getting environment variable %s", key)
+	log.Debugf("Getting environment variable %s", key)
 	if value, exists := os.LookupEnv(key); exists {
 		return value
 	}
-	log.Info(fmt.Sprintf("Using default value %s for %s", defaultVal, key))
+	log.Debugf(fmt.Sprintf("Using default value %s for %s", defaultVal, key))
 	return defaultVal
 }
 
@@ -277,7 +277,7 @@ func envAsBool(key string, defaultVal bool) bool {
 	if val, err := strconv.ParseBool(val); err == nil {
 		return val
 	}
-	log.Info(fmt.Sprintf("Using default value %t for %s", defaultVal, key))
+	log.Debugf("Using default value %t for %s", defaultVal, key)
 	return defaultVal
 }
 
@@ -286,6 +286,6 @@ func envAsInt(key string, defaultVal int) int {
 	if val, err := strconv.Atoi(val); err == nil {
 		return val
 	}
-	log.Info(fmt.Sprintf("Using default value %d for %s", defaultVal, key))
+	log.Debugf("Using default value %d for %s", defaultVal, key)
 	return defaultVal
 }

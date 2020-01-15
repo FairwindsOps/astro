@@ -45,7 +45,7 @@ type KubeResourceWatcher struct {
 
 // Watch tells the KubeResourceWatcher to start waiting for events
 func (watcher *KubeResourceWatcher) Watch(term <-chan struct{}) {
-	log.Infof("Starting watcher.")
+	log.Debugf("Starting watcher.")
 
 	defer watcher.wq.ShutDown()
 	defer rt.HandleCrash()
@@ -57,7 +57,7 @@ func (watcher *KubeResourceWatcher) Watch(term <-chan struct{}) {
 		return
 	}
 
-	log.Infof("Watcher synced.")
+	log.Debugf("Watcher synced.")
 	wait.Until(watcher.waitForEvents, time.Second, term)
 }
 
@@ -103,7 +103,7 @@ func (watcher *KubeResourceWatcher) next() bool {
 		// limit the number of retries
 		if watcher.wq.NumRequeues(evt) < 5 {
 			log.Errorf("Error running queued item %s: %v", evt.(config.Event).Key, processErr)
-			log.Infof("Retry processing item %s", evt.(config.Event).Key)
+			log.Errorf("Retry processing item %s", evt.(config.Event).Key)
 			watcher.wq.AddRateLimited(evt)
 		} else {
 			log.Errorf("Giving up trying to run queued item %s: %v", evt.(config.Event).Key, processErr)
@@ -116,9 +116,9 @@ func (watcher *KubeResourceWatcher) next() bool {
 
 // New starts a controller for watching Kubernetes objects.
 func New(ctx context.Context) {
-	log.Info("Starting controller.")
+	log.Debug("Starting controller.")
 	kubeClient := kube.GetInstance()
-	log.Infof("Creating watcher for Deployments.")
+	log.Debug("Creating watcher for Deployments.")
 	DeploymentInformer := cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
@@ -137,7 +137,7 @@ func New(ctx context.Context) {
 	defer close(dTerm)
 	go DeployWatcher.Watch(dTerm)
 
-	log.Infof("Creating watcher for Namespaces.")
+	log.Debug("Creating watcher for Namespaces.")
 	NSInformer := cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
@@ -165,7 +165,7 @@ func New(ctx context.Context) {
 }
 
 func createController(kubeClient kubernetes.Interface, informer cache.SharedIndexInformer, resource string) *KubeResourceWatcher {
-	log.Infof("Creating controller for resource type %s", resource)
+	log.Debugf("Creating controller for resource type %s", resource)
 	wq := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
 
 	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
@@ -183,7 +183,7 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
 			evt.Namespace = objectMeta(obj).Namespace
 			evt.NewMeta = &objMeta
 			evt.OldMeta = new(metav1.ObjectMeta)
-			log.Infof("%s/%s has been added.", resource, evt.Key)
+			log.Debugf("%s/%s has been added.", resource, evt.Key)
 			wq.Add(evt)
 		},
 		DeleteFunc: func(obj interface{}) {
@@ -200,7 +200,7 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
 			evt.Namespace = objectMeta(obj).Namespace
 			evt.NewMeta = new(metav1.ObjectMeta)
 			evt.OldMeta = &objMeta
-			log.Infof("%s/%s has been deleted.", resource, evt.Key)
+			log.Debugf("%s/%s has been deleted.", resource, evt.Key)
 			wq.Add(evt)
 		},
 		UpdateFunc: func(old interface{}, new interface{}) {
@@ -218,7 +218,7 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
 			evt.Namespace = objectMeta(new).Namespace
 			evt.OldMeta = &oldMeta
 			evt.NewMeta = &newMeta
-			log.Infof("%s/%s has been updated.", resource, evt.Key)
+			log.Debugf("%s/%s has been updated.", resource, evt.Key)
 			wq.Add(evt)
 		},
 	})
