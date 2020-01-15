@@ -45,7 +45,7 @@ func newModifiers() *Modifiers {
 				Name: "ignore",
 				ModifyFunc: func(monitor *ddapi.Monitor, params string, val interface{}) {
 					log.Infof("Ignoring monitor %s", *monitor.Name)
-					monitor = nil
+					*monitor = ddapi.Monitor{}
 				},
 			},
 		},
@@ -57,28 +57,28 @@ func (m *Modifiers) Run(monitor *ddapi.Monitor, name string, annotations map[str
 	for _, modifier := range m.Items {
 		log.Infof("Check Modifier %s for monitor %s", modifier.Name, *monitor.Name)
 		if ok, match := modifier.isMatch(name, annotations); ok {
-			log.Infof("Running modifier %s on monitor %s", modifier.Name, *monitor.Name)
-			params := modifier.GetParams(name, match)
-			modifier.ModifyFunc(monitor, *params, match.AnnotationValue)
+			for _, matchedItem := range match {
+				log.Infof("Running modifier %s on monitor %s", modifier.Name, name)
+				params := modifier.GetParams(name, &matchedItem)
+				modifier.ModifyFunc(monitor, *params, matchedItem.AnnotationValue)
+			}
 		}
 	}
 }
 
 // IsMatch returns true if a modifier matches the provided annotations and monitorName
-func (m *Modifier) isMatch(monitorName string, annotations map[string]string) (bool, *modifierMatch) {
+func (m *Modifier) isMatch(monitorName string, annotations map[string]string) (bool, []modifierMatch) {
 	rStr := fmt.Sprintf(regStr, m.Name, monitorName)
 	log.Infof("Monitor regex str is: %s", rStr)
 	re := regexp.MustCompile(fmt.Sprintf(regStr, m.Name, monitorName))
 
+	matches := []modifierMatch{}
 	for k, v := range annotations {
 		if re.MatchString(k) {
-			return true, &modifierMatch{
-				AnnotationKey:   k,
-				AnnotationValue: v,
-			}
+			matches = append(matches, modifierMatch{AnnotationKey: k, AnnotationValue: v})
 		}
 	}
-	return false, nil
+	return len(matches) > 0, matches
 }
 
 // GetParams returns the param field of a regex string

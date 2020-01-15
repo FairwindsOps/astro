@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 	"sync"
@@ -100,17 +101,28 @@ func (config *Config) getMatchingRulesets(annotations map[string]string, objectT
 			}
 
 			if hasAllAnnotations {
+				processed := map[string]ddapi.Monitor{}
 				for name := range monitorSet.Monitors {
 					// process overrides
 					tmpMonitor := monitorSet.Monitors[name]
 					modifiers.Run(&tmpMonitor, name, annotations)
-					monitorSet.Monitors[name] = tmpMonitor
+
+					// if monitor is still valid, add it
+					if !isEmpty(tmpMonitor) {
+						processed[name] = tmpMonitor
+					}
 				}
+				monitorSet.Monitors = processed
 				validMSets = append(validMSets, monitorSet)
 			}
 		}
 	}
 	return &validMSets
+}
+
+// isEmpty returns whether a monitor struct is set to it's empty initialized value
+func isEmpty(monitor ddapi.Monitor) bool {
+	return reflect.DeepEqual(monitor, ddapi.Monitor{})
 }
 
 // GetBoundMonitors returns a collection of monitors that are indirectly bound to objectTypes in the namespace specified.
