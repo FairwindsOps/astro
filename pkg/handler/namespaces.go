@@ -49,7 +49,7 @@ func OnNamespaceChanged(namespace *corev1.Namespace, event config.Event) {
 				log.Errorf("Error applying template for monitor %s: %v", *monitor.Name, err)
 				return
 			}
-			log.Infof("Reconcile monitor %s", *monitor.Name)
+			log.Debugf("Reconcile monitor %s", *monitor.Name)
 			if cfg.DryRun == false {
 				metrics.ChangeCounter.WithLabelValues("namespaces", "create_update").Inc()
 				_, err := dd.AddOrUpdate(&monitor)
