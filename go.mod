@@ -6,8 +6,6 @@ require (
 	github.com/Azure/go-autorest/autorest v0.9.2 // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.8.0 // indirect
 	github.com/cenkalti/backoff v2.1.1+incompatible // indirect
-	github.com/gogo/protobuf v1.2.1 // indirect
-	github.com/golang/groupcache v0.0.0-20190129154638-5b532d6fd5ef // indirect
 	github.com/golang/mock v1.4.3
 	github.com/gophercloud/gophercloud v0.7.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.1 // indirect
@@ -19,7 +17,6 @@ require (
 	github.com/stretchr/testify v1.5.1
 	github.com/zorkian/go-datadog-api v2.28.0+incompatible
 	golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421 // indirect
-	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
 	gopkg.in/yaml.v2 v2.2.8
 	k8s.io/api v0.0.0-20190409021203-6e4e0e4f393b
 	k8s.io/apimachinery v0.0.0-20190404173353-6a84e37a896d
