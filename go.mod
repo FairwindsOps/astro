@@ -17,7 +17,7 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v0.0.6
 	github.com/stretchr/testify v1.5.1
-	github.com/zorkian/go-datadog-api v2.26.0+incompatible
+	github.com/zorkian/go-datadog-api v2.28.0+incompatible
 	golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421 // indirect
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
 	gopkg.in/yaml.v2 v2.2.8

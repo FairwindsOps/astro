@@ -217,6 +217,8 @@ github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q
 github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77/go.mod h1:aYKd//L2LvnjZzWKhF00oedf4jCCReLcmhLdhm1A27Q=
 github.com/zorkian/go-datadog-api v2.26.0+incompatible h1:mljeL9ywBmiDEAKGH8Fg6Mfb3I8T6JMVDd5QQbgRGKI=
 github.com/zorkian/go-datadog-api v2.26.0+incompatible/go.mod h1:PkXwHX9CUQa/FpB9ZwAD45N1uhCW4MT/Wj7m36PbKss=
+github.com/zorkian/go-datadog-api v2.28.0+incompatible h1:bh/2jIkDFCZRjkuQKBFdmB+sScAMXf8fctKTT0ae+wE=
+github.com/zorkian/go-datadog-api v2.28.0+incompatible/go.mod h1:PkXwHX9CUQa/FpB9ZwAD45N1uhCW4MT/Wj7m36PbKss=
 go.etcd.io/bbolt v1.3.2/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.uber.org/atomic v1.3.2/go.mod h1:gD2HeocX3+yG+ygLZcrzQJaqmWj9AIm7n08wl/qW/PE=
 go.uber.org/atomic v1.4.0/go.mod h1:gD2HeocX3+yG+ygLZcrzQJaqmWj9AIm7n08wl/qW/PE=
