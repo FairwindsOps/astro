@@ -11,7 +11,7 @@
 
 Astro is designed to simplify Datadog monitor administration.  This is an operator that emits Datadog monitors based on Kubernetes state.  The operator responds to changes of resources in your kubernetes cluster and will manage Datadog monitors based on the configured state.
 
-**Want to learn more?** Reach out on [the Slack channel](https://fairwindscommunity.slack.com/messages/astro) ([request invite](https://join.slack.com/t/fairwindscommunity/shared_invite/zt-cxss92z7-YjfnJwpUwlviViBFjYV2gg)), send an email to `opensource@fairwinds.com`, or join us for [office hours on Zoom](https://fairwindscommunity.slack.com/messages/office-hours)
+**Want to learn more?** Reach out on [the Slack channel](https://fairwindscommunity.slack.com/messages/astro) ([request invite](https://join.slack.com/t/fairwindscommunity/shared_invite/zt-e3c6vj4l-3lIH6dvKqzWII5fSSFDi1g)), send an email to `opensource@fairwinds.com`, or join us for [office hours on Zoom](https://fairwindscommunity.slack.com/messages/office-hours)
 
 ## Installing
 The [Astro helm chart](https://github.com/FairwindsOps/charts/tree/master/stable/astro) is the preferred way to install Astro into your cluster.
