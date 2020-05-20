@@ -138,7 +138,13 @@ func run(ctx context.Context, cancel context.CancelFunc) {
 		cancel()
 	}()
 	log.Info("Entering main run loop and starting watchers.")
-	controller.New(ctx)
+
+	// TODO - run all controllers
+	//controller.New(ctx)
+	//k8sController := controller.KubeResourceController{}
+	staticController := controller.StaticController{}
+	//k8sController.Run(ctx)
+	staticController.Run(ctx)
 }
 
 // Execute is the main entry point into the command

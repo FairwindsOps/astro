@@ -36,6 +36,10 @@ import (
 	"github.com/fairwindsops/astro/pkg/kube"
 )
 
+type KubeResourceController struct {
+    Name string
+}
+
 // KubeResourceWatcher contains the informer that watches Kubernetes objects and the queue that processes updates.
 type KubeResourceWatcher struct {
 	kubeClient kubernetes.Interface
@@ -114,8 +118,8 @@ func (watcher *KubeResourceWatcher) next() bool {
 	return true
 }
 
-// New starts a controller for watching Kubernetes objects.
-func New(ctx context.Context) {
+// Run starts a controller for watching Kubernetes objects.
+func (k *KubeResourceController) Run(ctx context.Context) {
 	log.Debug("Starting controller.")
 	kubeClient := kube.GetInstance()
 	log.Debug("Creating watcher for Deployments.")
@@ -132,7 +136,7 @@ func New(ctx context.Context) {
 		0,
 		cache.Indexers{},
 	)
-	DeployWatcher := createController(kubeClient.Client, DeploymentInformer, "deployment")
+	DeployWatcher := k.createController(kubeClient.Client, DeploymentInformer, "deployment")
 	dTerm := make(chan struct{})
 	defer close(dTerm)
 	go DeployWatcher.Watch(dTerm)
@@ -152,19 +156,19 @@ func New(ctx context.Context) {
 		cache.Indexers{},
 	)
 
-	NSWatcher := createController(kubeClient.Client, NSInformer, "namespace")
+	NSWatcher := k.createController(kubeClient.Client, NSInformer, "namespace")
 	nsTerm := make(chan struct{})
 	defer close(nsTerm)
 	go NSWatcher.Watch(nsTerm)
 
 	select {
 	case <-ctx.Done():
-		log.Info("Shutting down controllers")
+		log.Info("Shutting down k8s controller")
 		return
 	}
 }
 
-func createController(kubeClient kubernetes.Interface, informer cache.SharedIndexInformer, resource string) *KubeResourceWatcher {
+func (k *KubeResourceController) createController(kubeClient kubernetes.Interface, informer cache.SharedIndexInformer, resource string) *KubeResourceWatcher {
 	log.Debugf("Creating controller for resource type %s", resource)
 	wq := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
 

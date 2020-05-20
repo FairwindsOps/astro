@@ -107,6 +107,11 @@ func (config *Config) getMatchingRulesets(annotations map[string]string, objectT
 				}
 			}
 
+			// if no annotations are configured, then it has all of the annotations.
+			if len(monitorSet.Annotations) == 0 {
+			    hasAllAnnotations = true
+            }
+
 			if hasAllAnnotations {
 				for name := range monitorSet.Monitors {
 					if _, exists := overrides[name]; exists {
