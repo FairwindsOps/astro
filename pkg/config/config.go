@@ -89,6 +89,7 @@ func (config *Config) GetMatchingMonitors(annotations map[string]string, objectT
 	return &validMonitors
 }
 
+// GetStaticMonitors returns a collection of monitors from the config file that do not depend on resources in the kube cluster.
 func (config *Config) GetStaticMonitors() *[]ddapi.Monitor {
 	var validMonitors []ddapi.Monitor
 	for _, monitorSet := range config.Rulesets.MonitorSets {
