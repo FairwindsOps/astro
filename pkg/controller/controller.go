@@ -117,6 +117,25 @@ func (watcher *KubeResourceWatcher) next() bool {
 // New starts a controller for watching Kubernetes objects.
 func New(ctx context.Context) {
 	log.Debug("Starting controller.")
+
+	log.Debug("Starting watcher for static monitors.")
+	var staticEvent = config.Event{
+		EventType:    "update",
+		Key:          "n/a",
+		Namespace:    "",
+		OldMeta:      nil,
+		NewMeta:      nil,
+		ResourceType: "static",
+	}
+	handler.StaticMonitorUpdate(staticEvent)
+	ticker := time.NewTicker(time.Minute)
+	go func() {
+		for range ticker.C {
+			log.Debug("Checking for static monitor updates.")
+			handler.StaticMonitorUpdate(staticEvent)
+		}
+	}()
+
 	kubeClient := kube.GetInstance()
 	log.Debug("Creating watcher for Deployments.")
 	DeploymentInformer := cache.NewSharedIndexInformer(

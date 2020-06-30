@@ -66,7 +66,7 @@ func (ddman *DDMonitorManager) AddOrUpdate(monitor *ddapi.Monitor) (*ddapi.Monit
 	// check if monitor exists
 	ddMonitor, err := ddman.GetProvisionedMonitor(monitor)
 	if err != nil {
-		//monitor doesn't exist
+		// monitor doesn't exist
 		log.Infof("Creating new monitor: %v", *monitor.Name)
 		provisioned, err := ddman.Datadog.CreateMonitor(monitor)
 
@@ -82,12 +82,12 @@ func (ddman *DDMonitorManager) AddOrUpdate(monitor *ddapi.Monitor) (*ddapi.Monit
 	if err != nil {
 		return nil, err
 	}
-	//monitor exists
+	// monitor exists
 	if reflect.DeepEqual(*merged, *ddMonitor) {
-		log.Infof("Monitor exists and is up to date: %v", *ddMonitor.Name)
+		log.Debugf("Monitor exists and is up to date: %v", *ddMonitor.Name)
 	} else {
 		// monitor exists and needs updating.
-		log.Infof("Monitor needs updating: %v", *ddMonitor.Name)
+		log.Infof("Monitor updating: %v", *ddMonitor.Name)
 		err := ddman.Datadog.UpdateMonitor(merged)
 		if err != nil {
 			metrics.DatadogErrCounter.Inc()

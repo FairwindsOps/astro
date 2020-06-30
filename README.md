@@ -77,6 +77,7 @@ rulesets:
 
 * `cluster_variables`: (dict).  A collection of variables that can be used in monitors.  They can be used in monitors by prepending with `ClusterVariables`, eg `{{ ClusterVariables.var1 }}`.
 * `rulesets`: (List).  A collection of rulesets.  A ruleset consists of a Kubernetes resource type, annotations the resource must have to be considered valid, and a collection of monitors to manage for the resource.
+  * `type`: (String). The type of resource to match if matching with annotations. Can also be `static` or `binding`. Currently supports `deployment`, `namespace`, `binding`, and `static` as values.
   * `match_annotations`: (List).  A collection of name/value pairs pairs of annotations that must be present on the resource to manage it.
   * `bound_objects`: (List).  A collection of object types that are bound to this object.  For instance, if you have a ruleset for a namespace, you can bind other objects like deployments, services, etc. Then, when the bound objects in the namespace get updated, those rulesets apply to it.
   * `monitors`: (Map).  A collection of monitors to manage for any resource that matches the rules defined.
@@ -111,6 +112,9 @@ rulesets:
         * `include_tags`: When true, notifications from this monitor automatically insert triggering tags into the title.
         * `require_full_window`: boolean indicating if a monitor needs a full window of data to be evaluated.
         * `locked`: boolean indicating if changes are only allowed from the creator or admins.
+#### Static monitors
+A static monitor is one that does not depend on the presence of a resource in the kubernetes cluster. An example of a 
+static monitor would be `Host CPU Usage`. There are a variety of example static monitors in the (static_conf.yml example)[./static_conf.yml]
 
 #### A Note on Templating
 Since Datadog uses a very similar templating language to go templating, to pass a template variable to Datadog it must be "escaped" by inserting it as a template literal:
@@ -118,6 +122,9 @@ Since Datadog uses a very similar templating language to go templating, to pass 
 ```
 {{ "{{/is_alert}}" }}
 ```
+
+The above note is not applicable for static monitors and if extra brackets are present, creation of the static monitors will fail.
+
 ## Overriding Configuration
 
 It is possible to override monitor elements using Kubernetes resource annotations.
@@ -135,7 +142,7 @@ As of now, the only fields that can be overridden are:
 * query
 * type
 
-Additionally, templating in the override is currently not available.
+Templating in the override is currently not available.
 
 ## Contributing
 PRs welcome! Check out the [Contributing Guidelines](CONTRIBUTING.md),

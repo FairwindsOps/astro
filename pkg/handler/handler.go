@@ -84,36 +84,38 @@ func applyTemplateToField(obj interface{}, tmplString string) (string, error) {
 }
 
 func applyTemplate(obj interface{}, monitor *ddapi.Monitor, event *config.Event) error {
-	if monitor.Name != nil {
-		name, err := applyTemplateToField(obj, *monitor.Name)
-		if err != nil {
-			return err
+	if event.ResourceType != "static" {
+		if monitor.Name != nil {
+			name, err := applyTemplateToField(obj, *monitor.Name)
+			if err != nil {
+				return err
+			}
+			monitor.Name = &name
 		}
-		monitor.Name = &name
-	}
 
-	if monitor.Query != nil {
-		query, err := applyTemplateToField(obj, *monitor.Query)
-		if err != nil {
-			return err
+		if monitor.Query != nil {
+			query, err := applyTemplateToField(obj, *monitor.Query)
+			if err != nil {
+				return err
+			}
+			monitor.Query = &query
 		}
-		monitor.Query = &query
-	}
 
-	if monitor.Message != nil {
-		message, err := applyTemplateToField(obj, *monitor.Message)
-		if err != nil {
-			return err
+		if monitor.Message != nil {
+			message, err := applyTemplateToField(obj, *monitor.Message)
+			if err != nil {
+				return err
+			}
+			monitor.Message = &message
 		}
-		monitor.Message = &message
-	}
 
-	if monitor.Options != nil && monitor.Options.EscalationMessage != nil {
-		message, err := applyTemplateToField(obj, *monitor.Options.EscalationMessage)
-		if err != nil {
-			return err
+		if monitor.Options != nil && monitor.Options.EscalationMessage != nil {
+			message, err := applyTemplateToField(obj, *monitor.Options.EscalationMessage)
+			if err != nil {
+				return err
+			}
+			monitor.Options.EscalationMessage = &message
 		}
-		monitor.Options.EscalationMessage = &message
 	}
 
 	// apply identifying tags

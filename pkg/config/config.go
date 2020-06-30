@@ -89,6 +89,18 @@ func (config *Config) GetMatchingMonitors(annotations map[string]string, objectT
 	return &validMonitors
 }
 
+func (config *Config) GetStaticMonitors() *[]ddapi.Monitor {
+	var validMonitors []ddapi.Monitor
+	for _, monitorSet := range config.Rulesets.MonitorSets {
+		if monitorSet.ObjectType == "static" {
+			for _, v := range monitorSet.Monitors {
+				validMonitors = append(validMonitors, v)
+			}
+		}
+	}
+	return &validMonitors
+}
+
 func (config *Config) getMatchingRulesets(annotations map[string]string, objectType string, overrides map[string][]Override) *[]MonitorSet {
 	var validMSets []MonitorSet
 

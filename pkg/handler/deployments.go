@@ -55,7 +55,7 @@ func OnDeploymentChanged(deployment *appsv1.Deployment, event config.Event) {
 
 		monitors = append(*cfg.GetMatchingMonitors(deployment.Annotations, event.ResourceType, overrides), *cfg.GetBoundMonitors(ns.Annotations, event.ResourceType, overrides)...)
 		for _, monitor := range monitors {
-			err := applyTemplate(deployment, &monitor, &event)
+			err = applyTemplate(deployment, &monitor, &event)
 			if err != nil {
 				metrics.TemplateErrorCounter.Inc()
 				log.Errorf("Error applying template for monitor %s: %v", *monitor.Name, err)
