@@ -114,7 +114,7 @@ rulesets:
         * `locked`: boolean indicating if changes are only allowed from the creator or admins.
 #### Static monitors
 A static monitor is one that does not depend on the presence of a resource in the kubernetes cluster. An example of a 
-static monitor would be `Host CPU Usage`. There are a variety of example static monitors in the (static_conf.yml example)[./static_conf.yml]
+static monitor would be `Host CPU Usage`. There are a variety of example static monitors in the [static_conf.yml example](./static_conf.yml)
 
 #### A Note on Templating
 Since Datadog uses a very similar templating language to go templating, to pass a template variable to Datadog it must be "escaped" by inserting it as a template literal:
