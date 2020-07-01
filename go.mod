@@ -15,8 +15,8 @@ require (
 	github.com/stretchr/testify v1.5.1
 	github.com/zorkian/go-datadog-api v2.29.0+incompatible
 	gopkg.in/yaml.v2 v2.3.0
-	k8s.io/api v0.17.2
-	k8s.io/apimachinery v0.17.2
-	k8s.io/client-go v0.17.2
+	k8s.io/api v0.18.5
+	k8s.io/apimachinery v0.18.5
+	k8s.io/client-go v0.18.5
 	sigs.k8s.io/controller-runtime v0.5.2
 )
