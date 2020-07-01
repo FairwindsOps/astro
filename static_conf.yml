@@ -1,0 +1,165 @@
+---
+rulesets:
+- type: static
+  monitors:
+    host-high-load-avg:
+      name: "High System Load Average"
+      type: metric alert
+      query: "avg(last_30m):avg:system.load.norm.5{k8s.io/role/master:1} by {host} > 2"
+      message: |-
+        Load avg is high on "{{host.name}} {{host.ip}}".
+        This is a normalized load based on the number of CPUs (i.e. ActualLoadAverage / NumberOfCPUs)
+        Is this node over-provisioned? Pods may need to have a CPU limits closer to their requests
+        Is this node doing a lot of I/O? Load average could be high based on high disk or networking I/O. This may be acceptable if application performance is still ok. To reduce I/O-based system load, you may need to artificially limit the number of high-I/O pods running on a single node.
+      tags: []
+      options:
+        notify_audit: false
+        notify_no_data: false
+        new_host_delay: 300
+        thresholds:
+          critical: 2.0
+        locked: false
+    host-high-mem-use:
+      name: "Memory Utilization"
+      type: query alert
+      query: "avg(last_15m):avg:system.mem.pct_usable{k8s.io/role/master:1} by {host} < 0.1"
+      message: |-
+        "{{#is_alert}}"
+        Running out of free memory on "{{host.name}}"
+        "{{/is_alert}}"
+        "{{#is_alert_to_warning}}"
+        Memory usage has decreased. There is about 30% free
+        "{{/is_alert_to_warning}}"
+        "{{#is_alert_recovery}}"
+        Memory is below treshold again
+        "{{/is_alert_recovery}}"
+      tags: []
+      options:
+        notify_audit: false
+        notify_no_data: false
+        new_host_delay: 300
+        require_full_window: true
+        thresholds:
+          critical: 0.1
+          warning: 0.15
+        locked: false
+    host-disk-use:
+      name: "Host Disk Usage"
+      type: query alert
+      query: "avg(last_30m):(avg:system.disk.total{*} by {host} - avg:system.disk.free{*} by {host}) / avg:system.disk.total{*} by {host} * 100 > 90"
+      message: |-
+        "{{#is_alert}}"
+        Disk Usage has been above threshold over 30 minutes on "{{host.name}}"
+        "{{/is_alert}}"
+        "{{#is_warning}}"
+        Disk Usage has been above threshold over 30 minutes on "{{host.name}}"
+        "{{/is_warning}}"
+        "{{^is_alert}}"
+        Disk Usage has recovered on "{{host.name}}"
+        "{{/is_alert}}"
+        "{{^is_warning}}"
+        Disk Usage has recovered on "{{host.name}}"
+        "{{/is_warning}}"
+      tags: []
+      options:
+        notify_audit: false
+        notify_no_data: false
+        new_host_delay: 300
+        require_full_window: true
+        thresholds:
+          critical: 90.0
+          warning: 80.0
+          warning_recovery: 75.0
+          critical_recovery: 85.0
+        locked: false
+    host-io-wait-times:
+      name: "I/O Wait Times"
+      type: metric alert
+      query: "avg(last_10m):avg:system.cpu.iowait{*} by {host} > 50"
+      message: |-
+        "{{#is_alert}}"
+        The I/O wait time for {host.ip} is very high
+        - Is the EBS volume out of burst capacity for iops?
+        - Is something writing lots of errors to the journal?
+        - Is there a pod doing something unexpected (crash looping, etc)?
+        "{{/is_alert}}"
+        "{{^is_alert}}"
+        The EBS volume burst capacity is returning to normal.
+        "{{/is_alert}}"
+      tags: []
+      options:
+        notify_audit: false
+        new_host_delay: 300
+        notify_no_data: false
+        require_full_window: true
+        locked: false
+        thresholds:
+          critical: 50.0
+          warning: 30.0
+    nginx-config-reload-fail:
+      name: "Nginx Config Reload Failure"
+      type: metric alert
+      query: "max(last_5m):max:ingress.nginx_ingress_controller_config_last_reload_successful{*} by {kube_deployment} <= 0"
+      message: |-
+        "{{#is_alert}}"
+        The last nginx config reload for "{{kube_deployment.name}}" failed!  Are there any bad ingress configs?  Does the nginx config have a syntax error?
+        "{{/is_alert}}"
+        "{{#is_recovery}}"
+        Nginx config reloaded successfully!
+        "{{/is_recovery}}"
+      tags: []
+      options:
+        notify_audit: false
+        new_host_delay: 300
+        notify_no_data: false
+        require_full_window: true
+        locked: false
+        thresholds:
+          critical: 0.0
+          critical_recovery: 1.0
+    node-not-ready:
+      name: "Node is not Ready"
+      type: service check
+      query: |
+        "kubernetes_state.node.ready".by("host").last(20).count_by_status()
+      message: |-
+        "{{#is_alert}}"
+        A Node is not ready!
+        Cluster: "{{kubernetescluster.name}}"
+        Host: "{{host.name}}"
+        IP: "{{host.ip}}"
+        "{{check_message}}"
+        "{{/is_alert}}"
+        "{{#is_recovery}}"
+        Node is now ready.
+        Cluster: "{{kubernetescluster.name}}"
+        Host: "{{host.name}}"
+        IP: "{{host.ip}}"
+        "{{/is_recovery}}"
+      tags: []
+      options:
+        notify_audit: false
+        no_data_timeframe: 2
+        new_host_delay: 900
+        notify_no_data: false
+        locked: false
+        thresholds:
+          critical: 20.0
+          ok: 2.0
+    cluster-hpa-errors:
+      name: "HPA Errors"
+      type: event alert
+      query: "events('sources:kubernetes priority:all \"unable to fetch metrics from resource metrics API:\"').by('hpa').rollup('count').last('1h') > 200"
+      message: |-
+        "{{#is_alert}}"
+        A high number of hpa failures (> "{{threshold}}" ) are occurring.  Can HPAs get metrics?
+        "{{/is_alert}}"
+        "{{#is_alert_recovery}}"
+        HPA Metric Retrieval Failure has recovered.
+        "{{/is_alert_recovery}}"
+      tags: []
+      options:
+        notify_audit: false
+        notify_no_data: false
+        require_full_window: true
+        locked: false

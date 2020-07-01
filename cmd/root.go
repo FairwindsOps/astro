@@ -67,7 +67,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&metricsPort, "metrics-port", "p", ":8080", "The address to serve prometheus metrics.")
 	rootCmd.PersistentFlags().StringVar(&namespace, "namespace", "kube-system", "The namespace where astro is running")
 }
-func leaderElection(cmd *cobra.Command, args []string) {
+func leaderElection(*cobra.Command, []string) {
 	log.SetOutput(os.Stdout)
 	log.SetLevel(logLevels[strings.ToLower(logLevel)])
 
@@ -127,7 +127,7 @@ func leaderElection(cmd *cobra.Command, args []string) {
 }
 
 func run(ctx context.Context, cancel context.CancelFunc) {
-	// create a channel to respond to SIGTERMs
+	// create a channel to respond to SIGTERM and SIGINT
 	signals := make(chan os.Signal, 1)
 	defer close(signals)
 

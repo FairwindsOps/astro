@@ -52,7 +52,7 @@ func OnNamespaceChanged(namespace *corev1.Namespace, event config.Event) {
 			log.Debugf("Reconcile monitor %s", *monitor.Name)
 			if cfg.DryRun == false {
 				metrics.ChangeCounter.WithLabelValues("namespaces", "create_update").Inc()
-				_, err := dd.AddOrUpdate(&monitor)
+				_, err = dd.AddOrUpdate(&monitor)
 				record = append(record, *monitor.Name)
 				if err != nil {
 					metrics.ErrorCounter.Inc()
