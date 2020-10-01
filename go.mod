@@ -6,7 +6,7 @@ require (
 	github.com/Azure/go-autorest/autorest v0.9.2 // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.8.0 // indirect
 	github.com/cenkalti/backoff v2.1.1+incompatible // indirect
-	github.com/golang/mock v1.4.3
+	github.com/golang/mock v1.4.4
 	github.com/gophercloud/gophercloud v0.7.0 // indirect
 	github.com/imdario/mergo v0.3.11
 	github.com/prometheus/client_golang v1.7.1
