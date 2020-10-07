@@ -1,6 +1,7 @@
-FROM golang:1.12 AS build
+FROM golang:1.14 AS build
 LABEL maintainer="Micah Huber <micah@fairwinds.com>"
 LABEL maintainer="Luke Reed <luke@fairwinds.com>"
+LABEL maintainer="Bader Boland <bader@fairwinds.com>"
 WORKDIR /go/src/github.com/fairwindsops/astro
 ADD . /go/src/github.com/fairwindsops/astro
 
