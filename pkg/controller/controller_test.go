@@ -37,7 +37,7 @@ func TestCreateDeploymentController(t *testing.T) {
 		0,
 		cache.Indexers{},
 	)
-	DeployWatcher := createController(kubeClient.Client, DeploymentInformer, "deployment")
+	DeployWatcher := createController(kubeClient.Client, DeploymentInformer, "deployment", 500)
 
 	annotations := make(map[string]string, 1)
 	annotations["test"] = "yup"

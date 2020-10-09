@@ -17,9 +17,12 @@ package controller
 import (
 	"context"
 	"fmt"
+	"os"
+	"strconv"
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/time/rate"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -151,7 +154,8 @@ func New(ctx context.Context) {
 		0,
 		cache.Indexers{},
 	)
-	DeployWatcher := createController(kubeClient.Client, DeploymentInformer, "deployment")
+	rateLimit := getRateLimitTime()
+	DeployWatcher := createController(kubeClient.Client, DeploymentInformer, "deployment", rateLimit)
 	dTerm := make(chan struct{})
 	defer close(dTerm)
 	go DeployWatcher.Watch(dTerm)
@@ -170,8 +174,7 @@ func New(ctx context.Context) {
 		0,
 		cache.Indexers{},
 	)
-
-	NSWatcher := createController(kubeClient.Client, NSInformer, "namespace")
+	NSWatcher := createController(kubeClient.Client, NSInformer, "namespace", rateLimit)
 	nsTerm := make(chan struct{})
 	defer close(nsTerm)
 	go NSWatcher.Watch(nsTerm)
@@ -183,9 +186,29 @@ func New(ctx context.Context) {
 	}
 }
 
-func createController(kubeClient kubernetes.Interface, informer cache.SharedIndexInformer, resource string) *KubeResourceWatcher {
+func getRateLimitTime() int {
+	rateString := os.Getenv("RATELIMIT_INTERVAL")
+	if rateString != "" {
+		rateInt, err := strconv.Atoi(rateString)
+		if err != nil {
+			log.Warn("RATELIMIT_INTERVAL not set to a valid integer value", err)
+			return 500
+		}
+		return rateInt
+	}
+	return 500
+}
+
+func createController(kubeClient kubernetes.Interface, informer cache.SharedIndexInformer, resource string, rateLimit int) *KubeResourceWatcher {
 	log.Debugf("Creating controller for resource type %s", resource)
-	wq := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
+	rateLimiter := workqueue.NewMaxOfRateLimiter(
+		// Default is 5 Millisecond base and a max of 1000 seconds.
+		// Lowered to 100 second max
+		// Raised the base time to 500 millieconds * number of tries squared.
+		workqueue.NewItemExponentialFailureRateLimiter(time.Duration(rateLimit)*time.Millisecond, 100*time.Second),
+		&workqueue.BucketRateLimiter{Limiter: rate.NewLimiter(rate.Limit(10), 100)},
+	)
+	wq := workqueue.NewRateLimitingQueue(rateLimiter)
 
 	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
