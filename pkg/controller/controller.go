@@ -204,7 +204,7 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
 	rateLimiter := workqueue.NewMaxOfRateLimiter(
 		// Default is 5 Millisecond base and a max of 1000 seconds.
 		// Lowered to 100 second max
-		// Raised the base time to 500 millieconds * number of tries squared.
+		// Raised the base time to 500 milliseconds * number of tries squared.
 		workqueue.NewItemExponentialFailureRateLimiter(time.Duration(rateLimit)*time.Millisecond, 100*time.Second),
 		&workqueue.BucketRateLimiter{Limiter: rate.NewLimiter(rate.Limit(10), 100)},
 	)
