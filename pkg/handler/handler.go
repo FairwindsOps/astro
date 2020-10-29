@@ -109,6 +109,18 @@ func applyTemplate(obj interface{}, monitor *ddapi.Monitor, event *config.Event)
 			monitor.Message = &message
 		}
 
+		if monitor.Tags != nil {
+			tags := []string{}
+			for _, tag := range monitor.Tags {
+				tag, err := applyTemplateToField(obj, tag)
+				if err != nil {
+					return err
+				}
+				tags = append(tags, tag)
+			}
+			monitor.Tags = tags
+		}
+
 		if monitor.Options != nil && monitor.Options.EscalationMessage != nil {
 			message, err := applyTemplateToField(obj, *monitor.Options.EscalationMessage)
 			if err != nil {
