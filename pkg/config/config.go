@@ -15,6 +15,7 @@
 package config
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -135,6 +136,24 @@ func (config *Config) getMatchingRulesets(annotations map[string]string, objectT
 								tmpMonitor.Query = &tmpOverrides[i].Value
 							case "message":
 								tmpMonitor.Message = &tmpOverrides[i].Value
+							case "threshold-critical":
+								if tmpMonitor.Options == nil {
+									tmpMonitor.Options = &ddapi.Options{}
+								}
+								if tmpMonitor.Options.Thresholds == nil {
+									tmpMonitor.Options.Thresholds = &ddapi.ThresholdCount{}
+								}
+								threshold := json.Number(tmpOverrides[i].Value)
+								tmpMonitor.Options.Thresholds.Critical = &threshold
+							case "threshold-warning":
+								if tmpMonitor.Options == nil {
+									tmpMonitor.Options = &ddapi.Options{}
+								}
+								if tmpMonitor.Options.Thresholds == nil {
+									tmpMonitor.Options.Thresholds = &ddapi.ThresholdCount{}
+								}
+								threshold := json.Number(tmpOverrides[i].Value)
+								tmpMonitor.Options.Thresholds.Warning = &threshold
 							default:
 								log.Warnf("override provided does mot match any monitor fields. provided field: %s", o.Field)
 							}
