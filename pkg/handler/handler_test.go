@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -62,6 +63,9 @@ func TestParseOverrides(t *testing.T) {
 	assert.Equal(t, len(overrides), 1)
 	assert.IsType(t, map[string][]config.Override{}, overrides)
 	for k := range overrides {
+		sort.SliceStable(overrides[k], func(i, j int) bool {
+			return overrides[k][i].Field < overrides[k][j].Field
+		})
 		assert.Equal(t, "dep-monitor", k)
 		assert.Equal(t, []config.Override{
 			{Field: "name", Value: "Deployment Monitor Name Override"},
