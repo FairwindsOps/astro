@@ -143,8 +143,10 @@ func (config *Config) getMatchingRulesets(annotations map[string]string, objectT
 								if tmpMonitor.Options.Thresholds == nil {
 									tmpMonitor.Options.Thresholds = &ddapi.ThresholdCount{}
 								}
-								threshold := json.Number(tmpOverrides[i].Value)
-								tmpMonitor.Options.Thresholds.Critical = &threshold
+								if tmpOverrides[i].Value != "" {
+									threshold := json.Number(tmpOverrides[i].Value)
+									tmpMonitor.Options.Thresholds.Critical = &threshold
+								}
 							case "threshold-warning":
 								if tmpMonitor.Options == nil {
 									tmpMonitor.Options = &ddapi.Options{}
@@ -152,8 +154,10 @@ func (config *Config) getMatchingRulesets(annotations map[string]string, objectT
 								if tmpMonitor.Options.Thresholds == nil {
 									tmpMonitor.Options.Thresholds = &ddapi.ThresholdCount{}
 								}
-								threshold := json.Number(tmpOverrides[i].Value)
-								tmpMonitor.Options.Thresholds.Warning = &threshold
+								if tmpOverrides[i].Value != "" {
+									threshold := json.Number(tmpOverrides[i].Value)
+									tmpMonitor.Options.Thresholds.Warning = &threshold
+								}
 							default:
 								log.Warnf("override provided does mot match any monitor fields. provided field: %s", o.Field)
 							}
