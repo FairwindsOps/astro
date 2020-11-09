@@ -21,6 +21,7 @@ func TestApplyTemplate(t *testing.T) {
 	queryTemplate := "Query {{ .ObjectMeta.Name }}"
 	messageTemplate := "Message {{ .ObjectMeta.Name }}"
 	emTemplate := "EM {{ .ObjectMeta.Name }}"
+	tagsTemplate := []string{"test:{{ .ObjectMeta.Name }}"}
 	monitor := ddapi.Monitor{
 		Name:    &nameTemplate,
 		Query:   &queryTemplate,
@@ -28,6 +29,7 @@ func TestApplyTemplate(t *testing.T) {
 		Options: &ddapi.Options{
 			EscalationMessage: &emTemplate,
 		},
+		Tags: tagsTemplate,
 	}
 	event := config.Event{
 		Key:          "a",
@@ -41,6 +43,7 @@ func TestApplyTemplate(t *testing.T) {
 	assert.Equal(t, "Query foo", *monitor.Query, "Query template should be filled")
 	assert.Equal(t, "Message foo", *monitor.Message, "Message template should be filled")
 	assert.Equal(t, "EM foo", *monitor.Options.EscalationMessage, "EM template should be filled")
+	assert.Equal(t, []string{"test:foo", "astro", "astro:object_type:d", "astro:resource:a"}, monitor.Tags, "Tags template should be filled")
 }
 
 func TestParseOverrides(t *testing.T) {
