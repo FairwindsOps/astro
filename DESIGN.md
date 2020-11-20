@@ -1,8 +1,9 @@
 # astro
 
 ## People
-* Micah huber
+* Micah Huber
 * Luke Reed
+* Bader Boland
 
 ## Intent
 The goal of this project is to automate the management of Datadog monitors for Kubernetes clusters.  Given the dynamic nature of distributed Kubernetes systems, monitoring must frequently adapt to match the state of clusters.  Currently, no solution exists to address this need automatically.  Existing tools rely on manually configuring monitoring state which introduces toil to SRE teams.  Additionally, monitoring is often an after-thought and seldom gets adjusted promptly to serve new or changing workloads.  This introduces risk to availability and performance assurance because monitors may not be present or accurate to trigger changes in KPIs (Key Performance Indicators).  The result can be breaches in SLAs because they weren't detected and noisy pagers contributing to pager fatigue.
@@ -45,41 +46,22 @@ The application contains the following core components:
 * Utils.  Utilities for the application.  One important utility is the interaction with the datadog api to create, update, or destroy monitors.
 
 ### Configuration
-Configuration is specified via a combination of environment variables and a configuration file.  Environment variables specify things like API keys for the application.  The configuration file mainly contains information about the monitoring state that is desired in the cluster.
+Configuration is specified via a combination of environment variables and Custom Resources.  Environment variables specify things like API keys for the application. The custom resources mainly contain information about the monitoring state that is desired in the cluster.
 
-Example Configuration File:
+#### ClusterAlertConfiguration
+
+This is a cluster wide object. This defines a reusable set of endpoints to notify when an alert is triggered. Any configuration for these endpoints must already be configured in DataDog.
+
 ```yaml
----
-rulesets:
-- type: deployment
-  match_annotations:
-    - name: astro/owner
-      value: astro
-  monitors:
-    - name: "Deployment Replica Alert - {{ .ObjectMeta.Name }}"
-      type: metric alert
-      query: "max(last_10m):max:kubernetes_state.deployment.replicas_available{kubernetescluster:foobar,namespace:{{ .ObjectMeta.Namespace }}} by {deployment} <= 0"
-      message: |
-        {{ "{{#is_alert}}" }}
-        Available replicas is currently 0 for {{ .ObjectMeta.Name }}
-        {{ "{{/is_alert}}" }}
-        {{ "{{^is_alert}}" }}
-        Available replicas is no longer 0 for {{ .ObjectMeta.Name }}
-        {{ "{{/is_alert}}" }}
-      tags:
-        - astro
-      no_data_timeframe: 60
-      notify_audit: false
-      notify_no_data: false
-      renotify_interval: 5
-      new_host_delay: 5
-      evaluation_delay: 300
-      timeout: 300
-      escalation_message: ""
-      thresholds:
-        critical: 0
-      require_full_window: true
-      locked: false
+kind: ClusterAlertConfiguration
+metadata:
+  name: alert-sample
+spec:
+  alwaysTarget: "@slack-general" # any time there is a message this target will be alerted.
+  noDataTarget: "@slack-nodata" # this target will be alerted whenever the monitor is triggered from having no data.
+  alertTarget: "@slack-alert" # this target will be notified when the monitor reaches the Alert threshold
+  warningTarget: "@slack-warnings" # this target  will be notified when the monitor reaches the warning threshold
+  notRecoveryTarget: "@slack-recovereD" # this target will be notified when either the warning or alert thresholds are met, or there is no data. But not when a monitor is recovered from.
 ```
 
 ## Related Work
