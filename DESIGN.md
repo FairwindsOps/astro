@@ -46,6 +46,7 @@ The application contains the following core components:
 * Utils.  Utilities for the application.  One important utility is the interaction with the datadog api to create, update, or destroy monitors.
 
 ### Configuration
+
 Configuration is specified via a combination of environment variables and Custom Resources.  Environment variables specify things like API keys for the application. The custom resources mainly contain information about the monitoring state that is desired in the cluster.
 
 #### ClusterAlertConfiguration
@@ -57,26 +58,102 @@ kind: ClusterAlertConfiguration
 metadata:
   name: alert-sample
 spec:
-  alwaysTarget: "@slack-general" # any time there is a message this target will be alerted.
-  noDataTarget: "@slack-nodata" # this target will be alerted whenever the monitor is triggered from having no data.
+  alwaysTarget: "@slack-general" # any time there is a message this target will be notified.
+  noDataTarget: "@slack-nodata" # this target will be notified whenever the monitor is triggered from having no data.
   alertTarget: "@slack-alert" # this target will be notified when the monitor reaches the Alert threshold
   warningTarget: "@slack-warnings" # this target  will be notified when the monitor reaches the warning threshold
   notRecoveryTarget: "@slack-recovereD" # this target will be notified when either the warning or alert thresholds are met, or there is no data. But not when a monitor is recovered from.
 ```
 
-## Related Work
-* [Rodd](https://github.com/FairwindsOps/rodd).  Rodd is our current monitor management solution that takes a config file as input and creates terraform as output.  The main differentiators between rodd and astro are:
-  * rodd requires manual updates to state, astro does not
-  * rodd supports creating monitors for non-kubernetes items
+#### ClusterMonitorSet
 
-  Rodd's features complement astro because it supports edge cases that astro does not (for example, creating monitors for things that aren't defined in a Kubernetes cluster).
+This is a cluster wide object. This defines a set of monitors to be created. They could be static or they could be templated out by all of the targets that match a selector.
+
+```yaml
+kind: ClusterMonitorSet
+metadata:
+  name: cluster-monitor-set
+spec:
+  targetReferences:
+  - apiGroups:
+    - ""
+    resources:
+    - pods
+  selector:
+    matchLabels:
+      app: astro
+  monitors:
+  - name: "Pod Alert - {{ .ObjectMeta.Name }}"
+    type: "metric alert"
+    query: "max(last_10m):max:kubernetes.cpu.user.total{namespace:{{ .ObjectMeta.Namespace }},pod_name:{{ .ObjectMeta.Name }}} > 2"
+    message: |-
+      The CPU usage was too high for {{ .ObjectMeta.Name }}
+    tags:
+    - tag1
+    options:
+      no_data_timeframe: 60
+      notify_audit: false
+      notify_no_data: false
+      renotify_interval: 5
+      new_host_delay: 5
+      evaluation_delay: 300
+      timeout: 300
+      escalation_message: ""
+      threshold_count:
+        critical: 0
+      require_full_window: true
+      locked: false   
+```
+
+#### MonitorSet
+
+This is a namespaced object. This is a namespace specific equivalent of `ClusterMonitorSet`
+
+#### ClusterMonitorBinding
+
+This is a cluster wide object. This is a binding between a `ClusterMonitorSet` and a `ClusterAlertConfiguration`.
+
+```yaml
+kind: ClusterMonitorBinding
+metadata:
+  name: cluster-monitor-binding
+spec:
+  monitorSetRef:
+    apiGroup: astro.fairwinds.com
+    name: cluster-monitor-set
+    kind: ClusterMonitorSet
+  alertConfigurationRef:
+    apiGroup: astro.fairwinds.com
+    name: alert-sample
+    kind: ClusterAlertConfiguration
+```
+
+#### MonitorBinding
+
+This is a namespaced object. This is the namespace specific equivalent of `ClusterMonitorBinding`. This is a binding between either a `ClusterMonitorSet` or a `MonitorSet` and a `ClusterAlertConfiguration`
+
+```yaml
+kind: MonitorBinding
+metadata:
+  name: monitor-binding
+  namespace: default
+spec:
+  monitorSetRef:
+    apiGroup: astro.fairwinds.com
+    name: monitor-set
+    kind: MonitorSet
+    namespace: default
+  alertConfigurationRef:
+    apiGroup: astro.fairwinds.com
+    name: alert-sample
+    kind: ClusterAlertConfiguration
+```
+
+## Related Work
 
 * [Datadog Terraform Provider](https://www.terraform.io/docs/providers/datadog/index.html).  The terraform provider can provision downtime, monitors, synthetics, and dashboards.  Using the provider is effective but it all must be managed manually.
 
 ## Possible objections
-
-### Using CRDs to Store Configuration
-Use of a CRD to store configuration could be attractive because it would easily enable automatic updates to configuration.  However, one of the potential benefits of this project would be having a global configuration broad enough to apply to multiple clusters.  In this case, it is not desirable to have it live in the cluster and should be stored somewhere easily accessible for all clusters using it to access it.
 
 ### Using the Terraform Datadog provider
 Datadog providers a terraform provider that can be used to manage monitors.  This is especially beneficial when you already use terraform to manage existing infrastructure.  The disadvantage to this method is that all changes in state must be applied manually.  Using astro, manual intervention can be significantly reduced.
