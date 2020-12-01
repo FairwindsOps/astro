@@ -26,9 +26,9 @@ rulesets:
         renotify_interval: 5
         new_host_delay: 5
         evaluation_delay: 300
-        timeout: 300
+        timeout_h: 1
         escalation_message: ""
-        threshold_count:
+        thresholds:
           critical: 0
         require_full_window: true
         locked: false
