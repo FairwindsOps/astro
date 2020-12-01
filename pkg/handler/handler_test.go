@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -48,7 +49,9 @@ func TestApplyTemplate(t *testing.T) {
 
 func TestParseOverrides(t *testing.T) {
 	annotations := map[string]string{
-		"astro.fairwinds.com/override.dep-monitor.name": "Deployment Monitor Name Override",
+		"astro.fairwinds.com/override.dep-monitor.name":               "Deployment Monitor Name Override",
+		"astro.fairwinds.com/override.dep-monitor.threshold-critical": "10.0",
+		"astro.fairwinds.com/override.dep-monitor.threshold-warning":  "5.0",
 	}
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -60,7 +63,13 @@ func TestParseOverrides(t *testing.T) {
 	assert.Equal(t, len(overrides), 1)
 	assert.IsType(t, map[string][]config.Override{}, overrides)
 	for k := range overrides {
+		sort.SliceStable(overrides[k], func(i, j int) bool {
+			return overrides[k][i].Field < overrides[k][j].Field
+		})
 		assert.Equal(t, "dep-monitor", k)
-		assert.Equal(t, []config.Override{{Field: "name", Value: "Deployment Monitor Name Override"}}, overrides[k])
+		assert.Equal(t, []config.Override{
+			{Field: "name", Value: "Deployment Monitor Name Override"},
+			{Field: "threshold-critical", Value: "10.0"},
+			{Field: "threshold-warning", Value: "5.0"}}, overrides[k])
 	}
 }
