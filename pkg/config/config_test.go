@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/json"
 	"os"
 	"testing"
 
@@ -65,15 +66,51 @@ func TestGetClusterVariables(t *testing.T) {
 }
 
 func TestGetRulesetsValid(t *testing.T) {
+	annotations := annotationCases["pass"]
+	overrides := map[string][]Override{
+		"dep-replica-alert": {
+			{
+				Field: "threshold-critical",
+				Value: "10.0",
+			},
+			{
+				Field: "threshold-warning",
+				Value: "5",
+			},
+		},
+		"namespaced-replica-alert": {
+			{
+				Field: "threshold-critical",
+				Value: "500",
+			},
+			{
+				Field: "threshold-warning",
+				Value: "100",
+			},
+		},
+	}
+	thresholds := map[string]map[string]json.Number{
+		"dep-replica-alert": {
+			"critical": json.Number("10.0"),
+			"warning":  json.Number("5"),
+		},
+		"namespaced-replica-alert": {
+			"critical": json.Number("500"),
+			"warning":  json.Number("100"),
+		},
+	}
+
 	for objectType, items := range typeCases {
-		annotations := annotationCases["pass"]
-		overrides := make(map[string][]Override)
+		name := items["name"]
+		title := items["title"]
 		mSets := cfg.getMatchingRulesets(annotations, objectType, overrides)
 		assert.Equal(t, 1, len(*mSets))
 		mSet := (*mSets)[0]
 		assert.Equal(t, objectType, mSet.ObjectType)
 		assert.Equal(t, 1, len(mSet.Monitors))
-		assert.Equal(t, items["title"], *mSet.Monitors[items["name"]].Name)
+		assert.Equal(t, title, *mSet.Monitors[name].Name)
+		assert.Equal(t, thresholds[name]["critical"], *mSet.Monitors[name].Options.Thresholds.Critical)
+		assert.Equal(t, thresholds[name]["warning"], *mSet.Monitors[name].Options.Thresholds.Warning)
 
 		monitors := cfg.GetMatchingMonitors(annotations, objectType, overrides)
 		var expected []ddapi.Monitor

@@ -141,6 +141,8 @@ As of now, the only fields that can be overridden are:
 * message
 * query
 * type
+* threshold-critical
+* threshold-warning
 
 Templating in the override is currently not available.
 
