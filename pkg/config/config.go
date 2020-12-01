@@ -26,29 +26,29 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ghodss/yaml"
 	log "github.com/sirupsen/logrus"
 	ddapi "github.com/zorkian/go-datadog-api"
-	"gopkg.in/yaml.v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type ruleset struct {
-	ClusterVariables map[string]string `yaml:"cluster_variables,omitempty"`
-	MonitorSets      []MonitorSet      `yaml:"rulesets,omitempty"`
+	ClusterVariables map[string]string `json:"cluster_variables,omitempty"`
+	MonitorSets      []MonitorSet      `json:"rulesets,omitempty"`
 }
 
 // A MonitorSet represents a collection of Monitors that applies to an object.
 type MonitorSet struct {
-	ObjectType   string                   `yaml:"type"`                    // The type of object.  Example: deployment
-	Annotations  []Annotation             `yaml:"match_annotations"`       // Annotations an object must possess to be considered applicable for the monitors.
-	BoundObjects []string                 `yaml:"bound_objects,omitempty"` // A collection of ObjectTypes that are bound to the MonitorSet.
-	Monitors     map[string]ddapi.Monitor `yaml:"monitors"`                // A collection of Monitors.
+	ObjectType   string                   `json:"type"`                    // The type of object.  Example: deployment
+	Annotations  []Annotation             `json:"match_annotations"`       // Annotations an object must possess to be considered applicable for the monitors.
+	BoundObjects []string                 `json:"bound_objects,omitempty"` // A collection of ObjectTypes that are bound to the MonitorSet.
+	Monitors     map[string]ddapi.Monitor `json:"monitors"`                // A collection of Monitors.
 }
 
 // An Annotation represent a kubernetes annotation.
 type Annotation struct {
-	Name  string `yaml:"name"`  // The annotation name.
-	Value string `yaml:"value"` // The value of the annotation.
+	Name  string `json:"name"`  // The annotation name.
+	Value string `json:"value"` // The value of the annotation.
 }
 
 // An Event represents an update of a Kubernetes object and contains metadata about the update.
