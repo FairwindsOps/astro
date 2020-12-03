@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -26,7 +27,7 @@ func TestNamespaceChange(t *testing.T) {
 			Annotations: annotations,
 		},
 	}
-	kubeClient.Client.CoreV1().Namespaces().Create(ns)
+	kubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), ns, metav1.CreateOptions{})
 	event := config.Event{
 		EventType:    "create",
 		Namespace:    "owned-namespace",
@@ -58,7 +59,7 @@ func TestNamespaceChangeNoMatch(t *testing.T) {
 			Annotations: annotations,
 		},
 	}
-	kubeClient.Client.CoreV1().Namespaces().Create(ns)
+	kubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), ns, metav1.CreateOptions{})
 	event := config.Event{
 		EventType:    "create",
 		Namespace:    "owned-namespace",

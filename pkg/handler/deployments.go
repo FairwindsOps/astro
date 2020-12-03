@@ -15,6 +15,7 @@
 package handler
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -47,7 +48,7 @@ func OnDeploymentChanged(deployment *appsv1.Deployment, event config.Event) {
 		var record []string
 		var monitors []ddapi.Monitor
 
-		ns, err := kubeClient.Client.CoreV1().Namespaces().Get(event.Namespace, metav1.GetOptions{})
+		ns, err := kubeClient.Client.CoreV1().Namespaces().Get(context.TODO(), event.Namespace, metav1.GetOptions{})
 		if err != nil {
 			log.Errorf("Error getting namespace %s: %+v", event.Namespace, err)
 			return
