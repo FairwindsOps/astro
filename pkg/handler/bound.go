@@ -15,6 +15,7 @@
 package handler
 
 import (
+	"context"
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
@@ -27,7 +28,7 @@ import (
 )
 
 func updateBoundResources(namespace *corev1.Namespace, kc *kube.ClientInstance) {
-	deploys, err := kc.Client.AppsV1().Deployments(namespace.Name).List(metav1.ListOptions{})
+	deploys, err := kc.Client.AppsV1().Deployments(namespace.Name).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		log.Errorf("Error getting bound deployments for namespace %q.", namespace.Name)
 		return

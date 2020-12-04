@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -28,7 +29,7 @@ func TestUpdateBoundResources(t *testing.T) {
 			Annotations: nsAnnotations,
 		},
 	}
-	kubeClient.Client.CoreV1().Namespaces().Create(ns)
+	kubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), ns, metav1.CreateOptions{})
 	depAnnotations := make(map[string]string, 0)
 	dep := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -36,7 +37,7 @@ func TestUpdateBoundResources(t *testing.T) {
 			Annotations: depAnnotations,
 		},
 	}
-	kubeClient.Client.AppsV1().Deployments(ns.Name).Create(dep)
+	kubeClient.Client.AppsV1().Deployments(ns.Name).Create(context.TODO(), dep, metav1.CreateOptions{})
 
 	tags := []string{"astro"}
 	depTags := []string{"astro", "astro:object_type:deployment", "astro:resource:bound/foo"}

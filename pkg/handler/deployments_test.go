@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -24,7 +25,7 @@ func TestDeploymentChange(t *testing.T) {
 			Name: "foo",
 		},
 	}
-	kubeClient.Client.CoreV1().Namespaces().Create(ns)
+	kubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), ns, metav1.CreateOptions{})
 
 	annotations := make(map[string]string, 1)
 	annotations["astro/owner"] = "astro"
@@ -34,7 +35,7 @@ func TestDeploymentChange(t *testing.T) {
 			Annotations: annotations,
 		},
 	}
-	kubeClient.Client.AppsV1().Deployments("foo").Create(dep)
+	kubeClient.Client.AppsV1().Deployments("foo").Create(context.TODO(), dep, metav1.CreateOptions{})
 	event := config.Event{
 		EventType:    "create",
 		Namespace:    "foo",
@@ -63,7 +64,7 @@ func TestDeploymentChangeNoMatch(t *testing.T) {
 			Name: "foo",
 		},
 	}
-	kubeClient.Client.CoreV1().Namespaces().Create(ns)
+	kubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), ns, metav1.CreateOptions{})
 
 	annotations := make(map[string]string, 1)
 	annotations["astro/owner"] = "not-astro"
@@ -73,7 +74,7 @@ func TestDeploymentChangeNoMatch(t *testing.T) {
 			Annotations: annotations,
 		},
 	}
-	kubeClient.Client.AppsV1().Deployments("foo").Create(dep)
+	kubeClient.Client.AppsV1().Deployments("foo").Create(context.TODO(), dep, metav1.CreateOptions{})
 	event := config.Event{
 		EventType:    "create",
 		Namespace:    "foo",
