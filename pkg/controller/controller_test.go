@@ -27,10 +27,10 @@ func TestCreateDeploymentController(t *testing.T) {
 	DeploymentInformer := cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-				return kubeClient.Client.AppsV1().Deployments("").List(metav1.ListOptions{})
+				return kubeClient.Client.AppsV1().Deployments("").List(context.TODO(), metav1.ListOptions{})
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-				return kubeClient.Client.AppsV1().Deployments("").Watch(metav1.ListOptions{})
+				return kubeClient.Client.AppsV1().Deployments("").Watch(context.TODO(), metav1.ListOptions{})
 			},
 		},
 		&appsv1.Deployment{},
@@ -47,13 +47,13 @@ func TestCreateDeploymentController(t *testing.T) {
 			Annotations: annotations,
 		},
 	}
-	kubeClient.Client.CoreV1().Namespaces().Create(ns)
+	kubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), ns, metav1.CreateOptions{})
 	deploy := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "foo",
 		},
 	}
-	kubeClient.Client.AppsV1().Deployments("owned-namespace").Create(deploy)
+	kubeClient.Client.AppsV1().Deployments("owned-namespace").Create(context.TODO(), deploy, metav1.CreateOptions{})
 
 	assert.Implements(t, (*kubernetes.Interface)(nil), DeployWatcher.kubeClient, "")
 	assert.Implements(t, (*cache.SharedIndexInformer)(nil), DeployWatcher.informer, "")
