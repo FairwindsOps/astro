@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -27,7 +28,8 @@ func TestNamespaceChange(t *testing.T) {
 			Annotations: annotations,
 		},
 	}
-	kubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), ns, metav1.CreateOptions{})
+	_, err := kubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), ns, metav1.CreateOptions{})
+	assert.NoError(t, err)
 	event := config.Event{
 		EventType:    "create",
 		Namespace:    "owned-namespace",
@@ -59,7 +61,8 @@ func TestNamespaceChangeNoMatch(t *testing.T) {
 			Annotations: annotations,
 		},
 	}
-	kubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), ns, metav1.CreateOptions{})
+	_, err := kubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), ns, metav1.CreateOptions{})
+	assert.NoError(t, err)
 	event := config.Event{
 		EventType:    "create",
 		Namespace:    "owned-namespace",

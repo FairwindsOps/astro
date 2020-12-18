@@ -23,7 +23,7 @@ func StaticMonitorUpdate(event config.Event) {
 			return
 		}
 		log.Debugf("Reconcile static monitor %s", *monitor.Name)
-		if cfg.DryRun == false {
+		if !cfg.DryRun {
 			_, err = dd.AddOrUpdate(&monitor)
 			record = append(record, *monitor.Name)
 			if err != nil {

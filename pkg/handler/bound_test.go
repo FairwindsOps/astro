@@ -29,15 +29,17 @@ func TestUpdateBoundResources(t *testing.T) {
 			Annotations: nsAnnotations,
 		},
 	}
-	kubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), ns, metav1.CreateOptions{})
-	depAnnotations := make(map[string]string, 0)
+	_, err := kubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), ns, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	depAnnotations := make(map[string]string)
 	dep := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        "foo",
 			Annotations: depAnnotations,
 		},
 	}
-	kubeClient.Client.AppsV1().Deployments(ns.Name).Create(context.TODO(), dep, metav1.CreateOptions{})
+	_, err = kubeClient.Client.AppsV1().Deployments(ns.Name).Create(context.TODO(), dep, metav1.CreateOptions{})
+	assert.NoError(t, err)
 
 	tags := []string{"astro"}
 	depTags := []string{"astro", "astro:object_type:deployment", "astro:resource:bound/foo"}
@@ -61,7 +63,7 @@ func TestUpdateBoundResources(t *testing.T) {
 }
 
 func TestSetupBoundEvent(t *testing.T) {
-	depAnnotations := make(map[string]string, 0)
+	depAnnotations := make(map[string]string)
 	dep := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        "test-dep",

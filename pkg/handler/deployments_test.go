@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -25,7 +26,8 @@ func TestDeploymentChange(t *testing.T) {
 			Name: "foo",
 		},
 	}
-	kubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), ns, metav1.CreateOptions{})
+	_, err := kubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), ns, metav1.CreateOptions{})
+	assert.NoError(t, err)
 
 	annotations := make(map[string]string, 1)
 	annotations["astro/owner"] = "astro"
@@ -35,7 +37,8 @@ func TestDeploymentChange(t *testing.T) {
 			Annotations: annotations,
 		},
 	}
-	kubeClient.Client.AppsV1().Deployments("foo").Create(context.TODO(), dep, metav1.CreateOptions{})
+	_, err = kubeClient.Client.AppsV1().Deployments("foo").Create(context.TODO(), dep, metav1.CreateOptions{})
+	assert.NoError(t, err)
 	event := config.Event{
 		EventType:    "create",
 		Namespace:    "foo",
@@ -64,7 +67,8 @@ func TestDeploymentChangeNoMatch(t *testing.T) {
 			Name: "foo",
 		},
 	}
-	kubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), ns, metav1.CreateOptions{})
+	_, err := kubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), ns, metav1.CreateOptions{})
+	assert.NoError(t, err)
 
 	annotations := make(map[string]string, 1)
 	annotations["astro/owner"] = "not-astro"
@@ -74,7 +78,8 @@ func TestDeploymentChangeNoMatch(t *testing.T) {
 			Annotations: annotations,
 		},
 	}
-	kubeClient.Client.AppsV1().Deployments("foo").Create(context.TODO(), dep, metav1.CreateOptions{})
+	_, err = kubeClient.Client.AppsV1().Deployments("foo").Create(context.TODO(), dep, metav1.CreateOptions{})
+	assert.NoError(t, err)
 	event := config.Event{
 		EventType:    "create",
 		Namespace:    "foo",

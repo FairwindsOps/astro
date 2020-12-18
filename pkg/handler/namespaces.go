@@ -35,7 +35,7 @@ func OnNamespaceChanged(namespace *corev1.Namespace, event config.Event) {
 
 	switch strings.ToLower(event.EventType) {
 	case "delete":
-		if cfg.DryRun == false {
+		if !cfg.DryRun {
 			log.Info("Deleting resource monitors.")
 			metrics.ChangeCounter.WithLabelValues("namespaces", "delete").Inc()
 			dd.DeleteMonitors([]string{cfg.OwnerTag, fmt.Sprintf("astro:object_type:%s", event.ResourceType), fmt.Sprintf("astro:resource:%s", event.Key)})
@@ -50,7 +50,7 @@ func OnNamespaceChanged(namespace *corev1.Namespace, event config.Event) {
 				return
 			}
 			log.Debugf("Reconcile monitor %s", *monitor.Name)
-			if cfg.DryRun == false {
+			if !cfg.DryRun {
 				metrics.ChangeCounter.WithLabelValues("namespaces", "create_update").Inc()
 				_, err = dd.AddOrUpdate(&monitor)
 				record = append(record, *monitor.Name)
