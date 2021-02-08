@@ -12,8 +12,7 @@ require (
 	github.com/googleapis/gnostic v0.5.3 // indirect
 	github.com/imdario/mergo v0.3.11
 	github.com/kr/pretty v0.2.1 // indirect
-	github.com/prometheus/client_golang v1.8.0
-	github.com/prometheus/common v0.15.0 // indirect
+	github.com/prometheus/client_golang v1.9.0
 	github.com/sirupsen/logrus v1.7.0
 	github.com/spf13/cobra v1.1.1
 	github.com/stretchr/testify v1.6.1
@@ -21,7 +20,6 @@ require (
 	golang.org/x/crypto v0.0.0-20201124201722-c8d3bf9c5392 // indirect
 	golang.org/x/net v0.0.0-20201202161906-c7110b5ffcbb // indirect
 	golang.org/x/oauth2 v0.0.0-20201203001011-0b49973bad19 // indirect
-	golang.org/x/sys v0.0.0-20201202213521-69691e467435 // indirect
 	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1 // indirect
 	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e
 	google.golang.org/appengine v1.6.7 // indirect
