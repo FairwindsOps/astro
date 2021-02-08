@@ -6,7 +6,6 @@ require (
 	cloud.google.com/go v0.72.0 // indirect
 	github.com/Azure/go-autorest/autorest v0.11.12 // indirect
 	github.com/ghodss/yaml v1.0.0
-	github.com/go-logr/logr v0.3.0 // indirect
 	github.com/golang/mock v1.4.4
 	github.com/google/go-cmp v0.5.4 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
@@ -27,11 +26,8 @@ require (
 	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e
 	google.golang.org/appengine v1.6.7 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	k8s.io/api v0.19.4
-	k8s.io/apimachinery v0.19.4
-	k8s.io/client-go v0.19.4
-	k8s.io/klog/v2 v2.4.0 // indirect
-	k8s.io/kube-openapi v0.0.0-20201113171705-d219536bb9fd // indirect
-	k8s.io/utils v0.0.0-20201110183641-67b214c5f920 // indirect
-	sigs.k8s.io/controller-runtime v0.6.4
+	k8s.io/api v0.20.2
+	k8s.io/apimachinery v0.20.2
+	k8s.io/client-go v0.20.2
+	sigs.k8s.io/controller-runtime v0.8.1
 )
