@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go v0.72.0 // indirect
 	github.com/Azure/go-autorest/autorest v0.11.12 // indirect
 	github.com/ghodss/yaml v1.0.0
-	github.com/golang/mock v1.4.4
+	github.com/golang/mock v1.5.0
 	github.com/google/go-cmp v0.5.4 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/googleapis/gnostic v0.5.3 // indirect
