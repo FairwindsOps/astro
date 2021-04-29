@@ -1,0 +1,38 @@
+version: 2
+updates:
+- package-ecosystem: gomod
+  directory: "/"
+  schedule:
+    interval: monthly
+    time: "11:00"
+  ignore:
+  - dependency-name: sigs.k8s.io/controller-runtime
+    versions:
+    - 0.7.0
+    - 0.8.1
+    - 0.8.2
+  - dependency-name: github.com/sirupsen/logrus
+    versions:
+    - 1.8.0
+  - dependency-name: github.com/stretchr/testify
+    versions:
+    - 1.7.0
+  - dependency-name: github.com/golang/mock
+    versions:
+    - 1.5.0
+  - dependency-name: k8s.io/client-go
+    versions:
+    - 0.20.1
+    - 0.20.2
+    - 0.20.4
+  - dependency-name: k8s.io/apimachinery
+    versions:
+    - 0.20.1
+    - 0.20.2
+  - dependency-name: k8s.io/api
+    versions:
+    - 0.20.1
+    - 0.20.2
+  - dependency-name: github.com/prometheus/client_golang
+    versions:
+    - 1.9.0
