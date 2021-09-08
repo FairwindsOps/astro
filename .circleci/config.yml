@@ -88,19 +88,19 @@ workflows:
     jobs:
       - test
       - rok8s-scripts/kubernetes_e2e_tests:
-          name: e2e test kube 1.15.7
+          name: e2e test kube v1.19.11
           kind_node_image: >-
-            "kindest/node:v1.15.7@sha256:e2df133f80ef633c53c0200114fce2ed5e1f6947477dbc83261a6a921169488d"
+            "kindest/node:v1.19.11@sha256:558780c13d9736d9ba55fa695a5bb8f403a53e42b95bea54fbdc4712181f5e3f"
           <<: *e2e_config
       - rok8s-scripts/kubernetes_e2e_tests:
-          name: e2e test kube 1.16.4
+          name: e2e test kube 1.20.7
           kind_node_image: >-
-            "kindest/node:v1.16.4@sha256:b91a2c2317a000f3a783489dfb755064177dbc3a0b2f4147d50f04825d016f55"
+            "kindest/node:v1.20.7@sha256:4c68efafa97d278a75a5b4677fb27e4986b03301739f1f87575af32202da9cfe"
           <<: *e2e_config
       - rok8s-scripts/kubernetes_e2e_tests:
-          name: e2e test kube 1.17.0
+          name: e2e test kube 1.21.2
           kind_node_image: >-
-            "kindest/node:v1.17.0@sha256:9512edae126da271b66b990b6fff768fbb7cd786c7d39e86bdf55906352fdf62"
+            "kindest/node:v1.21.2@sha256:9d07ff05e4afefbba983fac311807b3c17a5f36e7061f6cb7e2ba756255b2be4"
           <<: *e2e_config
       - build:
           context: org-global
