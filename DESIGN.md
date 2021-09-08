@@ -42,7 +42,7 @@ The main components of this project include a single binary controller that runs
 The application contains the following core components:
 * Config.  Configuration for the application.  It contains information about monitors to apply to objects, api keys, etc.  The main source of information is from environment variables and a configuration file.
 * Controller.  The controller interacts with the Kubernetes api and handles registering and listening for updated events as well as calling appropriate handlers based on received events.
-* Handlers.  Handlers receive events from the controller and respond to them.  They determine a desired monitoring state and create monitor objects that represent a datadog monitor.  
+* Handlers.  Handlers receive events from the controller and respond to them.  They determine a desired monitoring state and create monitor objects that represent a datadog monitor.
 * Utils.  Utilities for the application.  One important utility is the interaction with the datadog api to create, update, or destroy monitors.
 
 ### Configuration
@@ -102,7 +102,7 @@ spec:
       threshold_count:
         critical: 0
       require_full_window: true
-      locked: false   
+      locked: false
 ```
 
 #### MonitorSet
