@@ -11,10 +11,6 @@
 
 Astro is designed to simplify Datadog monitor administration.  This is an operator that emits Datadog monitors based on Kubernetes state.  The operator responds to changes of resources in your kubernetes cluster and will manage Datadog monitors based on the configured state.
 
-## Join the Fairwinds Open Source Community
-
-The goal of the Fairwinds Community is to exchange ideas, influence the open source roadmap, and network with fellow Kubernetes users. [Chat with us on Slack](https://join.slack.com/t/fairwindscommunity/shared_invite/zt-e3c6vj4l-3lIH6dvKqzWII5fSSFDi1g) or [join the user group](https://www.fairwinds.com/open-source-software-user-group) to get involved!
-
 ## Installing
 The [Astro helm chart](https://github.com/FairwindsOps/charts/tree/master/stable/astro) is the preferred way to install Astro into your cluster.
 
@@ -161,6 +157,17 @@ a Kubernetes expert, you can contact `info@fairwinds.com` or [visit our website]
 ## License
 Apache License 2.0
 
+<!-- Begin boilerplate -->
+## Join the Fairwinds Open Source Community
+
+The goal of the Fairwinds Community is to exchange ideas, influence the open source roadmap,
+and network with fellow Kubernetes users.
+[Chat with us on Slack](https://join.slack.com/t/fairwindscommunity/shared_invite/zt-e3c6vj4l-3lIH6dvKqzWII5fSSFDi1g)
+[join the user group](https://www.fairwinds.com/open-source-software-user-group) to get involved!
+
+<a href="https://www.fairwinds.com/t-shirt-offer?utm_source=astro&utm_medium=astro&utm_campaign=astro-tshirt">
+  <img src="https://www.fairwinds.com/hubfs/Doc_Banners/Fairwinds_OSS_User_Group_740x125_v6.png" alt="Love Fairwinds Open Source? Share your business email and job title and we'll send you a free Fairwinds t-shirt!" />
+</a>
 
 ## Other Projects from Fairwinds
 
@@ -170,5 +177,3 @@ Enjoying Astro? Check out some of our other projects:
 * [Pluto](https://github.com/FairwindsOps/Pluto) - Detect Kubernetes resources that have been deprecated or removed in future versions
 * [Nova](https://github.com/FairwindsOps/Nova) - Check to see if any of your Helm charts have updates available
 * [rbac-manager](https://github.com/FairwindsOps/rbac-manager) - Simplify the management of RBAC in your Kubernetes clusters
-
-Or [check out the full list](https://www.fairwinds.com/open-source-software?utm_source=astro&utm_medium=astro&utm_campaign=astro)
