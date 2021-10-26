@@ -22,7 +22,7 @@ A combination of environment variables and a yaml file is used to configure the 
 |:------------|:----------------------------------:|:----------|:------------|
 | `DD_API_KEY` | The api key for your Datadog account. | `Y` ||
 | `DD_APP_KEY` | The app key for your Datadog account. | `Y` ||
-| `OWNER`      | A unique name to designate as the owner.  This will be applied as a tag to identified managed monitors. | `N`| `astro` |
+| `OWNER`      | A unique name to designate as the owner of the generated monitors.  A tag with the owner's value will be applied to managed monitors. If deploying astro on multiple clusters, it is required to provide different `owner` values to segregate monitor management. | `N`| `astro` |
 | `DEFINITIONS_PATH` | The path to monitor definition configurations.  This can be a local path or a URL.  Multiple paths should be separated by a `;` | `N` | `conf.yml` |
 | `DRY_RUN` | when set to true monitors will not be managed in Datadog. | `N` | `false` |
 
