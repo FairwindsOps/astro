@@ -1,15 +1,13 @@
-## Why This PR?
+**Why This PR?**
 _a short description of why this PR is needed_
 
+Fixes #
 
-## Changes
+**Changes**
 Changes proposed in this pull request:
-
 *
 
+**Checklist:**
 
-## Checklist:
-_if this PR is related to Astro 2 then the target should be main not master_
-
-* [ ] I have documented any new or substantially changed packages
-* [ ] I have added automated tests
+* [ ] I have signed the CLA
+* [ ] I have updated/added any relevant documentation related to this PR
