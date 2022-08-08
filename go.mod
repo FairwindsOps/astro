@@ -14,7 +14,7 @@ require (
 	github.com/kr/pretty v0.2.1 // indirect
 	github.com/prometheus/client_golang v1.9.0
 	github.com/sirupsen/logrus v1.7.0
-	github.com/spf13/cobra v1.1.1
+	github.com/spf13/cobra v1.5.0
 	github.com/stretchr/testify v1.6.1
 	github.com/zorkian/go-datadog-api v2.30.0+incompatible
 	golang.org/x/crypto v0.0.0-20201124201722-c8d3bf9c5392 // indirect
@@ -23,7 +23,6 @@ require (
 	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1 // indirect
 	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e
 	google.golang.org/appengine v1.6.7 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 	k8s.io/api v0.20.2
 	k8s.io/apimachinery v0.20.2
 	k8s.io/client-go v0.20.2
