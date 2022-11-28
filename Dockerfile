@@ -1,4 +1,4 @@
-FROM golang:1.14 AS build
+FROM golang:1.19 AS build
 LABEL maintainer="Micah Huber <micah@fairwinds.com>"
 LABEL maintainer="Luke Reed <luke@fairwinds.com>"
 LABEL maintainer="Bader Boland <bader@fairwinds.com>"
